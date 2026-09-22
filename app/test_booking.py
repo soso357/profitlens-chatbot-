@@ -19,6 +19,11 @@ def page() -> str:
     return PAGE.read_text(encoding="utf-8")
 
 
+@router.get("/test-chat", response_class=HTMLResponse)
+def chat_page() -> str:
+    return (Path(__file__).parent / "static" / "test-chat.html").read_text(encoding="utf-8")
+
+
 @router.get("/api/slots")
 def slots(tz: str = "America/New_York", after: str | None = None) -> dict:
     if tz not in booking.US_TIMEZONES:

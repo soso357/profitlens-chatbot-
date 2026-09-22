@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat Test</title>
+<style>
+  :root { --text: #666666; --strong: #111111; --line: #e5e5e5; --bg: #ffffff; --soft: #f6f6f6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--soft); font-family: Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); }
+  main { max-width: 480px; margin: 32px auto; padding: 0 16px; }
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; height: calc(100vh - 64px); max-height: 720px; }
+  header { padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  header b { color: var(--strong); display: block; }
+  header span { font-size: 12px; }
+  #log { flex: 1; overflow-y: auto; padding: 16px; }
+  .msg { max-width: 85%; padding: 10px 13px; border-radius: 12px; margin: 6px 0; line-height: 1.45; font-size: 15px; white-space: pre-wrap; }
+  .agent { background: var(--soft); color: var(--strong); }
+  .visitor { background: var(--strong); color: #fff; margin-left: auto; }
+  .note { font-size: 12px; text-align: center; margin: 8px 0; }
+  form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
+  input { flex: 1; padding: 11px 12px; font: inherit; font-size: 15px; border: 1px solid var(--line); border-radius: 10px; }
+  button { padding: 0 16px; font: inherit; font-weight: 600; color: #fff; background: var(--strong); border: 0; border-radius: 10px; cursor: pointer; }
+  button:disabled { opacity: 0.5; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <header><b>ProfitLens assistant</b><span>Test page, only on this computer. Reload for a new conversation.</span></header>
+    <div id="log"></div>
+    <form id="form"><input id="text" placeholder="Type your question" autocomplete="off" autofocus><button id="send">Send</button></form>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const session = "test-" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+function add(text, who) {
+  const d = document.createElement("div"); d.className = "msg " + who; d.textContent = text;
+  $("log").appendChild(d); $("log").scrollTop = $("log").scrollHeight;
+}
+$("form").onsubmit = async e => {
+  e.preventDefault();
+  const text = $("text").value.trim(); if (!text) return;
+  add(text, "visitor"); $("text").value = ""; $("send").disabled = true;
+  try {
+    const r = await fetch("/chat", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: session, message: text }) });
+    const data = await r.json();
+    add(r.ok ? data.reply : "Sorry, please try again.", "agent");
+    if (data.mode === "email_form") { const n = document.createElement("div"); n.className = "note"; n.textContent = "(The real widget would now show a leave your email form.)"; $("log").appendChild(n); }
+  } catch { add("Sorry, please try again.", "agent"); }
+  $("send").disabled = false; $("text").focus();
+};
+</script>
+</body>
+</html>
