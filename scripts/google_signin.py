@@ -25,6 +25,10 @@ TOKEN_FILE = ROOT / os.getenv("GOOGLE_TOKEN_FILE", "secrets/google-token.json")
 CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
 
 if not CLIENT_FILE.exists():
+    # Accept the file under its downloaded name (Finder can hide or double the .json ending).
+    found = sorted(CLIENT_FILE.parent.glob("client_secret*.json"))
+    CLIENT_FILE = found[0] if found else CLIENT_FILE
+if not CLIENT_FILE.exists():
     sys.exit(f"Missing {CLIENT_FILE.relative_to(ROOT)}. Download the JSON from Google Cloud first (step 5).")
 
 flow = InstalledAppFlow.from_client_secrets_file(str(CLIENT_FILE), SCOPES)
