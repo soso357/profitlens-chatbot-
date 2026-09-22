@@ -55,3 +55,4 @@ python3 .claude/scripts/memory_index.py search <words>
 ## Improving the setup
 
 When you notice something useful Ioseb did not ask for (a repeated task, a spec gap, a missing guardrail or test), record it with the propose-capability skill and mention it in one sentence. Build only what Ioseb approves.
+- 2026-09-22: Telegram bot is @profitlbot. Founder alerts group "ProfitLens leads", chat ID -5552197383 (not a secret; stored in .env.example). Test message delivered. Ioseb chose to keep the bot token that was shared in chat rather than revoke it.
