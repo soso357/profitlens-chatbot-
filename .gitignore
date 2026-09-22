@@ -25,3 +25,7 @@ memory/working/
 memory/index.sqlite
 memory/index.tmp
 .claude/settings.local.json
+
+# Google sign-in files (Phase 3)
+client_secret*.json
+google-token*.json
