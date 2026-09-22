@@ -64,11 +64,11 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 
 ## 6. Integrations
 
-Anthropic API (conversation), Google Calendar via service account (free slots, events with Meet link), Zoho SMTP (founder notifications, visitor confirmation, weekly digest), Render (hosting, disk, environment variables), Framer (one short script tag embed).
+Anthropic API (conversation), Google Calendar via service account (free slots, events with Meet link), Zoho SMTP (founder notifications, visitor confirmation, weekly digest; the record of every alert), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
 
 ## 7. Open questions
 
-- Calendar working hours and time zone. FOUNDER TO CONFIRM
-- Which founder receives booking notifications. FOUNDER TO CONFIRM
-- Model choice (Sonnet class or Haiku class) with cost per conversation. Decided in Phase 1, recorded as an ADR.
+- Calendar hours: RESOLVED 2026-09-22. All 7 days, 19:00 to 03:00 Asia/Tbilisi, calendar ioseb@useprofitlens.com.
+- Notification recipient: RESOLVED 2026-09-22. ioseb@useprofitlens.com.
+- Model: RESOLVED 2026-09-22. Claude Haiku 4.5 (ADR 0013).
 - Exact wording of the AI disclosure. FOUNDER TO CONFIRM

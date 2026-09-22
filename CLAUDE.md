@@ -55,4 +55,3 @@ python3 .claude/scripts/memory_index.py search <words>
 ## Improving the setup
 
 When you notice something useful Ioseb did not ask for (a repeated task, a spec gap, a missing guardrail or test), record it with the propose-capability skill and mention it in one sentence. Build only what Ioseb approves.
-- 2026-09-22: Telegram added for founder alerts (decided by Ioseb). Every lead, booking and handoff goes to a founders' Telegram chat AND by Zoho email (email is the record and backup). Alerts only: founders do not reply to visitors from Telegram. Visitors still chat only on the website. Visitor confirmations stay on email. Telegram is called over plain HTTPS, no new library. Built in Phase 2.

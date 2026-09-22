@@ -27,7 +27,25 @@ def in_scope(rel):
     return rel.startswith("app/") and rel.endswith((".html", ".js", ".css"))
 
 
+def check(path):
+    rel = os.path.relpath(path, ROOT)
+    problems = []
+    for i, line in enumerate(open(path, errors="replace"), 1):
+        if DASHES.search(line):
+            problems.append(f"{rel}:{i} has an em or en dash (rule R4): {line.strip()[:100]}")
+        if rel.startswith("content/") and PERCENT.search(line):
+            problems.append(f"{rel}:{i} has a percentage (rule R2): {line.strip()[:100]}")
+    return problems
+
+
 def main():
+    if "--all" in sys.argv:  # manual check of every in-scope file, used by the phase-gate skill
+        problems = []
+        for p in sorted(list(ROOT.glob("content/**/*")) + list(ROOT.glob("app/**/*"))):
+            if p.is_file() and in_scope(str(p.relative_to(ROOT))):
+                problems += check(p)
+        print("\n".join(problems) or "OK: no dashes or percentages in chatbot text")
+        sys.exit(1 if problems else 0)
     if os.environ.get(GUARD_ENV):
         return
     data = read_hook_input()
@@ -38,12 +56,7 @@ def main():
         return
     if not in_scope(rel) or not os.path.exists(path):
         return
-    problems = []
-    for i, line in enumerate(open(path, errors="replace"), 1):
-        if DASHES.search(line):
-            problems.append(f"{rel}:{i} has an em or en dash (rule R4): {line.strip()[:100]}")
-        if rel.startswith("content/") and PERCENT.search(line):
-            problems.append(f"{rel}:{i} has a percentage (rule R2): {line.strip()[:100]}")
+    problems = check(path)
     if problems:
         print(json.dumps({"decision": "block", "reason": "Chatbot text guardrail:\n" + "\n".join(problems[:15])
                           + "\nFix these lines (commas, periods or parentheses instead of dashes; remove figures)."}))

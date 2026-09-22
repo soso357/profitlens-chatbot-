@@ -23,6 +23,11 @@ Confirmed facts only. Anything unconfirmed goes to docs/spec.md "Open questions"
 - Node is at ~/.local/node/bin (used only for the pyright type checker).
 - Claude Code plugins at project scope: skill-creator, claude-md-management, security-guidance, pyright-lsp.
 
+## Booking and email (confirmed 2026-09-22)
+- Booking calendar, notification recipient and Zoho sending address: ioseb@useprofitlens.com.
+- Calls bookable all 7 days, 19:00 to 03:00 Georgia time (Asia/Tbilisi, no daylight saving).
+- Chat model: Claude Haiku 4.5 (ADR 0013).
+
 ## Accounts (credentials never written here)
 - Anthropic API: pending from founders.
 - Google Calendar (service account): pending.

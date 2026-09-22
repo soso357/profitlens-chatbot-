@@ -8,8 +8,8 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 
 | Phase | Status | Gate |
 |---|---|---|
-| 0 Setup and approved answers | IN PROGRESS: three content files drafted, waiting for founder edits | not approved |
-| 1 Chat service (local) | NOT STARTED | |
+| 0 Setup and approved answers | DONE | approved 2026-09-22 |
+| 1 Chat service (local) | IN PROGRESS: service, guardrails and test conversations committed (e750b7a) | not approved |
 | 2 Qualification and lead capture | NOT STARTED | |
 | 3 Booking in Google Calendar | NOT STARTED | |
 | 4 Website widget | NOT STARTED | |

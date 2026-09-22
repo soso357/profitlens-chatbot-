@@ -10,7 +10,7 @@ Session summaries feed project context and self improvement. Options were a manu
 
 ## Decision
 
-A SessionEnd hook starts a detached background job that condenses the transcript and runs a headless Claude call (claude -p, Sonnet) to write memory/episodic/sessions/<date>-<id>.md and any improvement proposals to memory/proposals/. Sessions with fewer than 3 real user messages are skipped. The job runs from a temporary folder so project hooks do not fire again (no loop).
+A SessionEnd hook starts a detached background job that condenses the transcript and runs a headless Claude call (claude -p, Sonnet) to write memory/episodic/sessions/<date>-<id>.md and any improvement proposals to memory/proposals/. Sessions with fewer than 3 real user messages that also changed no files are skipped (a single long instruction that produced real work still counts). The job runs from a temporary folder so project hooks do not fire again (no loop).
 
 ## Consequences
 

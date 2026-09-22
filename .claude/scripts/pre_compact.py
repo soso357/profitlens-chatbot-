@@ -50,7 +50,7 @@ def main():
         "Written by a hook, not by Claude. Use handoff.md first; this is the fallback.",
         "",
         "## Uncommitted changes",
-        "```", git.strip() or "(clean)", "```",
+        "```", git.rstrip() or "(clean)", "```",
         "",
         "## Last user requests",
     ] + [f"- {m}" for m in recent_user_messages(data.get("transcript_path", ""))]

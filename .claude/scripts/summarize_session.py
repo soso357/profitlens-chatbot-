@@ -109,7 +109,7 @@ def condense(path):
     if len(text) > MAX_CHARS:
         half = MAX_CHARS // 2
         text = text[:half] + "\n\n[... middle of session omitted ...]\n\n" + text[-half:]
-    return scrub(text), user_count
+    return scrub(text), user_count, len(files)
 
 
 def next_proposal_number():
@@ -150,9 +150,9 @@ def main():
     dry = "--dry-run" in sys.argv
     transcript, sid, reason = (args + ["", "unknown", "other"])[:3]
     stamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    text, user_count = condense(transcript)
-    if user_count < MIN_USER_MESSAGES and not dry:
-        print(f"{stamp} skip {sid}: only {user_count} user messages")
+    text, user_count, n_files = condense(transcript)
+    if user_count < MIN_USER_MESSAGES and n_files == 0 and not dry:
+        print(f"{stamp} skip {sid}: {user_count} user messages and no files changed")
         return
     existing = "\n".join(f"- {t}" for _, _, t in open_proposals()) or "(none)"
     prompt = PROMPT.format(existing=existing, sid=sid[:8], reason=reason, transcript=text)
