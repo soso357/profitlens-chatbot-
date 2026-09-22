@@ -50,6 +50,10 @@ BOOKING_HORIZON_DAYS = _int("BOOKING_HORIZON_DAYS", 14)
 # Founder alerts.
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+ZOHO_SMTP_HOST = os.getenv("ZOHO_SMTP_HOST", "smtp.zoho.eu")
+ZOHO_SMTP_USER = os.getenv("ZOHO_SMTP_USER", "")
+ZOHO_SMTP_PASSWORD = os.getenv("ZOHO_SMTP_PASSWORD", "")
+FOUNDER_NOTIFY_EMAILS = [e.strip() for e in os.getenv("FOUNDER_NOTIFY_EMAIL", "").split(",") if e.strip()]
 
 # Local test pages (never switch on in production).
 TEST_PAGES = os.getenv("TEST_PAGES", "") == "1"

@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-from app import booking, chat_log, telegram
+from app import booking, chat_log, email_alerts, telegram
 
 router = APIRouter()
 PAGE = Path(__file__).parent / "static" / "test-booking.html"
@@ -58,10 +58,11 @@ def book(body: BookIn) -> dict:
 
     when = booking.describe(start, body.tz)
     georgia = start.astimezone(booking.FOUNDER_TZ).strftime("%a %-d %b, %H:%M")
-    telegram.send(
-        f"New intake call booked (TEST)\n"
+    alert = (
         f"Name: {body.name}\nRestaurant: {body.restaurant}\nLocation: {body.location}\nEmail: {body.email}\n"
         f"Time: {when} / {georgia} Georgia\nMeet: {event['meet_link']}"
     )
+    telegram.send(f"New intake call booked (TEST)\n{alert}")
+    email_alerts.alert_founders(f"New intake call (TEST): {body.restaurant}", alert)
     chat_log.log("test-booking", "booked", start=start.isoformat(), restaurant=body.restaurant, email=body.email)
     return {"when": when, "meet_link": event["meet_link"]}
