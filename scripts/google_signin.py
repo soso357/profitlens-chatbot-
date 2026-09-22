@@ -19,6 +19,7 @@ load_dotenv(ROOT / ".env")
 SCOPES = [
     "https://www.googleapis.com/auth/calendar.events",    # create the call events
     "https://www.googleapis.com/auth/calendar.freebusy",  # see which times are free
+    "https://www.googleapis.com/auth/gmail.send",         # send founder alert emails
 ]
 CLIENT_FILE = ROOT / os.getenv("GOOGLE_CLIENT_SECRET_FILE", "secrets/client_secret.json")
 TOKEN_FILE = ROOT / os.getenv("GOOGLE_TOKEN_FILE", "secrets/google-token.json")

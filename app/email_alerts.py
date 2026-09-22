@@ -1,27 +1,26 @@
-"""Sends short plain emails through Zoho Mail (EU servers)."""
-import smtplib
-import ssl
+"""Sends short plain emails from the booking Gmail account, using the same Google sign-in as the calendar."""
+import base64
 from email.message import EmailMessage
 
-import certifi
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 from app import config
 
-_SSL = ssl.create_default_context(cafile=certifi.where())
-
 
 def send(to: list[str], subject: str, body: str) -> bool:
-    if not (config.ZOHO_SMTP_USER and config.ZOHO_SMTP_PASSWORD and to):
+    if not to or not config.GOOGLE_TOKEN_FILE.exists():
         return False
     msg = EmailMessage()
-    msg["From"] = f"ProfitLens Chat <{config.ZOHO_SMTP_USER}>"
+    msg["From"] = f"ProfitLens Chat <{config.GOOGLE_CALENDAR_ID}>"
     msg["To"] = ", ".join(to)
     msg["Subject"] = subject
     msg.set_content(body)
     try:
-        with smtplib.SMTP_SSL(config.ZOHO_SMTP_HOST, 465, context=_SSL, timeout=15) as smtp:
-            smtp.login(config.ZOHO_SMTP_USER, config.ZOHO_SMTP_PASSWORD)
-            smtp.send_message(msg)
+        creds = Credentials.from_authorized_user_file(str(config.GOOGLE_TOKEN_FILE))
+        gmail = build("gmail", "v1", credentials=creds, cache_discovery=False)
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+        gmail.users().messages().send(userId="me", body={"raw": raw}).execute()
         return True
     except Exception:
         return False
