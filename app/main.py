@@ -35,6 +35,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 client = anthropic.Anthropic(max_retries=2, timeout=30.0)
 
+if config.TEST_PAGES:
+    from app.test_booking import router as test_booking_router
+    app.include_router(test_booking_router)
+
 
 class Session:
     def __init__(self) -> None:

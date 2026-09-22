@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a Call (Test)</title>
+<style>
+  :root { --text: #666666; --strong: #111111; --line: #e5e5e5; --accent: #111111; --bg: #ffffff; --soft: #f6f6f6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--soft); font-family: Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); }
+  main { max-width: 440px; margin: 40px auto; padding: 0 16px; }
+  .card { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+  .tag { display: inline-block; font-size: 12px; background: #fff4d6; color: #7a5b00; padding: 3px 8px; border-radius: 6px; margin-bottom: 12px; }
+  h1 { font-size: 20px; color: var(--strong); margin: 0 0 6px; }
+  p { margin: 0 0 16px; line-height: 1.5; font-size: 15px; }
+  label { display: block; font-size: 13px; margin: 12px 0 4px; }
+  select, input { width: 100%; padding: 10px 12px; font: inherit; font-size: 15px; border: 1px solid var(--line); border-radius: 8px; color: var(--strong); background: var(--bg); }
+  .slot { display: block; width: 100%; text-align: left; padding: 12px 14px; margin: 8px 0; font: inherit; font-size: 15px; color: var(--strong); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+  .slot:hover { border-color: var(--accent); }
+  .btn { width: 100%; margin-top: 16px; padding: 12px; font: inherit; font-size: 15px; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 10px; cursor: pointer; }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  .link { background: none; border: 0; color: var(--text); text-decoration: underline; font: inherit; font-size: 14px; cursor: pointer; padding: 8px 0; }
+  .error { color: #b00020; font-size: 14px; margin-top: 10px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <span class="tag">Test page, only on this computer</span>
+
+    <section id="step-time">
+      <h1>Book your intake call</h1>
+      <p>A 15 to 20 minute video call with one of our founders. Pick a time that suits you.</p>
+      <label for="tz">Your time zone</label>
+      <select id="tz"></select>
+      <div id="slots"><p>Loading times...</p></div>
+      <button class="link" id="more">Show later times</button>
+      <div class="error" id="time-error"></div>
+    </section>
+
+    <section id="step-details" class="hidden">
+      <h1>Your details</h1>
+      <p id="chosen"></p>
+      <label for="name">Your name</label><input id="name" autocomplete="name">
+      <label for="restaurant">Restaurant name</label><input id="restaurant">
+      <label for="location">City and state</label><input id="location" placeholder="Austin, Texas">
+      <label for="email">Email</label><input id="email" type="email" autocomplete="email">
+      <button class="btn" id="book">Book this call</button>
+      <button class="link" id="back">Pick a different time</button>
+      <div class="error" id="book-error"></div>
+    </section>
+
+    <section id="step-done" class="hidden">
+      <h1>You are booked</h1>
+      <p id="done-text"></p>
+      <p>We have emailed you a calendar invite with the Google Meet link. To change the time, just reply to the founder's email.</p>
+    </section>
+  </div>
+</main>
+<script>
+const zones = {"America/New_York":"Eastern","America/Chicago":"Central","America/Denver":"Mountain",
+  "America/Phoenix":"Arizona","America/Los_Angeles":"Pacific","America/Anchorage":"Alaska","Pacific/Honolulu":"Hawaii"};
+const $ = id => document.getElementById(id);
+const guess = Intl.DateTimeFormat().resolvedOptions().timeZone;
+for (const [z, n] of Object.entries(zones)) $("tz").add(new Option(n + " time", z, false, z === guess));
+if (!zones[guess]) $("tz").value = "America/New_York";
+
+let last = null, chosen = null;
+
+async function loadSlots(after) {
+  $("time-error").textContent = "";
+  const url = "/api/slots?tz=" + encodeURIComponent($("tz").value) + (after ? "&after=" + encodeURIComponent(after) : "");
+  const r = await fetch(url);
+  if (!r.ok) { $("slots").innerHTML = ""; $("time-error").textContent = "Sorry, times are not available right now."; return; }
+  const { slots } = await r.json();
+  $("slots").innerHTML = "";
+  if (!slots.length) { $("slots").innerHTML = "<p>No more free times in the next two weeks.</p>"; $("more").classList.add("hidden"); return; }
+  $("more").classList.remove("hidden");
+  for (const s of slots) {
+    const b = document.createElement("button");
+    b.className = "slot"; b.textContent = s.label;
+    b.onclick = () => { chosen = s; $("chosen").textContent = s.label; show("step-details"); };
+    $("slots").appendChild(b);
+  }
+  last = slots[slots.length - 1].start;
+}
+
+function show(id) { for (const s of ["step-time","step-details","step-done"]) $(s).classList.toggle("hidden", s !== id); }
+
+$("tz").onchange = () => loadSlots();
+$("more").onclick = () => loadSlots(last);
+$("back").onclick = () => show("step-time");
+$("book").onclick = async () => {
+  $("book-error").textContent = "";
+  const body = { start: chosen.start, tz: $("tz").value, name: $("name").value.trim(),
+    restaurant: $("restaurant").value.trim(), location: $("location").value.trim(), email: $("email").value.trim() };
+  if (!body.name || !body.restaurant || !body.location || !body.email) { $("book-error").textContent = "Please fill in every field."; return; }
+  $("book").disabled = true;
+  const r = await fetch("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  $("book").disabled = false;
+  const data = await r.json();
+  if (!r.ok) { $("book-error").textContent = typeof data.detail === "string" ? data.detail : "Please check your details."; return; }
+  $("done-text").textContent = "Your call is on " + data.when + ".";
+  show("step-done");
+};
+loadSlots();
+</script>
+</body>
+</html>

@@ -34,3 +34,22 @@ SESSION_MESSAGES_PER_HOUR = _int("SESSION_MESSAGES_PER_HOUR", 20)
 MAX_VISITOR_MESSAGES_PER_SESSION = _int("MAX_VISITOR_MESSAGES_PER_SESSION", 30)
 IP_RATE_LIMIT = os.getenv("IP_RATE_LIMIT", "60/hour")
 DAILY_SPEND_LIMIT_USD = _float("DAILY_SPEND_LIMIT_USD", 5.00)
+
+# Booking (Phase 3). Founders' hours are in their own time zone; an end before the start runs past midnight.
+GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+GOOGLE_TOKEN_FILE = ROOT / os.getenv("GOOGLE_TOKEN_FILE", "secrets/google-token.json")
+BOOKING_TIMEZONE = os.getenv("BOOKING_TIMEZONE", "Asia/Tbilisi")
+BOOKING_DAYS = os.getenv("BOOKING_DAYS", "mon,tue,wed,thu,fri,sat,sun").split(",")
+BOOKING_START = os.getenv("BOOKING_START", "19:00")
+BOOKING_END = os.getenv("BOOKING_END", "03:00")
+CALL_MINUTES = _int("CALL_MINUTES", 20)
+SLOT_STEP_MINUTES = _int("SLOT_STEP_MINUTES", 30)
+BOOKING_MIN_NOTICE_HOURS = _int("BOOKING_MIN_NOTICE_HOURS", 12)
+BOOKING_HORIZON_DAYS = _int("BOOKING_HORIZON_DAYS", 14)
+
+# Founder alerts.
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
+# Local test pages (never switch on in production).
+TEST_PAGES = os.getenv("TEST_PAGES", "") == "1"
