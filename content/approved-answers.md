@@ -4,7 +4,7 @@ DRAFT for founders to edit. Source: the text of useprofitlens.com (home, how it 
 
 The chat agent may only say what is written in this file. If something is not here, the agent does not know it and hands off to a founder. Keep answers short and plain. Anything marked FOUNDER TO CONFIRM must be checked, then the marker deleted. Delete any answer you do not want the agent to give.
 
-Left out on purpose (rule 2, no report figures or example numbers): the healthy food cost range, the "whole menu costed" figure, the "never more than 8%" price suggestion limit, consultant and competitor prices, the monthly revenue range on the About page, and every number in the Main Street Grill sample.
+Left out on purpose (rule 2, no report figures or example numbers): the healthy food cost range, the "whole menu costed" figure, the upper limit on price suggestions, consultant and competitor prices, the monthly revenue range on the About page, and every number in the Main Street Grill sample.
 
 ---
 
