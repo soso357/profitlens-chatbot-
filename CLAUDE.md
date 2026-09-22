@@ -155,3 +155,4 @@ Demonstrate: the service is live on Render, a founder completes a test conversat
 - 2026-09-22: Phase 0 started. Folder, virtual environment, requirements.txt, .gitignore, .env.example and git created.
 - 2026-09-22: Website text downloaded directly from useprofitlens.com instead of being pasted. content/approved-answers.md drafted from it; report figures, percentages and sample numbers left out on purpose.
 - 2026-09-22: Confirmed by Ioseb: no payment ever happens through the chatbot. The chatbot only has conversations and schedules the intake call. No card details, no payment links; payment questions go to a founder.
+- 2026-09-22: ioseb@useprofitlens.com is the booking calendar, the notification recipient and the Zoho sending address. Calls bookable all 7 days, 19:00 to 03:00 Georgia time (Asia/Tbilisi, no daylight saving). Stored as non-secret settings in .env.example.
