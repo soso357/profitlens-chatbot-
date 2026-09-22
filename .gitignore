@@ -19,3 +19,9 @@ leads.csv
 
 # Mac
 .DS_Store
+
+# Claude Code workflow (ADR 0009, 0012): per session state and the rebuildable index
+memory/working/
+memory/index.sqlite
+memory/index.tmp
+.claude/settings.local.json
