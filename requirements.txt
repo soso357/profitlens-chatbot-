@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+anthropic
+python-dotenv
+google-api-python-client
+google-auth
+pydantic
+slowapi

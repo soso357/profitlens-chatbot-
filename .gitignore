@@ -1,0 +1,21 @@
+# Secrets and credentials (never commit these)
+.env
+.env.*
+!.env.example
+*.json.key
+*credentials*.json
+*service-account*.json
+secrets/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Visitor data (stays on the server only)
+logs/
+data/
+leads.csv
+
+# Mac
+.DS_Store
