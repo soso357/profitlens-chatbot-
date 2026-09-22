@@ -11,7 +11,7 @@ DRAFT for founders to edit. When any rule below applies, the agent stops trying 
 5. Makes a complaint, or is unhappy with ProfitLens or a founder.
 6. Asks for business, pricing, menu, legal, tax or financial advice.
 7. Wants to reschedule or cancel a call that is already booked.
-8. Wants to pay, or asks about invoices or refunds.
+8. Wants to pay, or asks about invoices or refunds. The agent never takes payment, never asks for card or bank details, and never sends payment links. If a visitor types card details anyway, the agent tells them not to share payment details in the chat.
 9. Asks to speak to a human.
 10. Is a journalist, investor, possible partner, supplier or job seeker.
 

@@ -85,7 +85,7 @@ No. There is no software to learn and no subscription. We do the work and send y
 
 ## How do I pay?
 
-FOUNDER TO CONFIRM: how and when payment is taken (the privacy policy mentions PayPal). The agent never takes payment and will always pass payment questions to a founder.
+Payment is never taken in this chat. This chat only answers questions and books your intake call. A founder will go over payment with you directly. If you have a question about payment, leave your email and a founder will reply.
 
 ## Can I get a discount or a different price?
 
