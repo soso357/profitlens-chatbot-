@@ -22,6 +22,9 @@
   input { flex: 1; padding: 11px 12px; font: inherit; font-size: 15px; border: 1px solid var(--line); border-radius: 10px; }
   button { padding: 0 16px; font: inherit; font-weight: 600; color: #fff; background: var(--strong); border: 0; border-radius: 10px; cursor: pointer; }
   button:disabled { opacity: 0.5; }
+  .slots { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 10px; max-width: 85%; }
+  .slots button { padding: 10px 12px; text-align: left; font-weight: 500; color: var(--strong); background: var(--bg); border: 1px solid var(--strong); }
+  .slots button.more { border-color: var(--line); color: var(--text); }
 </style>
 </head>
 <body>
@@ -39,6 +42,25 @@ function add(text, who) {
   const d = document.createElement("div"); d.className = "msg " + who; d.textContent = text;
   $("log").appendChild(d); $("log").scrollTop = $("log").scrollHeight;
 }
+function showSlots(slots) {
+  if (!slots || !slots.length) return;
+  const box = document.createElement("div"); box.className = "slots";
+  const choose = async (choice, label) => {
+    box.querySelectorAll("button").forEach(b => b.disabled = true);
+    add(label, "visitor");
+    try {
+      const r = await fetch("/book", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: session, choice }) });
+      const data = await r.json();
+      add(r.ok ? data.reply : "Sorry, please try again.", "agent");
+      if (r.ok) showSlots(data.slots);
+    } catch { add("Sorry, please try again.", "agent"); }
+  };
+  slots.forEach(s => { const b = document.createElement("button"); b.type = "button"; b.textContent = s.label; b.onclick = () => choose(s.start, s.label); box.appendChild(b); });
+  const more = document.createElement("button"); more.type = "button"; more.className = "more"; more.textContent = "Other times";
+  more.onclick = () => choose("more", "Other times"); box.appendChild(more);
+  $("log").appendChild(box); $("log").scrollTop = $("log").scrollHeight;
+}
 $("form").onsubmit = async e => {
   e.preventDefault();
   const text = $("text").value.trim(); if (!text) return;
@@ -48,6 +70,7 @@ $("form").onsubmit = async e => {
       body: JSON.stringify({ session_id: session, message: text }) });
     const data = await r.json();
     add(r.ok ? data.reply : "Sorry, please try again.", "agent");
+    if (r.ok) showSlots(data.slots);
     if (data.mode === "email_form") { const n = document.createElement("div"); n.className = "note"; n.textContent = "(The real widget would now show a leave your email form.)"; $("log").appendChild(n); }
   } catch { add("Sorry, please try again.", "agent"); }
   $("send").disabled = false; $("text").focus();

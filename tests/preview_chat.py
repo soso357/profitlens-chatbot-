@@ -8,12 +8,16 @@ are not exercised here.
 
 Chat in a Terminal window:   .venv/bin/python -m tests.preview_chat
 Ask a list of questions:     .venv/bin/python -m tests.preview_chat "question one" "question two"
+
+Booking is REAL: when times are shown, typing 1, 2 or 3 books a call in the calendar,
+Google emails the invite to the email you gave, and founders get Telegram and email
+alerts marked "PREVIEW TEST". Type "more" for other times.
 """
 import subprocess
 import sys
 import tempfile
 
-from app import guardrails
+from app import chat_booking, guardrails
 from app.content import SYSTEM_PROMPT
 
 MODEL = "haiku"
@@ -38,25 +42,39 @@ def ask_model(history):
     return r.stdout.strip()
 
 
-def reply_to(history, message):
-    """Same order of checks as app/main.py chat()."""
+SOURCE = "PREVIEW TEST"
+
+
+def reply_to(history, message, state):
+    """Same order of checks as app/main.py chat(). Returns (message, reply, notes, slots)."""
     first = not history
+    choice = message.strip().rstrip(".").lower()
+    if state.offered and choice in ("1", "2", "3", chat_booking.MORE):
+        transcript = "\n".join(f"{'Visitor' if r == 'user' else 'Assistant'}: {t}" for r, t in history)
+        reply, slots = chat_booking.pick(state, choice, "preview", transcript, source=SOURCE)
+        return message, reply, [], slots
     if guardrails.contains_card_number(message):
         message = guardrails.redact_card_numbers(message)
         reply = guardrails.PAYMENT_WARNING
-        return message, (guardrails.ensure_disclosure(reply) if first else reply), ["card number removed"]
+        return message, (guardrails.ensure_disclosure(reply) if first else reply), ["card number removed"], []
     raw = ask_model(history + [("user", message)])
-    reply = guardrails.strip_markdown(guardrails.remove_dashes(raw))
+    text, details = chat_booking.extract(raw)
+    reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
     notes = guardrails.find_violations(reply)
     if notes:
-        reply = guardrails.HANDOFF_REPLY
+        reply, details = guardrails.HANDOFF_REPLY, None
     if first:
         reply = guardrails.ensure_disclosure(reply)
-    return message, reply, notes
+    slots = []
+    if details and not state.details:
+        extra, slots = chat_booking.offer(state, details, "preview")
+        reply = f"{reply} {extra}".strip()
+    return message, reply, notes, slots
 
 
 def main():
     history = []
+    state = chat_booking.BookingState()
     questions = sys.argv[1:]
     interactive = not questions
     if interactive:
@@ -78,7 +96,7 @@ def main():
             print(f"You: {message}")
         print("   (thinking, about 10 seconds...)", flush=True)
         try:
-            message, reply, notes = reply_to(history, message)
+            message, reply, notes, slots = reply_to(history, message, state)
         except FileNotFoundError:
             print("   ERROR: the 'claude' command was not found in this Terminal. Run this tool from the same kind of window where you use Claude Code.\n")
             continue
@@ -87,7 +105,12 @@ def main():
             continue
         if notes:
             print(f"   [guardrail blocked the model's reply: {'; '.join(notes)}]")
-        print(f"Bot: {reply}\n")
+        print(f"Bot: {reply}")
+        for i, sl in enumerate(slots, 1):
+            print(f"   [{i}] {sl['label']}")
+        if slots:
+            print("   Type 1, 2 or 3 to book (real booking), or 'more' for other times.")
+        print()
         history += [("user", message), ("assistant", reply)]
 
 

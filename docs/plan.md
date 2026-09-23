@@ -11,7 +11,7 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 | 0 Setup and approved answers | DONE | approved 2026-09-22 |
 | 1 Chat service (local) | IN PROGRESS: service, guardrails and test conversations committed (e750b7a) | not approved |
 | 2 Qualification and lead capture | NOT STARTED | |
-| 3 Booking in Google Calendar | NOT STARTED | |
+| 3 Booking in Google Calendar | IN PROGRESS: Google setup and booking module done; booking inside the chat being built | not approved |
 | 4 Website widget | NOT STARTED | |
 | 5 Deploy, harden, hand over | NOT STARTED | |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
@@ -19,6 +19,13 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 ## Phase notes
 
 (Per phase implementation plans go here, newest phase first.)
+
+### Phase 3 booking in the chat (2026-09-23, Ioseb chose to build it before Phases 1 and 2 are approved)
+1. app/chat_booking.py: when the model has name, restaurant, city and state, email and a fit (or unclear) result, it ends its reply with a hidden <offer_times>{...}</offer_times> block. The service strips it, reads the calendar and returns 3 times in the visitor's US time zone (default Eastern). The model never writes times or says a call is booked; only code does (guards R1).
+2. Visitor clicks a time (POST /book) or types 1, 2 or 3. Code re-checks the time, books it with a Meet link (app/booking.py), Google emails the invite, founders get Telegram and email alerts with details, fit result and a short transcript.
+3. "Other times" shows the next 3. Time taken: new times offered. Calendar down: apology, ask for preferred times, founder alert (spec B11).
+4. System prompt job 3 changed from "a founder will email you" to this flow. test-chat page shows time buttons; tests/preview_chat.py lets you type 1, 2 or 3.
+5. Tests: offline checks for the signal parsing and time zone fallback; a real booking from the preview.
 
 ---
 

@@ -10,7 +10,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from app import chat_log, config, guardrails, spend
+from app import chat_booking, chat_log, config, guardrails, spend
 from app.content import SYSTEM_PROMPT
 
 EMAIL_FORM_REPLY = (
@@ -47,6 +47,7 @@ class Session:
         self.visitor_messages = 0
         self.created = time.time()
         self.lock = threading.Lock()
+        self.booking = chat_booking.BookingState()
 
 
 _sessions: dict[str, Session] = {}
@@ -69,6 +70,16 @@ class ChatIn(BaseModel):
 class ChatOut(BaseModel):
     reply: str
     mode: str = "chat"  # "chat", or "email_form" when the widget should show the leave your email form
+    slots: list[dict] = []  # call times to show as buttons: {"start": iso, "label": text}
+
+
+class BookIn(BaseModel):
+    session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{8,64}$")
+    choice: str = Field(min_length=1, max_length=40)  # a slot "start", or "more" for other times
+
+
+def _transcript(session: Session) -> str:
+    return "\n".join(f"{'Visitor' if m['role'] == 'user' else 'Assistant'}: {m['content']}" for m in session.messages)
 
 
 def _reply_text(response) -> str:
@@ -114,6 +125,11 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             return ChatOut(reply=reply)
 
         chat_log.log(sid, "visitor", text=message)
+        if session.booking.offered and message.strip().rstrip(".") in ("1", "2", "3"):
+            reply, slots = chat_booking.pick(session.booking, message.strip().rstrip("."), sid, _transcript(session))
+            session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
+            chat_log.log(sid, "agent", text=reply)
+            return ChatOut(reply=reply, slots=slots)
         first_reply = not session.messages
         history = session.messages + [{"role": "user", "content": message}]
 
@@ -133,7 +149,8 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
         spend.add(cost)
 
         raw = _reply_text(response)
-        reply = guardrails.strip_markdown(guardrails.remove_dashes(raw))
+        text, booking_details = chat_booking.extract(raw)
+        reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
         if response.stop_reason == "max_tokens":
             reply = guardrails.trim_to_sentence(reply)
 
@@ -142,10 +159,15 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             violations.append(f"no usable reply (stop reason {response.stop_reason})")
         if violations:
             chat_log.log(sid, "guardrail_blocked", reasons=violations, original=raw)
-            reply = guardrails.HANDOFF_REPLY
+            reply, booking_details = guardrails.HANDOFF_REPLY, None
 
         if first_reply:
             reply = guardrails.ensure_disclosure(reply)
+
+        slots: list[dict] = []
+        if booking_details and not session.booking.details:
+            extra, slots = chat_booking.offer(session.booking, booking_details, sid)
+            reply = f"{reply} {extra}".strip()
 
         session.messages = history + [{"role": "assistant", "content": reply}]
         chat_log.log(
@@ -154,7 +176,20 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             cache_read_tokens=response.usage.cache_read_input_tokens,
             output_tokens=response.usage.output_tokens,
         )
-        return ChatOut(reply=reply)
+        return ChatOut(reply=reply, slots=slots)
+
+
+@app.post("/book", response_model=ChatOut)
+@limiter.limit(config.IP_RATE_LIMIT)
+def book(request: Request, body: BookIn) -> ChatOut:
+    """A time button was clicked (or "Other times")."""
+    session = get_session(body.session_id)
+    with session.lock:
+        reply, slots = chat_booking.pick(session.booking, body.choice, body.session_id, _transcript(session))
+        clicked = "Other times, please." if body.choice == chat_booking.MORE else "(I clicked one of the call times.)"
+        session.messages += [{"role": "user", "content": clicked}, {"role": "assistant", "content": reply}]
+        chat_log.log(body.session_id, "agent", text=reply)
+        return ChatOut(reply=reply, slots=slots)
 
 
 @app.get("/health")
