@@ -11,7 +11,7 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 | 0 Setup and approved answers | DONE | approved 2026-09-22 |
 | 1 Chat service (local) | IN PROGRESS: service, guardrails and test conversations committed (e750b7a) | not approved |
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
-| 3 Booking in Google Calendar | IN PROGRESS: Google setup and booking module done; booking inside the chat being built | not approved |
+| 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | NOT STARTED | |
 | 5 Deploy, harden, hand over | NOT STARTED | |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
