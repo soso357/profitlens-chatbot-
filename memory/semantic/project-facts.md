@@ -22,6 +22,7 @@ Confirmed facts only. Anything unconfirmed goes to docs/spec.md "Open questions"
 - No jq and no GitHub CLI (gh) on this machine; scripts use python3.
 - Node is at ~/.local/node/bin (used only for the pyright type checker).
 - Claude Code plugins at project scope: skill-creator, claude-md-management, security-guidance, pyright-lsp.
+- Obsidian vault ~/Desktop/IOSEB/IOSEB has a folder "PROFITLENS CHATBOT" of live links (symlinks) to docs/, memory/, content/, .claude/rules, .claude/skills, CLAUDE.md, REVIEW.md and the founders' brief, plus a START HERE note (2026-09-23). Edits in Obsidian change the project files. Renaming or moving those project files breaks the links.
 
 ## Booking and email (confirmed 2026-09-22)
 - Booking calendar, notification recipient and Zoho sending address: ioseb@useprofitlens.com.
