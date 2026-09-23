@@ -62,11 +62,12 @@ def main():
         emit_context("SessionStart", "\n\n".join(out))
         return
 
-    try:
-        subprocess.Popen([sys.executable, str(ROOT / ".claude" / "scripts" / "memory_index.py"), "build", "--quiet"],
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-    except Exception:
-        pass
+    for script, args in (("memory_index.py", ["build", "--quiet"]), ("obsidian_map.py", [])):
+        try:
+            subprocess.Popen([sys.executable, str(ROOT / ".claude" / "scripts" / script), *args],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        except Exception:
+            pass
 
     ps = plan_status()
     if ps:
