@@ -18,6 +18,7 @@ SECTIONS = [
     ("The build", ["docs/intent.md", "docs/spec.md", "docs/plan.md", "docs/build-log.md", "docs/workflow.md", "Original founders brief.md"]),
     ("Decisions (ADRs)", ["docs/adr"]),
     ("Research", ["docs/research"]),
+    ("Other docs and screenshots", ["docs"]),
     ("What the chatbot knows (founders own this)", ["chatbot content"]),
     ("Memory", ["memory/README.md", "memory/semantic", "memory/procedural"]),
     ("Improvement proposals", ["memory/proposals"]),
