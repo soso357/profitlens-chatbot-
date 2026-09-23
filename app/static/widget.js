@@ -62,11 +62,11 @@
   var wrap = el("div", "wrap");
   var panel = el("div", "panel");
   panel.setAttribute("role", "dialog");
-  panel.setAttribute("aria-label", "ProfitLens chat");
+  panel.setAttribute("aria-label", "Chat with Jelena, the ProfitLens AI assistant");
   var header = el("header");
   var title = el("div");
-  var b = el("b"); b.textContent = "ProfitLens assistant";
-  var sub = el("span"); sub.textContent = "AI assistant. A founder takes the actual call.";
+  var b = el("b"); b.textContent = "Jelena";
+  var sub = el("span"); sub.textContent = "ProfitLens AI assistant. A founder takes the call.";
   title.appendChild(b); title.appendChild(sub);
   var close = el("button", "close"); close.type = "button"; close.setAttribute("aria-label", "Close chat"); close.textContent = "×";
   header.appendChild(title); header.appendChild(close);
@@ -79,7 +79,7 @@
 
   var launcher = el("button", "launcher");
   launcher.type = "button";
-  launcher.setAttribute("aria-label", "Chat with the ProfitLens assistant");
+  launcher.setAttribute("aria-label", "Chat with Jelena, the ProfitLens AI assistant");
   launcher.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
 
   wrap.appendChild(panel); wrap.appendChild(launcher);
@@ -165,7 +165,7 @@
   function closePanel() {
     state.open = false; save();
     panel.classList.remove("open");
-    launcher.setAttribute("aria-label", "Chat with the ProfitLens assistant");
+    launcher.setAttribute("aria-label", "Chat with Jelena, the ProfitLens AI assistant");
     launcher.focus();
   }
 
