@@ -12,7 +12,7 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 | 1 Chat service (local) | IN PROGRESS: service, guardrails and test conversations committed (e750b7a) | not approved |
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
-| 4 Website widget | BUILT: widget, embed guide, desktop and phone screenshots (docs/screenshots). Final end to end test with the API key pending | not approved |
+| 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
 | 5 Deploy, harden, hand over | NOT STARTED | |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 
