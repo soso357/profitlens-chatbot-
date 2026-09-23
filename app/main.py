@@ -130,6 +130,19 @@ def widget() -> Response:
                     headers={"Cache-Control": "public, max-age=300"})
 
 
+AVATAR_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml"}
+
+
+@app.get("/avatar")
+def avatar() -> Response:
+    """Jelena's picture. A designer's avatar.png, .jpg or .webp in app/static wins over the placeholder SVG."""
+    for ext, media in AVATAR_TYPES.items():
+        f = WIDGET_FILE.parent / f"avatar{ext}"
+        if f.exists():
+            return Response(f.read_bytes(), media_type=media, headers={"Cache-Control": "public, max-age=3600"})
+    raise HTTPException(404)
+
+
 @app.post("/start", response_model=ChatOut)
 @limiter.limit(config.IP_RATE_LIMIT)
 def start(request: Request, body: SessionIn) -> ChatOut:

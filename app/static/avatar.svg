@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Jelena, illustrated AI assistant">
+  <!-- Placeholder illustrated avatar for Jelena. Replace with the final design:
+       put avatar.png, avatar.jpg or avatar.webp in app/static/ (it wins over this file). -->
+  <circle cx="48" cy="48" r="48" fill="#EFE9DF"/>
+  <!-- hair, back -->
+  <path d="M22 50c0-18 11-30 26-30s26 12 26 30v22H22z" fill="#3B2A22"/>
+  <!-- shoulders, black top -->
+  <path d="M18 96c2-16 14-24 30-24s28 8 30 24z" fill="#111111"/>
+  <!-- neck -->
+  <rect x="42" y="58" width="12" height="14" rx="5" fill="#E7B99A"/>
+  <!-- face -->
+  <ellipse cx="48" cy="46" rx="17" ry="19" fill="#F2C8A8"/>
+  <!-- hair, front fringe -->
+  <path d="M30 42c2-12 10-18 20-18 9 0 15 6 16 14-9-1-17-5-22-11-3 7-8 12-14 15z" fill="#3B2A22"/>
+  <!-- eyes -->
+  <circle cx="41.5" cy="47" r="2" fill="#2A1E18"/>
+  <circle cx="54.5" cy="47" r="2" fill="#2A1E18"/>
+  <!-- cheeks -->
+  <circle cx="37.5" cy="53" r="3" fill="#EBA88E" opacity=".55"/>
+  <circle cx="58.5" cy="53" r="3" fill="#EBA88E" opacity=".55"/>
+  <!-- smile -->
+  <path d="M43 55.5c3 3 7 3 10 0" stroke="#2A1E18" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+</svg>

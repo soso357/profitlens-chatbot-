@@ -8,6 +8,7 @@
   var script = document.currentScript;
   var API = script ? new URL(script.src).origin : "";
   var KEY = "profitlens_chat_v1";
+  var AVATAR = API + "/avatar";
 
   function load() {
     try { return JSON.parse(sessionStorage.getItem(KEY)) || null; } catch (e) { return null; }
@@ -30,6 +31,14 @@
     ".launcher { position: fixed; right: 20px; bottom: 20px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: #111111; color: #fff; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.18); display: flex; align-items: center; justify-content: center; z-index: 2147483000; }",
     ".launcher:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }",
     ".launcher svg { width: 26px; height: 26px; }",
+    ".launcher img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; border: 2px solid #111111; }",
+    ".launcher.pic { background: #fff; padding: 0; }",
+    ".who { display: flex; align-items: center; gap: 10px; min-width: 0; }",
+    ".av { border-radius: 50%; object-fit: cover; flex: none; background: #efe9df; }",
+    ".av-lg { width: 38px; height: 38px; }",
+    ".row { display: flex; align-items: flex-end; gap: 8px; margin: 6px 0; }",
+    ".row .msg { margin: 0; }",
+    ".av-sm { width: 26px; height: 26px; }",
     ".panel { position: fixed; right: 20px; bottom: 88px; width: 370px; height: 560px; max-height: calc(100vh - 110px); background: #fff; border: 1px solid #e5e5e5; border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,.16); display: none; flex-direction: column; overflow: hidden; z-index: 2147483000; }",
     ".panel.open { display: flex; }",
     "header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #e5e5e5; }",
@@ -66,10 +75,14 @@
   var header = el("header");
   var title = el("div");
   var b = el("b"); b.textContent = "Jelena";
-  var sub = el("span"); sub.textContent = "ProfitLens AI assistant. A founder takes the call.";
+  var sub = el("span"); sub.textContent = "AI assistant. A founder takes the call.";
   title.appendChild(b); title.appendChild(sub);
+  var who = el("div", "who");
+  var headAv = avatarImg("av av-lg", "Jelena");
+  if (headAv) who.appendChild(headAv);
+  who.appendChild(title);
   var close = el("button", "close"); close.type = "button"; close.setAttribute("aria-label", "Close chat"); close.textContent = "×";
-  header.appendChild(title); header.appendChild(close);
+  header.appendChild(who); header.appendChild(close);
   var log = el("div", "log"); log.setAttribute("aria-live", "polite");
   var form = el("form");
   var input = el("input"); input.type = "text"; input.placeholder = "Type your question"; input.setAttribute("aria-label", "Your message"); input.maxLength = 1000;
@@ -80,17 +93,40 @@
   var launcher = el("button", "launcher");
   launcher.type = "button";
   launcher.setAttribute("aria-label", "Chat with Jelena, the ProfitLens AI assistant");
-  launcher.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
+  var bubbleIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
+  var launchAv = avatarImg("", "");
+  if (launchAv) {
+    launcher.classList.add("pic");
+    launcher.appendChild(launchAv);
+    launchAv.onerror = function () { launcher.classList.remove("pic"); launcher.innerHTML = bubbleIcon; };
+  } else {
+    launcher.innerHTML = bubbleIcon;
+  }
 
   wrap.appendChild(panel); wrap.appendChild(launcher);
   root.appendChild(wrap);
 
   function el(tag, cls) { var e = document.createElement(tag); if (cls) e.className = cls; return e; }
 
+  function avatarImg(cls, alt) {
+    if (!API) return null;
+    var i = el("img", cls); i.src = AVATAR; i.alt = alt;
+    i.onerror = function () { i.style.display = "none"; };
+    return i;
+  }
+
   function bubble(text, who) {
     var d = el("div", "msg " + (who === "me" ? "me" : "bot"));
     d.textContent = text;
-    log.appendChild(d);
+    if (who === "me") {
+      log.appendChild(d);
+    } else {
+      var row = el("div", "row");
+      var av = avatarImg("av av-sm", "");
+      if (av) row.appendChild(av);
+      row.appendChild(d);
+      log.appendChild(row);
+    }
     log.scrollTop = log.scrollHeight;
   }
   function add(text, who) { state.log.push({ who: who, text: text }); save(); bubble(text, who); }
