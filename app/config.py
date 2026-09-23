@@ -53,4 +53,6 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 FOUNDER_NOTIFY_EMAILS = [e.strip() for e in os.getenv("FOUNDER_NOTIFY_EMAIL", "").split(",") if e.strip()]
 
 # Local test pages (never switch on in production).
+CONVERSATION_IDLE_MINUTES = _int("CONVERSATION_IDLE_MINUTES", 30)  # then the conversation goes to Telegram (ADR 0015)
+
 TEST_PAGES = os.getenv("TEST_PAGES", "") == "1"

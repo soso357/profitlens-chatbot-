@@ -1,11 +1,18 @@
-"""Offline checks of booking inside the chat (app/chat_booking.py). No calendar, no alerts sent.
+"""Offline checks of leads and booking inside the chat (app/chat_booking.py).
+No calendar, no alerts sent, leads written to a temporary file.
 Run: .venv/bin/python -m tests.check_booking"""
+import csv
+import tempfile
 from datetime import datetime, timedelta
+from pathlib import Path
 
-from app import booking, chat_booking as cb
+from app import booking, chat_booking as cb, leads, telegram
 
 SENT = []
-cb.telegram.send = lambda text: SENT.append(("telegram", text)) or True
+TG_RAW = []
+telegram.send = lambda text: TG_RAW.append(text) or True
+cb.telegram.send_long = lambda text: SENT.append(("telegram", text)) or True
+leads.FILE = Path(tempfile.mkdtemp()) / "leads.csv"
 cb.email_alerts.alert_founders = lambda subject, body: SENT.append(("email", subject)) or True
 cb.chat_log.log = lambda *a, **k: None
 
@@ -37,16 +44,17 @@ def check(name, ok):
     print(("PASS " if ok else "FAIL ") + name)
 
 
-text, d = cb.extract(GOOD)
+TYPED = "maria@example.com bob@example.com"
+text, d, _ = cb.extract(GOOD, TYPED)
 check("hidden block removed from visible text", "<offer_times>" not in text and text == "Great, here are the times.")
 check("details read", d is not None and d["restaurant"] == "Casa Maria" and d["timezone"] == "America/Chicago")
 check("no block means no booking", cb.extract("Hello there.")[1] is None)
-check("bad email means no booking", cb.extract(GOOD.replace("maria@example.com", "not an email"))[1] is None)
-check("not a fit means no booking (B5)", cb.extract(GOOD.replace('"fit": "fit"', '"fit": "not fit"'))[1] is None)
-check("unclear fit still books", cb.extract(GOOD.replace('"fit": "fit"', '"fit": "unclear"'))[1] is not None)
+check("bad email means no booking", cb.extract(GOOD.replace("maria@example.com", "not an email"), TYPED)[1] is None)
+check("not a fit means no booking (B5)", cb.extract(GOOD.replace('"fit": "fit"', '"fit": "not fit"'), TYPED)[1] is None)
+check("unclear fit still books", cb.extract(GOOD.replace('"fit": "fit"', '"fit": "unclear"'), TYPED)[1] is not None)
 check("unknown time zone falls back to Eastern",
-      cb.extract(GOOD.replace("America/Chicago", "Mars/Base"))[1]["timezone"] == "America/New_York")
-check("broken block is ignored and hidden", cb.extract("Hi <offer_times>{oops</offer_times>") == ("Hi", None))
+      cb.extract(GOOD.replace("America/Chicago", "Mars/Base"), TYPED)[1]["timezone"] == "America/New_York")
+check("broken block is ignored and hidden", cb.extract("Hi <offer_times>{oops</offer_times>") == ("Hi", None, None))
 
 s = cb.BookingState()
 extra, slots = cb.offer(s, d, "t")
@@ -77,6 +85,54 @@ cb.offer(s3, d, "t")
 booking.book = lambda *a, **k: (_ for _ in ()).throw(booking.SlotTaken())
 reply, slots = cb.pick(s3, "1", "t")
 check("time just taken: new times offered", reply == cb.TAKEN_REPLY and len(slots) == 3)
+
+def rows():
+    return list(csv.DictReader(leads.FILE.open())) if leads.FILE.exists() else []
+
+
+check("booking saved a 'booked' lead, calendar down saved a handoff lead",
+      [r["outcome"] for r in rows()] == ["booked", "founder needed (calendar down)"])
+
+# Phase 2: not a fit and handoff leads
+LEAD = ('Thanks, a founder will email you.\n<lead>{"name": "Bob", "restaurant": "Bob Bar", "location": "Miami, FL", '
+        '"email": "bob@example.com", "fit": "not fit", "reason": "mainly a bar"}</lead>')
+text, det, lead = cb.extract(LEAD, TYPED)
+check("lead block hidden from visitor", text == "Thanks, a founder will email you." and det is None and lead is not None)
+check("lead without a valid email is ignored", cb.extract(LEAD.replace("bob@example.com", "bob"), TYPED)[2] is None)
+check("invented email (visitor never typed it) is refused", cb.extract(LEAD, "maria@example.com")[2] is None)
+check("invented email refused for booking too", cb.extract(GOOD, "bob@example.com")[1] is None)
+s4 = cb.BookingState()
+SENT.clear()
+cb.record_lead(s4, lead, "s4", transcript="Visitor: we are a bar")
+check("not a fit lead saved", rows()[-1]["outcome"] == "not a fit" and rows()[-1]["email"] == "bob@example.com")
+check("not a fit alert has the conversation", any("not a fit" in t and "we are a bar" in t for k, t in SENT if k == "telegram"))
+cb.record_lead(s4, lead, "s4")
+check("same conversation alerts only once", len([r for r in rows() if r["session_id"] == "s4"]) == 1)
+_, _, h = cb.extract(LEAD.replace('"not fit"', '"unknown"'), TYPED)
+s5 = cb.BookingState()
+SENT.clear()
+cb.record_lead(s5, h, "s5")
+check("handoff subject is 'Chat handoff: founder needed' (B7)", any(k == "email" and t.startswith("Chat handoff: founder needed") for k, t in SENT))
+
+# fit visitor saw times, never picked, conversation went quiet
+s6 = cb.BookingState()
+cb.offer(s6, d, "s6")
+SENT.clear()
+cb.finish(s6, "s6", "Visitor: hi\nBot: times", "Visitor: hi\nBot: times")
+check("unpicked times saved as a lead", rows()[-1]["outcome"] == "times offered, not booked")
+check("conversation sent to Telegram when quiet (ADR 0015)", any(t.startswith("Chat conversation") for k, t in SENT if k == "telegram"))
+SENT.clear()
+cb.finish(cb.BookingState(), "s7", "Visitor: hi", "Visitor: hi")
+check("anonymous chat also goes to Telegram, no lead", len(SENT) == 1 and rows()[-1]["session_id"] != "s7")
+
+# long conversations are split for Telegram
+TG_RAW.clear()
+del cb.telegram.send_long
+import importlib
+importlib.reload(telegram)
+telegram.send = lambda text: TG_RAW.append(text) or True
+telegram.send_long("\n".join("line %d %s" % (i, "x" * 80) for i in range(200)))
+check("long text split into Telegram sized parts", len(TG_RAW) > 1 and all(len(t) <= 4096 for t in TG_RAW))
 
 failed = [n for n, ok in results if not ok]
 print(f"\n{len(results) - len(failed)} of {len(results)} passed")

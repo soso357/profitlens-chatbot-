@@ -12,6 +12,8 @@ Ask a list of questions:     .venv/bin/python -m tests.preview_chat "question on
 Booking is REAL: when times are shown, typing 1, 2 or 3 books a call in the calendar,
 Google emails the invite to the email you gave, and founders get Telegram and email
 alerts marked "PREVIEW TEST". Type "more" for other times.
+Leads are saved to data/leads.csv. When you type quit, the whole conversation is
+sent to the founders' Telegram group (in the live service: after 30 quiet minutes).
 """
 import subprocess
 import sys
@@ -50,7 +52,7 @@ def reply_to(history, message, state):
     first = not history
     choice = message.strip().rstrip(".").lower()
     if state.offered and choice in ("1", "2", "3", chat_booking.MORE):
-        transcript = "\n".join(f"{'Visitor' if r == 'user' else 'Assistant'}: {t}" for r, t in history)
+        transcript = chat_booking.transcript_text(history)
         reply, slots = chat_booking.pick(state, choice, "preview", transcript, source=SOURCE)
         return message, reply, [], slots
     if guardrails.contains_card_number(message):
@@ -58,17 +60,23 @@ def reply_to(history, message, state):
         reply = guardrails.PAYMENT_WARNING
         return message, (guardrails.ensure_disclosure(reply) if first else reply), ["card number removed"], []
     raw = ask_model(history + [("user", message)])
-    text, details = chat_booking.extract(raw)
+    typed = " ".join(t for r, t in history if r == "user") + " " + message
+    text, details, lead = chat_booking.extract(raw, typed)
     reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
     notes = guardrails.find_violations(reply)
     if notes:
-        reply, details = guardrails.HANDOFF_REPLY, None
+        notes = ["guardrail blocked the model's reply: " + "; ".join(notes)]
+        reply, details, lead = guardrails.HANDOFF_REPLY, None, None
     if first:
         reply = guardrails.ensure_disclosure(reply)
     slots = []
+    so_far = chat_booking.transcript_text(history + [("user", message), ("assistant", reply)])
     if details and not state.details:
-        extra, slots = chat_booking.offer(state, details, "preview")
+        extra, slots = chat_booking.offer(state, details, "preview", so_far, source=SOURCE)
         reply = f"{reply} {extra}".strip()
+    if lead:
+        if chat_booking.record_lead(state, lead, "preview", so_far, source=SOURCE):
+            notes = notes + ["lead saved, founders alerted"]
     return message, reply, notes, slots
 
 
@@ -104,7 +112,7 @@ def main():
             print(f"   ERROR: {e}\n")
             continue
         if notes:
-            print(f"   [guardrail blocked the model's reply: {'; '.join(notes)}]")
+            print(f"   [{'; '.join(notes)}]")
         print(f"Bot: {reply}")
         for i, sl in enumerate(slots, 1):
             print(f"   [{i}] {sl['label']}")
@@ -112,6 +120,10 @@ def main():
             print("   Type 1, 2 or 3 to book (real booking), or 'more' for other times.")
         print()
         history += [("user", message), ("assistant", reply)]
+    if history:
+        full = chat_booking.transcript_text(history)
+        chat_booking.finish(state, "preview", full, full, source=SOURCE)
+        print("Conversation sent to the founders' Telegram group.")
 
 
 if __name__ == "__main__":

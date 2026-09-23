@@ -61,6 +61,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | Conversation transcript | logs (Render disk in Phase 5) | 30 days, then deleted automatically |
 | Lead (name, restaurant, city, state, email, answers, fit result, transcript reference) | leads.csv | until founders delete |
 | Booking | Google Calendar event | founders manage |
+| Conversation copy in Telegram (every conversation, after 30 quiet minutes, ADR 0015) | founders' Telegram group | founders delete by hand after 30 days |
 
 ## 6. Integrations
 

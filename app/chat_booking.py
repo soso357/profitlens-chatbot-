@@ -1,22 +1,24 @@
-"""Booking inside the chat (Phase 3, spec B6 and B11).
+"""Leads and booking inside the chat (Phases 2 and 3, spec B5, B6, B7, B11).
 
-The model never writes call times and never says a call is booked. When it has the
-visitor's details and a fit result, it ends its reply with a hidden block:
+The model never writes call times, never says a call is booked, and never sends
+alerts. It ends a reply with a hidden block and this module does the rest:
 
-    <offer_times>{"name": "...", "restaurant": "...", "location": "...",
-                  "email": "...", "timezone": "America/Chicago", "fit": "fit"}</offer_times>
+    <offer_times>{"name", "restaurant", "location", "email", "timezone", "fit": "fit|unclear"}</offer_times>
+        visitor fits: show three free times in their US time zone
+    <lead>{"name", "restaurant", "location", "email", "fit": "not fit|unknown", "reason"}</lead>
+        visitor does not fit, or needs a founder: save the lead, alert the founders
 
-This module strips that block, reads the calendar, and returns up to three times
-in the visitor's US time zone. Booking a picked time happens only here, in code.
+Both blocks are removed before the visitor sees the reply.
 """
 import json
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from app import booking, chat_log, email_alerts, telegram
+from app import booking, chat_log, email_alerts, leads, telegram
 
-MARKER = re.compile(r"<offer_times>(.*?)</offer_times>", re.S)
+OFFER = re.compile(r"<offer_times>(.*?)</offer_times>", re.S)
+LEAD = re.compile(r"<lead>(.*?)</lead>", re.S)
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 DEFAULT_TZ = "America/New_York"
 MORE = "more"
@@ -35,29 +37,87 @@ NOT_OFFERED_REPLY = "Please pick one of the times shown, or ask me for other tim
 
 @dataclass
 class BookingState:
-    details: dict | None = None
+    details: dict | None = None          # from <offer_times>
     offered: list[datetime] = field(default_factory=list)
     booked: bool = False
+    lead_saved: bool = False             # a lead row exists for this conversation
+    handoff_sent: bool = False
 
 
-def extract(raw_reply: str) -> tuple[str, dict | None]:
-    """Remove the hidden block. Returns (text for the visitor, details or None)."""
-    m = MARKER.search(raw_reply)
-    text = MARKER.sub("", raw_reply).strip()
+def _json_block(pattern: re.Pattern, raw: str) -> dict | None:
+    m = pattern.search(raw)
     if not m:
-        return text, None
+        return None
     try:
         d = json.loads(m.group(1))
     except ValueError:
-        return text, None
-    details = {k: str(d.get(k, "")).strip()[:150] for k in ("name", "restaurant", "location", "email", "timezone", "fit")}
-    if not all(details[k] for k in ("name", "restaurant", "location")) or not EMAIL.match(details["email"]):
-        return text, None
-    if details["timezone"] not in booking.US_TIMEZONES:
-        details["timezone"] = DEFAULT_TZ
-    if details["fit"] not in ("fit", "unclear"):
-        return text, None  # not a fit: no booking (B5)
-    return text, details
+        return None
+    return d if isinstance(d, dict) else None
+
+
+def extract(raw_reply: str, visitor_text: str = "") -> tuple[str, dict | None, dict | None]:
+    """Remove hidden blocks. Returns (text for the visitor, booking details or None, lead or None).
+    visitor_text: everything the visitor typed. An email is only accepted if the visitor typed it,
+    so the model can never invent or guess one."""
+    typed = visitor_text.lower()
+    text = LEAD.sub("", OFFER.sub("", raw_reply)).strip()
+
+    details = _json_block(OFFER, raw_reply)
+    if details is not None:
+        details = {k: str(details.get(k, "")).strip()[:150] for k in ("name", "restaurant", "location", "email", "timezone", "fit")}
+        if (not all(details[k] for k in ("name", "restaurant", "location")) or not EMAIL.match(details["email"])
+                or details["email"].lower() not in typed or details["fit"] not in ("fit", "unclear")):  # not a fit never gets times (B5)
+            details = None
+        elif details["timezone"] not in booking.US_TIMEZONES:
+            details["timezone"] = DEFAULT_TZ
+
+    lead = _json_block(LEAD, raw_reply)
+    if lead is not None:
+        lead = {k: str(lead.get(k, "")).strip()[:300] for k in ("name", "restaurant", "location", "email", "fit", "reason")}
+        if not EMAIL.match(lead["email"]) or lead["email"].lower() not in typed:
+            lead = None
+    return text, details, lead
+
+
+def transcript_text(pairs) -> str:
+    """pairs: iterable of (role, text) with role 'user' or 'assistant'."""
+    return "\n".join(f"{'Visitor' if r == 'user' else 'Bot'}: {t}" for r, t in pairs)
+
+
+def _alert(subject: str, body: str) -> None:
+    telegram.send_long(f"{subject}\n{body}")
+    email_alerts.alert_founders(subject, body)
+
+
+def _details_text(d: dict) -> str:
+    lines = [f"Name: {d.get('name') or '(not given)'}", f"Restaurant: {d.get('restaurant') or '(not given)'}",
+             f"Location: {d.get('location') or '(not given)'}", f"Email: {d.get('email')}", f"Fit: {d.get('fit') or 'unknown'}"]
+    if d.get("reason"):
+        lines.append(f"Needs: {d['reason']}")
+    return "\n".join(lines)
+
+
+def _with_chat(body: str, transcript: str) -> str:
+    return body + (f"\n\nConversation:\n{transcript}" if transcript else "")
+
+
+def _tag(source: str) -> str:
+    return f" ({source})" if source else ""
+
+
+def record_lead(state: BookingState, lead: dict, sid: str, transcript: str = "", source: str = "") -> bool:
+    """Visitor does not fit or needs a founder, and left an email (B5, B7). False if already done."""
+    if state.handoff_sent:
+        return False
+    not_fit = lead.get("fit") == "not fit"
+    outcome = "not a fit" if not_fit else "founder needed"
+    leads.save(sid, lead, outcome, source=source)
+    subject = (f"New lead, not a fit{_tag(source)}: {lead.get('restaurant') or lead['email']}" if not_fit
+               else f"Chat handoff: founder needed{_tag(source)}: {lead.get('restaurant') or lead['email']}")
+    _alert(subject, _with_chat(_details_text(lead), transcript))
+    state.lead_saved = state.handoff_sent = True
+    chat_log.log(sid, "lead_saved", outcome=outcome)
+    return True
 
 
 def _slot_list(state: BookingState, after: datetime | None = None) -> list[dict]:
@@ -66,28 +126,25 @@ def _slot_list(state: BookingState, after: datetime | None = None) -> list[dict]
     return [{"start": s.isoformat(), "label": booking.describe(s, tz)} for s in state.offered]
 
 
-def _alert(subject: str, lines: str) -> None:
-    telegram.send(f"{subject}\n{lines}")
-    email_alerts.alert_founders(subject, lines)
+def _calendar_handoff(state: BookingState, sid: str, why: str, transcript: str, source: str) -> None:
+    d = state.details or {}
+    leads.save(sid, d, f"founder needed ({why})", source=source)
+    state.lead_saved = True
+    _alert(f"Chat handoff: founder needed ({why}){_tag(source)}: {d.get('restaurant', '')}",
+           _with_chat(_details_text(d) + "\nPlease email them to arrange a call.", transcript))
 
 
-def _details_text(d: dict) -> str:
-    return (f"Name: {d['name']}\nRestaurant: {d['restaurant']}\nLocation: {d['location']}\n"
-            f"Email: {d['email']}\nFit: {d['fit']}")
-
-
-def offer(state: BookingState, details: dict, sid: str) -> tuple[str, list[dict]]:
+def offer(state: BookingState, details: dict, sid: str, transcript: str = "", source: str = "") -> tuple[str, list[dict]]:
     """Returns (extra text, slots). Falls back to a founder handoff if the calendar fails (B11)."""
     state.details = details
     try:
         slots = _slot_list(state)
     except Exception as e:
         chat_log.log(sid, "error", error=f"calendar: {e}")
-        _alert(f"Chat handoff: founder needed (calendar down): {details['restaurant']}",
-               _details_text(details) + "\nThe calendar could not be read. Please email them to arrange a call.")
+        _calendar_handoff(state, sid, "calendar down", transcript, source)
         return CALENDAR_DOWN_REPLY, []
     if not slots:
-        _alert(f"Chat handoff: founder needed (no free times): {details['restaurant']}", _details_text(details))
+        _calendar_handoff(state, sid, "no free times", transcript, source)
         return NO_TIMES_REPLY, []
     chat_log.log(sid, "times_offered", slots=[s["start"] for s in slots])
     return "Here are the next free times. Pick the one that suits you:", slots
@@ -99,6 +156,7 @@ def pick(state: BookingState, choice: str, sid: str, transcript: str = "", sourc
         return "Your call is already booked. To change it, reply to the invite email and a founder will help.", []
     if not state.details or not state.offered:
         return NOT_OFFERED_REPLY, []
+    d = state.details
     try:
         if choice == MORE:
             slots = _slot_list(state, after=state.offered[-1])
@@ -109,7 +167,6 @@ def pick(state: BookingState, choice: str, sid: str, transcript: str = "", sourc
             start = datetime.fromisoformat(choice)
             if start not in state.offered:
                 return NOT_OFFERED_REPLY, []
-        d = state.details
         if not booking.is_valid_start(start):
             return TAKEN_REPLY, _slot_list(state)
         notes = f"Fit result: {d['fit']}" + (f"\n\nChat so far:\n{transcript[-1500:]}" if transcript else "")
@@ -120,16 +177,29 @@ def pick(state: BookingState, choice: str, sid: str, transcript: str = "", sourc
         return TAKEN_REPLY, _slot_list(state)
     except Exception as e:
         chat_log.log(sid, "error", error=f"booking: {e}")
-        if state.details:
-            _alert(f"Chat handoff: founder needed (booking failed): {state.details['restaurant']}",
-                   _details_text(state.details) + "\nBooking failed. Please email them to arrange a call.")
+        _calendar_handoff(state, sid, "booking failed", transcript, source)
         return CALENDAR_DOWN_REPLY, []
 
     state.booked, state.offered = True, []
     when = booking.describe(start, d["timezone"])
     georgia = start.astimezone(booking.FOUNDER_TZ).strftime("%a %-d %b, %H:%M")
-    _alert(f"New intake call booked{' (' + source + ')' if source else ''}: {d['restaurant']}",
-           _details_text(d) + f"\nTime: {when} / {georgia} Georgia\nMeet: {event['meet_link']}")
+    leads.save(sid, d, "booked", call_time=f"{when} / {georgia} Georgia", source=source)
+    state.lead_saved = True
+    _alert(f"New intake call booked{_tag(source)}: {d['restaurant']}",
+           _with_chat(_details_text(d) + f"\nTime: {when} / {georgia} Georgia\nMeet: {event['meet_link']}", transcript))
     chat_log.log(sid, "booked", start=start.isoformat(), restaurant=d["restaurant"])
     return (f"You are booked for {when}. A calendar invite with the Google Meet link is on its way to "
             f"{d['email']}. To change the time, just reply to that email and a founder will help."), []
+
+
+def finish(state: BookingState, sid: str, transcript: str, new_part: str, source: str = "") -> None:
+    """The conversation went quiet (or the preview ended). Send it to Telegram (ADR 0015) and
+    save a fit visitor who saw times but did not pick one as a lead."""
+    if state.details and not state.booked and not state.lead_saved:
+        leads.save(sid, state.details, "times offered, not booked", source=source)
+        state.lead_saved = True
+        _alert(f"New lead, did not pick a time{_tag(source)}: {state.details['restaurant']}",
+               _with_chat(_details_text(state.details), transcript))
+    if new_part.strip():
+        telegram.send_long(f"Chat conversation{_tag(source)} {sid[:8]}\n\n{new_part}")
+    chat_log.log(sid, "conversation_sent_to_telegram")

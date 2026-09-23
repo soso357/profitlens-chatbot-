@@ -48,6 +48,8 @@ class Session:
         self.created = time.time()
         self.lock = threading.Lock()
         self.booking = chat_booking.BookingState()
+        self.last_activity = time.time()
+        self.sent_to_telegram = 0  # how many messages are already in Telegram
 
 
 _sessions: dict[str, Session] = {}
@@ -78,8 +80,29 @@ class BookIn(BaseModel):
     choice: str = Field(min_length=1, max_length=40)  # a slot "start", or "more" for other times
 
 
-def _transcript(session: Session) -> str:
-    return "\n".join(f"{'Visitor' if m['role'] == 'user' else 'Assistant'}: {m['content']}" for m in session.messages)
+def _transcript(session: Session, start: int = 0) -> str:
+    return chat_booking.transcript_text((m["role"], m["content"]) for m in session.messages[start:])
+
+
+def _send_quiet_conversations() -> None:
+    """Every minute: conversations quiet for CONVERSATION_IDLE_MINUTES go to Telegram (ADR 0015)."""
+    while True:
+        time.sleep(60)
+        cutoff = time.time() - config.CONVERSATION_IDLE_MINUTES * 60
+        with _sessions_lock:
+            due = [(sid, s) for sid, s in _sessions.items()
+                   if s.last_activity < cutoff and len(s.messages) > s.sent_to_telegram]
+        for sid, s in due:
+            try:
+                with s.lock:
+                    new_part = _transcript(s, s.sent_to_telegram)
+                    s.sent_to_telegram = len(s.messages)
+                    chat_booking.finish(s.booking, sid, _transcript(s), new_part)
+            except Exception as e:
+                chat_log.log(sid, "error", error=f"telegram digest: {e}")
+
+
+threading.Thread(target=_send_quiet_conversations, daemon=True, name="telegram-digest").start()
 
 
 def _reply_text(response) -> str:
@@ -113,6 +136,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
 
         session.sent_times.append(now)
         session.visitor_messages += 1
+        session.last_activity = now
 
         if guardrails.contains_card_number(message):
             message = guardrails.redact_card_numbers(message)
@@ -149,7 +173,8 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
         spend.add(cost)
 
         raw = _reply_text(response)
-        text, booking_details = chat_booking.extract(raw)
+        typed = " ".join(m["content"] for m in history if m["role"] == "user")
+        text, booking_details, lead = chat_booking.extract(raw, typed)
         reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
         if response.stop_reason == "max_tokens":
             reply = guardrails.trim_to_sentence(reply)
@@ -159,17 +184,19 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             violations.append(f"no usable reply (stop reason {response.stop_reason})")
         if violations:
             chat_log.log(sid, "guardrail_blocked", reasons=violations, original=raw)
-            reply, booking_details = guardrails.HANDOFF_REPLY, None
+            reply, booking_details, lead = guardrails.HANDOFF_REPLY, None, None
 
         if first_reply:
             reply = guardrails.ensure_disclosure(reply)
 
+        session.messages = history + [{"role": "assistant", "content": reply}]
         slots: list[dict] = []
         if booking_details and not session.booking.details:
-            extra, slots = chat_booking.offer(session.booking, booking_details, sid)
+            extra, slots = chat_booking.offer(session.booking, booking_details, sid, _transcript(session))
             reply = f"{reply} {extra}".strip()
-
-        session.messages = history + [{"role": "assistant", "content": reply}]
+            session.messages[-1]["content"] = reply
+        if lead:
+            chat_booking.record_lead(session.booking, lead, sid, _transcript(session))
         chat_log.log(
             sid, "agent", text=reply, cost_usd=round(cost, 5),
             input_tokens=response.usage.input_tokens,
@@ -185,6 +212,7 @@ def book(request: Request, body: BookIn) -> ChatOut:
     """A time button was clicked (or "Other times")."""
     session = get_session(body.session_id)
     with session.lock:
+        session.last_activity = time.time()
         reply, slots = chat_booking.pick(session.booking, body.choice, body.session_id, _transcript(session))
         clicked = "Other times, please." if body.choice == chat_booking.MORE else "(I clicked one of the call times.)"
         session.messages += [{"role": "user", "content": clicked}, {"role": "assistant", "content": reply}]

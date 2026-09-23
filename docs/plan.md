@@ -10,7 +10,7 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 |---|---|---|
 | 0 Setup and approved answers | DONE | approved 2026-09-22 |
 | 1 Chat service (local) | IN PROGRESS: service, guardrails and test conversations committed (e750b7a) | not approved |
-| 2 Qualification and lead capture | NOT STARTED | |
+| 2 Qualification and lead capture | IN PROGRESS: leads file, lead alerts, every conversation to Telegram | not approved |
 | 3 Booking in Google Calendar | IN PROGRESS: Google setup and booking module done; booking inside the chat being built | not approved |
 | 4 Website widget | NOT STARTED | |
 | 5 Deploy, harden, hand over | NOT STARTED | |
@@ -19,6 +19,13 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 ## Phase notes
 
 (Per phase implementation plans go here, newest phase first.)
+
+### Phase 2 leads and alerts (2026-09-23)
+1. app/leads.py saves one row per lead to leads.csv (DATA_DIR): time, session, name, restaurant, location, email, fit, outcome (booked, not a fit, founder needed, times offered but not booked), booked time.
+2. The model signals a not a fit visitor or a handoff with a hidden <lead>{...}</lead> block once it has their email; code saves the lead and sends "Chat handoff: founder needed" (or "New lead: not a fit") by Telegram and email with the conversation.
+3. Bookings save a "booked" lead. A fit visitor who saw times but did not pick one is saved as "times offered, not booked" when the conversation goes quiet.
+4. Every conversation goes to Telegram after 30 quiet minutes (ADR 0015). The preview tool sends it when you type quit.
+5. Tests: offline checks for lead saving and the conversation digest; preview runs for a not a fit visitor, a handoff and a booking.
 
 ### Phase 3 booking in the chat (2026-09-23, Ioseb chose to build it before Phases 1 and 2 are approved)
 1. app/chat_booking.py: when the model has name, restaurant, city and state, email and a fit (or unclear) result, it ends its reply with a hidden <offer_times>{...}</offer_times> block. The service strips it, reads the calendar and returns 3 times in the visitor's US time zone (default Eastern). The model never writes times or says a call is booked; only code does (guards R1).

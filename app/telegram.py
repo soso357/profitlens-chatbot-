@@ -22,3 +22,26 @@ def send(text: str) -> bool:
             return bool(json.load(r).get("ok"))
     except Exception:
         return False
+
+
+def send_long(text: str, limit: int = 3900) -> bool:
+    """Telegram allows 4096 characters per message; split long texts on line breaks."""
+    chunks, current = [], ""
+    for line in text.splitlines(keepends=True):
+        while len(line) > limit:
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.append(line[:limit])
+            line = line[limit:]
+        if len(current) + len(line) > limit:
+            chunks.append(current)
+            current = ""
+        current += line
+    if current:
+        chunks.append(current)
+    total = len(chunks)
+    ok = True
+    for i, chunk in enumerate(chunks, 1):
+        ok = send(chunk if total == 1 else f"({i}/{total})\n{chunk}") and ok
+    return ok
