@@ -15,33 +15,14 @@ alerts marked "PREVIEW TEST". Type "more" for other times.
 Leads are saved to data/leads.csv. When you type quit, the whole conversation is
 sent to the founders' Telegram group (in the live service: after 30 quiet minutes).
 """
-import subprocess
 import sys
-import tempfile
 
-from app import chat_booking, guardrails
+from app import chat_booking, guardrails, model
 from app.content import SYSTEM_PROMPT
-
-MODEL = "haiku"
-
 
 def ask_model(history):
     """history: list of (role, text). Returns the model's next reply as plain text."""
-    lines = []
-    for role, text in history:
-        lines.append(f"{'Visitor' if role == 'user' else 'You'}: {text}")
-    prompt = ("Conversation so far on the website chat:\n\n" + "\n\n".join(lines)
-              + "\n\nWrite only your next reply to the visitor, nothing else.")
-    with tempfile.TemporaryDirectory() as tmp:  # outside the project so project hooks do not run
-        r = subprocess.run(
-            ["claude", "-p", "--model", MODEL, "--system-prompt", SYSTEM_PROMPT, "--tools", "",
-             "--no-session-persistence", "--output-format", "text"],
-            input=prompt, capture_output=True, text=True, cwd=tmp, timeout=180,
-            env={**__import__("os").environ, "PL_WORKFLOW_SUMMARIZER": "1"},
-        )
-    if r.returncode != 0:
-        raise RuntimeError(r.stderr.strip() or r.stdout.strip())
-    return r.stdout.strip()
+    return model.ask_claude_code(SYSTEM_PROMPT, [{"role": r, "content": t} for r, t in history])
 
 
 SOURCE = "PREVIEW TEST"

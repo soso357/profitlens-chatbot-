@@ -71,3 +71,37 @@ def book(body: BookIn) -> dict:
     email_alerts.alert_founders(f"New intake call (TEST): {body.restaurant}", alert)
     chat_log.log("test-booking", "booked", start=start.isoformat(), restaurant=body.restaurant, email=body.email)
     return {"when": when, "meet_link": event["meet_link"]}
+
+
+@router.get("/widget-test", response_class=HTMLResponse)
+def widget_test(demo: str = "") -> str:
+    """A stand in for a useprofitlens.com page with the widget embedded exactly like Framer will.
+    ?demo=open opens the chat; ?demo=ask also sends a first question (for screenshots)."""
+    auto = ""
+    if demo:
+        auto = """<script>
+window.addEventListener("load", function () { setTimeout(function () {
+  var r = document.getElementById("profitlens-chat").shadowRoot;
+  r.querySelector(".launcher").click();
+  if ("%s" === "ask") setTimeout(function () {
+    var i = r.querySelector("input"); i.value = "Hi, what is ProfitLens and how much does it cost?";
+    r.querySelector("form").requestSubmit();
+  }, 1500);
+}, 300); });
+</script>""" % demo
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Widget test</title>
+<style>body{{margin:0;font-family:Geist,-apple-system,sans-serif;color:#666;background:#fafafa}}
+section{{max-width:720px;margin:0 auto;padding:80px 24px}}h1{{color:#111;font-size:40px;margin:0 0 16px}}</style></head>
+<body><section><h1>Know what every dish really costs you.</h1>
+<p>This is a local stand in for the ProfitLens website. The chat button in the bottom right corner is the real widget,
+loaded with the same one line embed Framer will use.</p></section>
+<script src="/widget.js" defer></script>{auto}</body></html>"""
+
+
+@router.get("/widget-phone", response_class=HTMLResponse)
+def widget_phone(demo: str = "open") -> str:
+    """The widget test page inside a phone sized frame (390 x 844, like an iPhone)."""
+    return f"""<!doctype html><html><body style="margin:0;background:#ddd">
+<iframe src="/widget-test?demo={demo}" style="width:390px;height:844px;border:0;background:#fff;display:block"></iframe>
+</body></html>"""

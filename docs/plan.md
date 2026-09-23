@@ -12,13 +12,22 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 | 1 Chat service (local) | IN PROGRESS: service, guardrails and test conversations committed (e750b7a) | not approved |
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
-| 4 Website widget | NOT STARTED | |
+| 4 Website widget | BUILT: widget, embed guide, desktop and phone screenshots (docs/screenshots). Final end to end test with the API key pending | not approved |
 | 5 Deploy, harden, hand over | NOT STARTED | |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 
 ## Phase notes
 
 (Per phase implementation plans go here, newest phase first.)
+
+### Phase 4 website widget (2026-09-23)
+1. app/static/widget.js, served at /widget.js: one self contained file (styles and markup built by the script). Framer embed is one script tag; the widget finds the service address from its own src.
+2. Launcher button bottom right, panel over the page, full screen under 480px wide. Geist (inherited from the site, nothing loaded from third parties), body text #666666, no emoji. First message is the AI disclosure, sent by the server (POST /start) so rule R3 is enforced in code.
+3. Session id and the visible conversation live in sessionStorage: kept while the visitor moves between pages, gone when the tab closes. No cookies.
+4. Time buttons and "Other times" (POST /book). "Leave your email" form when the service says mode email_form (spend cap, rate limit, errors, kill switch later): POST /leave-email saves a lead and alerts founders.
+5. CORS: only ALLOWED_ORIGINS (default useprofitlens.com and www) may call the service.
+6. Test without the API key: TEST_PAGES=1 plus MODEL_VIA_CLAUDE_CODE=1 makes the local service get replies from Haiku through the Claude Code login. /widget-test is a local page that embeds the widget like Framer will.
+7. docs/framer-embed.md: the exact snippet, where to paste it in Framer, and the hidden test page steps.
 
 ### Phase 2 leads and alerts (2026-09-23)
 1. app/leads.py saves one row per lead to leads.csv (DATA_DIR): time, session, name, restaurant, location, email, fit, outcome (booked, not a fit, founder needed, times offered but not booked), booked time.

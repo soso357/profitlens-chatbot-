@@ -29,7 +29,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 
 | Id | Situation | Required behaviour | Source file |
 |---|---|---|---|
-| B1 | First reply of any session | Contains the AI disclosure (R3) | code check G2 |
+| B1 | First reply of any session | Contains the AI disclosure (R3). In the widget the server sends it as the first message when the chat opens (POST /start) | code check G2 |
 | B2 | Question answered in the approved file | Answer in 2 to 4 sentences, same meaning as the file | content/approved-answers.md |
 | B3 | Question not in the approved file | Say it is not something the agent can answer, offer founder email, ask for email | content/handoff-rules.md |
 | B4 | Visitor wants the analysis or a call, or questions are done | Ask qualifying questions one at a time | content/qualifying-questions.md |
