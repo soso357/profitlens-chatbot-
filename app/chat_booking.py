@@ -14,6 +14,7 @@ import json
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from app import booking, chat_log, email_alerts, leads, telegram
 
@@ -22,6 +23,16 @@ LEAD = re.compile(r"<lead>(.*?)</lead>", re.S)
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 DEFAULT_TZ = "America/New_York"
 MORE = "more"
+
+# Common misspellings of big email providers. A typo means the invite never arrives.
+EMAIL_TYPOS = {
+    "gmial.com": "gmail.com", "gmal.com": "gmail.com", "gmai.com": "gmail.com", "gamil.com": "gmail.com",
+    "gnail.com": "gmail.com", "gmaill.com": "gmail.com", "gmail.co": "gmail.com", "gmail.con": "gmail.com",
+    "gmail.cm": "gmail.com", "gmail.om": "gmail.com", "yaho.com": "yahoo.com", "yahooo.com": "yahoo.com",
+    "yahoo.co": "yahoo.com", "yahoo.con": "yahoo.com", "hotmial.com": "hotmail.com", "hotmal.com": "hotmail.com",
+    "hotmail.co": "hotmail.com", "hotmail.con": "hotmail.com", "outlok.com": "outlook.com", "outlook.co": "outlook.com",
+    "iclod.com": "icloud.com", "icloud.co": "icloud.com", "aol.co": "aol.com",
+}
 
 NO_TIMES_REPLY = (
     "I could not find a free time in the next two weeks. Which days and times usually work for you? "
@@ -79,6 +90,31 @@ def extract(raw_reply: str, visitor_text: str = "") -> tuple[str, dict | None, d
     return text, details, lead
 
 
+def email_typo(email: str) -> str | None:
+    """The likely intended address if the domain is a common misspelling, else None."""
+    user, _, domain = email.rpartition("@")
+    fixed = EMAIL_TYPOS.get(domain.lower())
+    return f"{user}@{fixed}" if fixed else None
+
+
+def handle(state: BookingState, details: dict | None, lead: dict | None, sid: str,
+           transcript: str = "", source: str = "") -> tuple[str, list[dict], list[str]]:
+    """Act on the hidden blocks of one reply. Returns (text to add to the reply, slots, notes).
+    If the email looks misspelled, nothing is booked or saved; the visitor is asked to check it."""
+    email = (details or lead or {}).get("email", "")
+    suggestion = email_typo(email) if email else None
+    if suggestion:
+        chat_log.log(sid, "email_typo", suggestion=suggestion)
+        return (f"Just to check, did you mean {suggestion}? Please type your email again so the invite reaches you.",
+                [], ["email looked misspelled, asked again"])
+    if details and not state.details:
+        extra, slots = offer(state, details, sid, transcript, source)
+        return extra, slots, []
+    if lead and record_lead(state, lead, sid, transcript, source):
+        return "", [], ["lead saved, founders alerted"]
+    return "", [], []
+
+
 def transcript_text(pairs) -> str:
     """pairs: iterable of (role, text) with role 'user' or 'assistant'."""
     return "\n".join(f"{'Visitor' if r == 'user' else 'Bot'}: {t}" for r, t in pairs)
@@ -120,9 +156,28 @@ def record_lead(state: BookingState, lead: dict, sid: str, transcript: str = "",
     return True
 
 
+def _spread(slots: list[datetime], tz: str, count: int = 3) -> list[datetime]:
+    """The earliest free time on each of the next days (visitor's calendar), so the visitor
+    gets a real choice. Fills up with same day times if there are fewer free days."""
+    zone = ZoneInfo(tz)
+    first_per_day, seen = [], set()
+    for s in slots:
+        day = s.astimezone(zone).date()
+        if day not in seen:
+            seen.add(day)
+            first_per_day.append(s)
+    picked = first_per_day[:count]
+    for s in slots:
+        if len(picked) >= count:
+            break
+        if s not in picked:
+            picked.append(s)
+    return sorted(picked)
+
+
 def _slot_list(state: BookingState, after: datetime | None = None) -> list[dict]:
-    state.offered = booking.free_slots(3, after)
     tz = (state.details or {}).get("timezone", DEFAULT_TZ)
+    state.offered = _spread(booking.free_slots(60, after), tz)
     return [{"start": s.isoformat(), "label": booking.describe(s, tz)} for s in state.offered]
 
 

@@ -190,13 +190,10 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             reply = guardrails.ensure_disclosure(reply)
 
         session.messages = history + [{"role": "assistant", "content": reply}]
-        slots: list[dict] = []
-        if booking_details and not session.booking.details:
-            extra, slots = chat_booking.offer(session.booking, booking_details, sid, _transcript(session))
+        extra, slots, _ = chat_booking.handle(session.booking, booking_details, lead, sid, _transcript(session))
+        if extra:
             reply = f"{reply} {extra}".strip()
             session.messages[-1]["content"] = reply
-        if lead:
-            chat_booking.record_lead(session.booking, lead, sid, _transcript(session))
         chat_log.log(
             sid, "agent", text=reply, cost_usd=round(cost, 5),
             input_tokens=response.usage.input_tokens,

@@ -69,14 +69,10 @@ def reply_to(history, message, state):
         reply, details, lead = guardrails.HANDOFF_REPLY, None, None
     if first:
         reply = guardrails.ensure_disclosure(reply)
-    slots = []
     so_far = chat_booking.transcript_text(history + [("user", message), ("assistant", reply)])
-    if details and not state.details:
-        extra, slots = chat_booking.offer(state, details, "preview", so_far, source=SOURCE)
-        reply = f"{reply} {extra}".strip()
-    if lead:
-        if chat_booking.record_lead(state, lead, "preview", so_far, source=SOURCE):
-            notes = notes + ["lead saved, founders alerted"]
+    extra, slots, more_notes = chat_booking.handle(state, details, lead, "preview", so_far, source=SOURCE)
+    reply = f"{reply} {extra}".strip()
+    notes = notes + more_notes
     return message, reply, notes, slots
 
 

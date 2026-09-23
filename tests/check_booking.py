@@ -134,6 +134,26 @@ telegram.send = lambda text: TG_RAW.append(text) or True
 telegram.send_long("\n".join("line %d %s" % (i, "x" * 80) for i in range(200)))
 check("long text split into Telegram sized parts", len(TG_RAW) > 1 and all(len(t) <= 4096 for t in TG_RAW))
 
+# email typos (invite would never arrive)
+check("gmial.com is caught", cb.email_typo("tekola@gmial.com") == "tekola@gmail.com")
+check("a correct address passes", cb.email_typo("maria@example.com") is None and cb.email_typo("x@gmail.com") is None)
+s8 = cb.BookingState()
+typo_details = dict(d, email="maria@gmial.com")
+extra, slots, notes = cb.handle(s8, typo_details, None, "s8")
+check("typo: no times, visitor asked to retype", "maria@gmail.com" in extra and not slots and s8.details is None)
+extra, slots, _ = cb.handle(s8, d, None, "s8")
+check("after retyping, times are offered", len(slots) == 3)
+
+# times spread over different days
+from zoneinfo import ZoneInfo
+day1 = [BASE + timedelta(minutes=30 * i) for i in range(6)]
+day2 = [BASE + timedelta(days=1, minutes=30 * i) for i in range(6)]
+day4 = [BASE + timedelta(days=3)]
+picked = cb._spread(day1 + day2 + day4, "America/Chicago")
+check("three times on three different days", len({p.astimezone(ZoneInfo("America/Chicago")).date() for p in picked}) == 3)
+check("earliest time is still first", picked[0] == day1[0])
+check("one free day only: fills with same day times", cb._spread(day1, "America/Chicago") == day1[:3])
+
 failed = [n for n, ok in results if not ok]
 print(f"\n{len(results) - len(failed)} of {len(results)} passed")
 raise SystemExit(1 if failed else 0)
