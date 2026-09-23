@@ -60,7 +60,7 @@ def main():
     questions = sys.argv[1:]
     interactive = not questions
     if interactive:
-        print("ProfitLens chatbot preview (Haiku via Claude Code). Type 'quit' to stop.\n")
+        print("ProfitLens chatbot preview (Haiku via Claude Code). Type a question and press Enter. Type 'quit' to stop.\n", flush=True)
     while True:
         if interactive:
             try:
@@ -76,7 +76,15 @@ def main():
                 break
             message = questions.pop(0)
             print(f"You: {message}")
-        message, reply, notes = reply_to(history, message)
+        print("   (thinking, about 10 seconds...)", flush=True)
+        try:
+            message, reply, notes = reply_to(history, message)
+        except FileNotFoundError:
+            print("   ERROR: the 'claude' command was not found in this Terminal. Run this tool from the same kind of window where you use Claude Code.\n")
+            continue
+        except Exception as e:
+            print(f"   ERROR: {e}\n")
+            continue
         if notes:
             print(f"   [guardrail blocked the model's reply: {'; '.join(notes)}]")
         print(f"Bot: {reply}\n")
