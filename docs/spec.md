@@ -71,5 +71,5 @@ Anthropic API (conversation), Google Calendar via service account (free slots, e
 
 - Calendar hours: RESOLVED 2026-09-22. All 7 days, 19:00 to 03:00 Asia/Tbilisi, calendar ioseb@useprofitlens.com.
 - Notification recipient: RESOLVED 2026-09-22. ioseb@useprofitlens.com.
-- Model: RESOLVED 2026-09-22. Claude Haiku 4.5 (ADR 0013).
+- Model: RESOLVED 2026-09-24. Claude Sonnet 5 (ADR 0016, replaces ADR 0013 Haiku 4.5).
 - Exact wording of the AI disclosure. Ioseb named the assistant Jelena (2026-09-23): "Hi, I'm Jelena, the AI assistant for ProfitLens...". FOUNDER TO CONFIRM

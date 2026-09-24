@@ -20,12 +20,18 @@ CONTENT_DIR = ROOT / "content"
 LOG_DIR = Path(os.getenv("LOG_DIR", ROOT / "logs"))
 DATA_DIR = Path(os.getenv("DATA_DIR", ROOT / "data"))
 
-MODEL = os.getenv("CLAUDE_MODEL", "claude-haiku-4-5")
-# Haiku 4.5 prices in US dollars per million tokens.
-PRICE_INPUT = _float("PRICE_INPUT_PER_M", 1.00)
-PRICE_OUTPUT = _float("PRICE_OUTPUT_PER_M", 5.00)
-PRICE_CACHE_WRITE = _float("PRICE_CACHE_WRITE_PER_M", 1.25)
-PRICE_CACHE_READ = _float("PRICE_CACHE_READ_PER_M", 0.10)
+MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5")  # ADR 0016
+# US dollars per million tokens: input, output, 5 minute cache write, cache read.
+# Source: platform.claude.com/docs/en/about-claude/pricing (checked 2026-09-24).
+MODEL_PRICES = {
+    "claude-sonnet-5": (2.00, 10.00, 2.50, 0.20),
+    "claude-haiku-4-5": (1.00, 5.00, 1.25, 0.10),
+}
+_p = MODEL_PRICES.get(MODEL, MODEL_PRICES["claude-sonnet-5"])  # unknown model: assume the dearer price
+PRICE_INPUT = _float("PRICE_INPUT_PER_M", _p[0])
+PRICE_OUTPUT = _float("PRICE_OUTPUT_PER_M", _p[1])
+PRICE_CACHE_WRITE = _float("PRICE_CACHE_WRITE_PER_M", _p[2])
+PRICE_CACHE_READ = _float("PRICE_CACHE_READ_PER_M", _p[3])
 
 # Cost and abuse protection (rule 8).
 MAX_REPLY_TOKENS = _int("MAX_REPLY_TOKENS", 400)

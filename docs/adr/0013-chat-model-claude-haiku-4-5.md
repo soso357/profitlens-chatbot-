@@ -1,6 +1,6 @@
 # ADR 0013: Chat model is Claude Haiku 4.5
 
-- Status: Accepted
+- Status: Superseded by 0016
 - Date: 2026-09-22
 - Decided by: Ioseb (chose Haiku over the recommended Sonnet 5)
 
