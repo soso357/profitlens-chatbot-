@@ -37,6 +37,14 @@ def send(session_id, message):
         return json.loads(r.read())
 
 
+def start(session_id):
+    req = urllib.request.Request(
+        f"{BASE}/start", data=json.dumps({"session_id": session_id}).encode(),
+        headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.loads(r.read())
+
+
 def guardrail_events(session_id):
     if not LOG.exists():
         return []
@@ -50,11 +58,13 @@ def main():
     for c in parse():
         sid = "test-" + secrets.token_hex(6)
         out.append(f"## {c['title']}\n\n*Expect: {c['expect']}*  \nSession: `{sid}`\n")
+        out.append(f"**Agent (greeting when the chat opens):** {start(sid)['reply']}\n")
         for m in c["messages"]:
             r = send(sid, m)
             dash_hits += bool(re.search("[–—]", r["reply"]))
             mode = "" if r["mode"] == "chat" else f"  *(widget mode: {r['mode']})*"
-            out.append(f"**Visitor:** {m}  \n**Agent:** {r['reply']}{mode}\n")
+            slots = "".join(f"  \n  [button] {s['label']}" for s in r.get("slots", []))
+            out.append(f"**Visitor:** {m}  \n**Agent:** {r['reply']}{mode}{slots}\n")
         for e in guardrail_events(sid):
             out.append(f"> Guardrail caught: {'; '.join(e['reasons'])}  \n> Original reply blocked: {e['original']}\n")
         print(f"done: {c['title']}")

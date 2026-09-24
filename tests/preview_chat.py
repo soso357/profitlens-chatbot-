@@ -43,7 +43,7 @@ def reply_to(history, message, state):
     raw = ask_model(history + [("user", message)])
     typed = " ".join(t for r, t in history if r == "user") + " " + message
     text, details, lead = chat_booking.extract(raw, typed)
-    reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
+    reply = guardrails.cap_length(guardrails.remove_sales_push(guardrails.strip_markdown(guardrails.remove_dashes(text)), message), message)
     notes = guardrails.find_violations(reply)
     if notes:
         notes = ["guardrail blocked the model's reply: " + "; ".join(notes)]

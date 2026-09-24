@@ -49,6 +49,41 @@ out = g.ensure_disclosure("The Food Cost Analysis is $99.")
 failures += "AI assistant" not in out
 print(f"  -> {out}")
 
+print("\nIntroduction never doubled:")
+own = "Hi, I'm Jelena, the AI assistant for ProfitLens. Thanks for asking!"
+out = g.ensure_disclosure(own)
+ok = out.count("Jelena") == 1 and "founder" in out
+failures += not ok
+print(f"  [{'OK' if ok else 'DOUBLED'}] -> {out}")
+
+print("\nReply length cap (R6):")
+long_reply = " ".join(f"Sentence {i} about the service." for i in range(9)) + " What is your email?"
+out = g.cap_length(long_reply, "how much is it?")
+ok = out.endswith("What is your email?") and len([x for x in out.split(".") if x.strip()]) <= 4
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] 10 sentences -> {out!r}")
+ok = g.cap_length(long_reply, "please explain in detail") == long_reply
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] visitor asked for detail: left as is")
+
+print("\nNumbered lists stay whole (plain text, R6 cap):")
+lst = "You will need to send us:\n\n1. Invoices from the last 4 weeks.\n2. Any recipe notes.\n3. A photo of your menu.\n\nAnything else?"
+out = g.cap_length(g.strip_markdown(lst), "What do I need to send?")
+ok = "recipe notes" in out and "menu" in out and "2." not in out
+failures += not ok
+print(f"  [{'OK' if ok else 'BROKEN'}] -> {out!r}")
+
+print("\nNo selling (rule 15):")
+for reply, msg, expect_gone in [
+    ("A founder can look at it. Would you like to book the intake call?", "is 40 percent bad?", True),
+    ("Any questions about the service, or would you like to get started?", "who won the super bowl", True),
+    ("Great, what is your first name?", "I want to book a call", False),
+]:
+    out = g.remove_sales_push(reply, msg)
+    ok = (out != reply and "book the" not in out.lower() and "get started" not in out.lower()) if expect_gone else out == reply
+    failures += not ok
+    print(f"  [{'OK' if ok else 'WRONG'}] {reply!r} -> {out!r}")
+
 print("\nCard numbers in visitor messages:")
 for msg, expect in [("my card is 4242 4242 4242 4242 exp 12/28", True), ("call me on 555 123 4567", False),
                     ("we have 45 dishes and 3 locations", False)]:

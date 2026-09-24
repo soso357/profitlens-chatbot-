@@ -235,6 +235,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
         reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
         if response.stop_reason == "max_tokens":
             reply = guardrails.trim_to_sentence(reply)
+        reply = guardrails.cap_length(guardrails.remove_sales_push(reply, message), message)
 
         violations = guardrails.find_violations(reply)
         if response.stop_reason == "refusal" or not reply:

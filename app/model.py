@@ -29,12 +29,15 @@ def via_claude_code() -> bool:
     return config.TEST_PAGES and config.MODEL_VIA_CLAUDE_CODE
 
 
+OPENED = "(The visitor opened the chat window.)"
+
+
 def _api_messages(history: list[dict]) -> list[dict]:
-    """The API needs the conversation to start with the visitor, so drop the greeting in front."""
-    i = 0
-    while i < len(history) and history[i]["role"] == "assistant":
-        i += 1
-    return history[i:]
+    """The API needs the conversation to start with the visitor. When the widget greeting comes
+    first, put a short placeholder in front so the model knows it already introduced itself."""
+    if history and history[0]["role"] == "assistant":
+        return [{"role": "user", "content": OPENED}] + history
+    return history
 
 
 def ask_claude_code(system: str, history: list[dict]) -> str:

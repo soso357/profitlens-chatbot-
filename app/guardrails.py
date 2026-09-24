@@ -80,15 +80,66 @@ def strip_markdown(text: str) -> str:
     text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)
     text = re.sub(r"^\s*#+\s*", "", text, flags=re.M)
     text = re.sub(r"^\s*[*•]\s+", "", text, flags=re.M)
+    # Rule 10, plain text: numbered list items become ordinary sentences.
+    text = re.sub(r"^\s*\d+[.)]\s+(.*?)[.;,]?\s*$", r"\1.", text, flags=re.M)
+    text = re.sub(r":\s*\n+(?=\S)", ": ", text)
     return text
 
 
+FOUNDER_LINE = "The call itself is with one of our founders."
+
+
 def ensure_disclosure(reply: str) -> str:
-    """Rule 3: the first reply must say this is an AI and that a founder takes the call."""
+    """Rule 3: the first reply must say this is an AI and that a founder takes the call.
+    Adds only what is missing, so the introduction never appears twice."""
     lower = reply.lower()
-    if "ai assistant" in lower and "founder" in lower:
+    has_ai, has_founder = "ai assistant" in lower, "founder" in lower
+    if has_ai and has_founder:
         return reply
+    if has_ai:
+        return f"{reply} {FOUNDER_LINE}"
     return f"{DISCLOSURE} {reply}"
+
+
+DETAIL_ASKED = re.compile(r"\b(detail|details|explain|tell me more|more about|in depth|everything)\b", re.I)
+
+
+_PUSH = re.compile(
+    r"(would you like|do you want|shall we|ready|want me|can i help you|how about|or would you like)[^.?!]*"
+    r"\b(book|booking|get started|move forward|start|sign up|schedule)\b[^.?!]*\?", re.I)
+_ASKED_TO_START = re.compile(r"\b(book|call|start|started|sign up|schedule|next step|analysis|report|how do i)\b", re.I)
+
+
+def remove_sales_push(reply: str, visitor_message: str) -> str:
+    """Rule 15, do not sell: drop a sentence that pushes booking when the visitor did not ask
+    about starting. If that leaves nothing, keep the reply as it was."""
+    if _ASKED_TO_START.search(visitor_message):
+        return reply
+    parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
+    # "Any questions, or would you like to get started?" keeps the neutral question
+    parts = [re.sub(r",?\s*or would you like to (book|get started|start)[^?]*\?", "?", p, flags=re.I) for p in parts]
+    kept = [p for p in parts if not _PUSH.search(p)]
+    return " ".join(kept) if kept else reply
+
+
+def cap_length(reply: str, visitor_message: str, max_words: int = 80, max_sentences: int = 4) -> str:
+    """Rule R6: keep replies short. If the visitor did not ask for detail and the reply is over
+    max_words or max_sentences, keep whole sentences from the start. A closing question (for
+    example asking for their email) is always kept, so a handoff is never cut off."""
+    parts = [p for p in re.split(r"(?<!\b\d[.])(?<=[.!?])\s+", reply.strip()) if p]
+    if DETAIL_ASKED.search(visitor_message) or (len(reply.split()) <= max_words and len(parts) <= max_sentences):
+        return reply
+    closing = parts.pop() if parts[-1].endswith("?") else ""
+    budget_s = max_sentences - (1 if closing else 0)
+    budget_w = max_words - len(closing.split())
+    kept, words = [], 0
+    for p in parts:
+        n = len(p.split())
+        if len(kept) >= budget_s or (kept and words + n > budget_w):
+            break
+        kept.append(p)
+        words += n
+    return " ".join(kept + ([closing] if closing else []))
 
 
 def trim_to_sentence(text: str) -> str:

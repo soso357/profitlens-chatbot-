@@ -74,7 +74,7 @@ V: Should I raise the price of my burger from $14 to $16?
 V: What food cost should I aim for?
 
 ## 16. Ready to start
-Expect: asks qualifying questions one at a time, then says a founder will email to arrange the call.
+Expect: asks only for what is still missing (never re-asks), then shows three call times as buttons.
 V: I want the analysis. How do I get started?
 V: My name is Maria.
 V: Maria's Kitchen, in Austin, Texas.
