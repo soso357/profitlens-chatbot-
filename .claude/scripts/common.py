@@ -26,7 +26,7 @@ SECRET_PATTERNS = [
     re.compile(r"sk-[A-Za-z0-9]{20,}"),
     re.compile(r"\b\d{8,10}:[A-Za-z0-9_\-]{30,}\b"),  # Telegram bot token
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----"),
-    re.compile(r"(?i)((?:password|passwd|app_password|api_key|secret|token)\s*[=:]\s*)\S+"),
+    re.compile(r"(?i)((?:password|passwd|app_password|api_key|secret|token)\s*[=:]\s*)[^\n]+"),  # whole rest of line: passwords can contain spaces
 ]
 
 

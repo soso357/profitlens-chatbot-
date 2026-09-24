@@ -30,7 +30,7 @@ Confirmed facts only. Anything unconfirmed goes to docs/spec.md "Open questions"
 - Chat model: Claude Haiku 4.5 (ADR 0013).
 
 ## Accounts (credentials never written here)
-- Anthropic API: pending from founders.
+- Anthropic API: account on platform.claude.com under profitlenstemplate@gmail.com (set up by a founder, 2026-09-24). $10 prepaid credit, auto reload OFF (founder's instruction: do not turn it on). Key name soso-chatbot, no expiry, lives only in .env.
 - Google Calendar (service account): pending.
 - Zoho Mail SMTP, EU servers (.zoho.eu): pending.
 - Render: not created yet.
