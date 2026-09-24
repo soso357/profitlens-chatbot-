@@ -9,7 +9,7 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 | Phase | Status | Gate |
 |---|---|---|
 | 0 Setup and approved answers | DONE | approved 2026-09-22 |
-| 1 Chat service (local) | IN PROGRESS: service, guardrails and test conversations committed (e750b7a) | not approved |
+| 1 Chat service (local) | DONE (17 conversations with the real API key, Haiku and Sonnet compared, Sonnet chosen) | approved 2026-09-24 by Ioseb |
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
