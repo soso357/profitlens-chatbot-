@@ -29,3 +29,4 @@ One line per decision or notable event, newest last. Date first. Design choices 
 - 2026-09-24: Chat model switched to Claude Sonnet 5 (Ioseb, ADR 0016 supersedes 0013) after the side by side Phase 1 test. Price table per model in app/config.py keeps the daily spend cap accurate (Sonnet 5: $2 in, $10 out per million tokens).
 - 2026-09-24: Phase 1 approved by Ioseb after the real API test runs (tests/transcripts.md, tests/transcripts-sonnet.md). Phases 0 to 4 approved; Phase 5 next.
 - 2026-09-24: Code pushed to private GitHub repo soso357/profitlens-chatbot- (branch master). requirements.txt pins certifi and tzdata for Render.
+- 2026-09-24: Deployed to Render (free plan, Virginia): https://profitlens-chat.onrender.com. Checked online: widget.js, avatar, greeting, a real Sonnet reply, CORS allows useprofitlens.com and refuses other sites, test pages hidden.

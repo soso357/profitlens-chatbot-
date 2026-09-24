@@ -5,10 +5,10 @@ The whole chat window lives on our chat service. Framer only gets one short line
 ## The embed line
 
 ```html
-<script src="https://SERVICE-ADDRESS/widget.js" defer></script>
+<script src="https://profitlens-chat.onrender.com/widget.js" defer></script>
 ```
 
-SERVICE-ADDRESS is the Render address from Phase 5 (for example profitlens-chat.onrender.com). Until Phase 5 there is no public address, so the embed cannot be used yet.
+The service runs on Render at https://profitlens-chat.onrender.com (health check: https://profitlens-chat.onrender.com/health).
 
 No breakpoint settings are needed in Framer: the widget sizes itself. On screens narrower than 480 pixels (phones) the chat opens full screen; on larger screens it opens as a panel in the bottom right corner.
 

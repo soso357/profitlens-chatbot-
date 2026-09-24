@@ -33,4 +33,4 @@ Confirmed facts only. Anything unconfirmed goes to docs/spec.md "Open questions"
 - Anthropic API: account on platform.claude.com under profitlenstemplate@gmail.com (set up by a founder, 2026-09-24). $10 prepaid credit, auto reload OFF (founder's instruction: do not turn it on). Key name soso-chatbot, no expiry, lives only in .env.
 - Google Calendar (service account): pending.
 - Zoho Mail SMTP, EU servers (.zoho.eu): pending.
-- Render: not created yet.
+- Render: web service profitlens-chat at https://profitlens-chat.onrender.com (Virginia, Free plan for the hidden test page, deploys from GitHub soso357/profitlens-chatbot- branch master). Google sign-in file is a Render secret file at /etc/secrets/google-token.json.
