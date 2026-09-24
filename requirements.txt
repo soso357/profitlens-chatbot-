@@ -7,3 +7,5 @@ python-dotenv==1.2.3
 slowapi==0.1.10
 uvicorn==0.53.0
 google-auth-oauthlib==1.4.1
+certifi==2026.7.22
+tzdata==2026.4
