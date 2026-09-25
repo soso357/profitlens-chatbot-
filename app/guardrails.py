@@ -107,7 +107,9 @@ DETAIL_ASKED = re.compile(r"\b(detail|details|explain|tell me more|more about|in
 _PUSH = re.compile(
     r"(would you like|do you want|shall we|ready|want me|can i help you|how about|or would you like)[^.?!]*"
     r"\b(book|booking|get started|move forward|start|sign up|schedule)\b[^.?!]*\?", re.I)
-_ASKED_TO_START = re.compile(r"\b(book|call|start|started|sign up|schedule|next step|analysis|report|how do i)\b", re.I)
+_ASKED_TO_START = re.compile(
+    r"\b(book|call|start|started|sign( me)? up|schedule|next step|analysis|report|how do i|want|buy|order|"
+    r"purchase|interested|go ahead|let'?s do|ready|proceed|get (it|this|that|the)|try (it|this|the))\b", re.I)
 
 
 def remove_sales_push(reply: str, visitor_message: str) -> str:

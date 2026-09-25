@@ -78,6 +78,9 @@ for reply, msg, expect_gone in [
     ("A founder can look at it. Would you like to book the intake call?", "is 40 percent bad?", True),
     ("Any questions about the service, or would you like to get started?", "who won the super bowl", True),
     ("Great, what is your first name?", "I want to book a call", False),
+    ("It includes an Excel workbook. Would you like to get started?", "i want to use 99% service", False),
+    ("Happy to help. Would you like to book the intake call?", "sign me up", False),
+    ("Great. Shall we book your call?", "I am interested, lets do it", False),
 ]:
     out = g.remove_sales_push(reply, msg)
     ok = (out != reply and "book the" not in out.lower() and "get started" not in out.lower()) if expect_gone else out == reply
