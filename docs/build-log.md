@@ -31,3 +31,4 @@ One line per decision or notable event, newest last. Date first. Design choices 
 - 2026-09-24: Code pushed to private GitHub repo soso357/profitlens-chatbot- (branch master). requirements.txt pins certifi and tzdata for Render.
 - 2026-09-24: Deployed to Render (free plan, Virginia): https://profitlens-chat.onrender.com. Checked online: widget.js, avatar, greeting, a real Sonnet reply, CORS allows useprofitlens.com and refuses other sites, test pages hidden.
 - 2026-09-25: Founder wording: 'margin' replaced by 'profit per plate' in the approved answers and the prompt (the report's term; if a visitor says margin, Jelena answers with profit per plate). Checked on Sonnet and Haiku: 0 replies say margin. Haiku used while testing (ADR 0017); Sonnet stays for real visitors (ADR 0016).
+- 2026-09-25: Ioseb chose Sonnet 5 for testing as well (ADR 0017 withdrawn). Render already runs claude-sonnet-5.

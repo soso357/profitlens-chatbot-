@@ -1,6 +1,6 @@
 # ADR 0017: Haiku 4.5 while testing, Sonnet 5 for real visitors
 
-- Status: Accepted (temporary, amends ADR 0016)
+- Status: Withdrawn 2026-09-25 (Ioseb chose to test on Sonnet too, so testers see what real visitors get)
 - Date: 2026-09-25
 - Decided by: Ioseb
 
