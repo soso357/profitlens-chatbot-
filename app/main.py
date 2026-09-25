@@ -97,6 +97,13 @@ class ChatOut(BaseModel):
     state: str = ""  # sealed copy of the conversation; the widget sends it back next time
 
 
+def _mirror(sid: str, session: Session, visitor: str, reply: str) -> None:
+    """Every exchange to Telegram as it happens (ADR 0019)."""
+    if config.TELEGRAM_LIVE:
+        first = sum(1 for m in session.messages if m["role"] == "user") <= 1
+        chat_booking.live_update(sid, visitor, reply, SOURCE, first)
+
+
 def _out(session_id: str, session: Session, **fields) -> ChatOut:
     return ChatOut(**fields, state=session_store.dump(session_id, session))
 
@@ -237,6 +244,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
                 reply = guardrails.ensure_disclosure(reply)
             session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
             chat_log.log(sid, "agent", text=reply)
+            _mirror(sid, session, message, reply)
             return _out(sid, session, reply=reply)
 
         chat_log.log(sid, "visitor", text=message)
@@ -244,6 +252,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             reply, slots = chat_booking.pick(session.booking, message.strip().rstrip("."), sid, _transcript(session), SOURCE)
             session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
             chat_log.log(sid, "agent", text=reply)
+            _mirror(sid, session, message, reply)
             return _out(sid, session, reply=reply, slots=slots)
         first_reply = not any(m["role"] == "assistant" for m in session.messages)
         history = session.messages + [{"role": "user", "content": message}]
@@ -252,6 +261,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             response = model.reply(SYSTEM_PROMPT, history)
         except Exception as e:  # any failure (network, missing key, outage) still leaves the visitor a path
             chat_log.log(sid, "error", error=f"{type(e).__name__}: {e}")
+            _mirror(sid, session, message, "(error, visitor shown the leave your email form)")
             return _out(sid, session, reply=ERROR_REPLY, mode="email_form")
 
         raw = response.text
@@ -278,6 +288,8 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             reply = f"{reply} {extra}".strip()
             session.messages[-1]["content"] = reply
         chat_log.log(sid, "agent", text=reply, cost_usd=round(response.cost_usd, 5), **(response.usage or {}))
+        times = "".join(f"\n  [time] {x['label']}" for x in slots)
+        _mirror(sid, session, message, reply + times)
         return _out(sid, session, reply=reply, slots=slots)
 
 
@@ -292,7 +304,9 @@ def book(request: Request, body: BookIn) -> ChatOut:
         reply, slots = chat_booking.pick(session.booking, body.choice, body.session_id, _transcript(session), SOURCE)
         clicked = "Other times, please." if body.choice == chat_booking.MORE else "(I clicked one of the call times.)"
         session.messages += [{"role": "user", "content": clicked}, {"role": "assistant", "content": reply}]
-        chat_log.log(body.session_id, "agent", text=reply)
+        chat_log.log(sid, "agent", text=reply)
+        label = "Other times" if body.choice == chat_booking.MORE else f"(clicked time {body.choice})"
+        _mirror(sid, session, label, reply + "".join(f"\n  [time] {x['label']}" for x in slots))
         return _out(sid, session, reply=reply, slots=slots)
 
 

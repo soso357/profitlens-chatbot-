@@ -12,11 +12,12 @@ Both blocks are removed before the visitor sees the reply.
 """
 import json
 import re
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from app import booking, chat_log, email_alerts, leads, telegram
+from app import booking, chat_log, config, email_alerts, leads, telegram
 
 OFFER = re.compile(r"<offer_times>(.*?)</offer_times>", re.S)
 LEAD = re.compile(r"<lead>(.*?)</lead>", re.S)
@@ -247,6 +248,14 @@ def pick(state: BookingState, choice: str, sid: str, transcript: str = "", sourc
             f"{d['email']}. To change the time, just reply to that email and a founder will help."), []
 
 
+def live_update(sid: str, visitor: str, reply: str, source: str = "", first: bool = False) -> None:
+    """ADR 0019: mirror one exchange to the founders' Telegram group right away, in the
+    background so the visitor never waits for Telegram."""
+    head = f"{'New chat' if first else 'Chat'} {sid[-6:]}{_tag(source)}"
+    text = f"{head}\nVisitor: {visitor}\nJelena: {reply}"
+    threading.Thread(target=telegram.send_long, args=(text,), daemon=True).start()
+
+
 def finish(state: BookingState, sid: str, transcript: str, new_part: str, source: str = "") -> None:
     """The conversation went quiet (or the preview ended). Send it to Telegram (ADR 0015) and
     save a fit visitor who saw times but did not pick one as a lead."""
@@ -255,6 +264,6 @@ def finish(state: BookingState, sid: str, transcript: str, new_part: str, source
         state.lead_saved = True
         _alert(f"New lead, did not pick a time{_tag(source)}: {state.details['restaurant']}",
                _with_chat(_details_text(state.details), transcript))
-    if new_part.strip():
+    if new_part.strip() and not config.TELEGRAM_LIVE:  # with live updates the founders already saw it
         telegram.send_long(f"Chat conversation{_tag(source)} {sid[:8]}\n\n{new_part}")
     chat_log.log(sid, "conversation_sent_to_telegram")

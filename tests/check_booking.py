@@ -114,7 +114,8 @@ SENT.clear()
 cb.record_lead(s5, h, "s5")
 check("handoff subject is 'Chat handoff: founder needed' (B7)", any(k == "email" and t.startswith("Chat handoff: founder needed") for k, t in SENT))
 
-# fit visitor saw times, never picked, conversation went quiet
+# fit visitor saw times, never picked, conversation went quiet (old digest mode, ADR 0015)
+cb.config.TELEGRAM_LIVE = False
 s6 = cb.BookingState()
 cb.offer(s6, d, "s6")
 SENT.clear()
@@ -124,6 +125,22 @@ check("conversation sent to Telegram when quiet (ADR 0015)", any(t.startswith("C
 SENT.clear()
 cb.finish(cb.BookingState(), "s7", "Visitor: hi", "Visitor: hi")
 check("anonymous chat also goes to Telegram, no lead", len(SENT) == 1 and rows()[-1]["session_id"] != "s7")
+
+# live mode (ADR 0019): the quiet check only saves the lead, the chat was already mirrored
+cb.config.TELEGRAM_LIVE = True
+s9 = cb.BookingState()
+cb.offer(s9, d, "s9")
+SENT.clear()
+cb.finish(s9, "s9", "Visitor: hi", "Visitor: hi")
+check("live mode: quiet check saves the lead, no second copy of the chat", rows()[-1]["session_id"] == "s9"
+      and not any(t.startswith("Chat conversation") for k, t in SENT if k == "telegram"))
+import time as _t
+LIVE = []
+cb.telegram.send_long = lambda text: LIVE.append(text) or True
+cb.live_update("abc123456789", "How much is it?", "It is $99.", first=True)
+_t.sleep(0.3)
+check("live mode: each exchange goes to Telegram right away", LIVE and LIVE[0].startswith("New chat 456789")
+      and "Visitor: How much is it?" in LIVE[0] and "Jelena: It is $99." in LIVE[0])
 
 # long conversations are split for Telegram
 TG_RAW.clear()
