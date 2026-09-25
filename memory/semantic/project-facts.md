@@ -16,6 +16,7 @@ Confirmed facts only. Anything unconfirmed goes to docs/spec.md "Open questions"
 ## People and roles in this build
 - Ioseb: approves every phase ("approved"), chooses between options, not a software engineer.
 - Founders: own content/ (approved answers, qualifying questions, handoff rules) and approve the widget before it goes live.
+- Approved answers finalised by the founders 2026-09-25 (v2): one to three locations; third founder named Tamar Zakaidze (as on the website; "Tamuna" in the brief); support@useprofitlens.com; booking only in the chat, no Tally form; Google Meet call always with a founder; no end date given for introductory prices.
 
 ## Technical setup (dev machine)
 - Mac, project at ~/Desktop/PROFITLENS-CHATBOT, Python 3.12, virtual environment in .venv.
