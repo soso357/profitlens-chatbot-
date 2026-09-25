@@ -138,9 +138,16 @@
     if (!on && typing) { typing.remove(); typing = null; }
   }
 
+  // Every request carries the sealed copy of the conversation from the last reply, so the
+  // conversation continues even if the server restarted in between (ADR 0018).
   function post(path, body) {
+    body.state = state.token || "";
     return fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      .then(function (r) { return r.json().then(function (data) { if (!r.ok) throw data; return data; }); });
+      .then(function (r) { return r.json().then(function (data) {
+        if (!r.ok) throw data;
+        if (data.state) { state.token = data.state; save(); }
+        return data;
+      }); });
   }
 
   function showSlots(slots) {

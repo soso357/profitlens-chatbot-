@@ -13,7 +13,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from app import chat_booking, chat_log, config, guardrails, leads, model, spend
+from app import chat_booking, chat_log, config, guardrails, leads, model, session_store, spend
 from app.content import DISCLOSURE, SYSTEM_PROMPT
 
 EMAIL_FORM_REPLY = (
@@ -64,38 +64,59 @@ _sessions: dict[str, Session] = {}
 _sessions_lock = threading.Lock()
 
 
-def get_session(session_id: str) -> Session:
+def get_session(session_id: str, saved_state: str = "") -> Session:
+    """The session from memory. After a restart it is rebuilt from the sealed copy the widget
+    sends back (ADR 0018), so a conversation never starts over mid way."""
     now = time.time()
     with _sessions_lock:
         for sid in [s for s, v in _sessions.items() if now - v.created > SESSION_MAX_AGE_SECONDS]:
             del _sessions[sid]
-        return _sessions.setdefault(session_id, Session())
+        if session_id not in _sessions:
+            session = Session()
+            state = session_store.load(session_id, saved_state)
+            if state:
+                session_store.restore(session, state)
+                chat_log.log(session_id, "session_restored", messages=len(session.messages))
+            _sessions[session_id] = session
+        return _sessions[session_id]
+
+
+STATE_FIELD = Field(default="", max_length=session_store.MAX_TOKEN_CHARS)
 
 
 class ChatIn(BaseModel):
     session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{8,64}$")
     message: str = Field(min_length=1)
+    state: str = STATE_FIELD  # sealed copy of the conversation (ADR 0018)
 
 
 class ChatOut(BaseModel):
     reply: str
     mode: str = "chat"  # "chat", or "email_form" when the widget should show the leave your email form
     slots: list[dict] = []  # call times to show as buttons: {"start": iso, "label": text}
+    state: str = ""  # sealed copy of the conversation; the widget sends it back next time
+
+
+def _out(session_id: str, session: Session, **fields) -> ChatOut:
+    return ChatOut(**fields, state=session_store.dump(session_id, session))
 
 
 class SessionIn(BaseModel):
     session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{8,64}$")
+    state: str = STATE_FIELD  # sealed copy of the conversation (ADR 0018)
 
 
 class EmailIn(BaseModel):
     session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{8,64}$")
     email: str = Field(max_length=200)
     note: str = Field(default="", max_length=1000)
+    state: str = STATE_FIELD  # sealed copy of the conversation (ADR 0018)
 
 
 class BookIn(BaseModel):
     session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{8,64}$")
     choice: str = Field(min_length=1, max_length=40)  # a slot "start", or "more" for other times
+    state: str = STATE_FIELD  # sealed copy of the conversation (ADR 0018)
 
 
 def _transcript(session: Session, start: int = 0) -> str:
@@ -147,13 +168,16 @@ def avatar() -> Response:
 @limiter.limit(config.IP_RATE_LIMIT)
 def start(request: Request, body: SessionIn) -> ChatOut:
     """The widget was opened: the first message is always the AI disclosure (rule R3, set in code)."""
-    session = get_session(body.session_id)
+    sid = body.session_id
+    session = get_session(sid, body.state)
     with session.lock:
         if not session.messages:
             session.messages.append({"role": "assistant", "content": DISCLOSURE})
             chat_log.log(body.session_id, "agent", text=DISCLOSURE)
         mode = "email_form" if spend.over_limit() else "chat"
-        return ChatOut(reply=DISCLOSURE, mode=mode)
+        if any(m["role"] == "user" for m in session.messages):  # restored mid conversation: no second greeting
+            return _out(sid, session, reply="", mode=mode)
+        return _out(sid, session, reply=DISCLOSURE, mode=mode)
 
 
 @app.post("/leave-email", response_model=ChatOut)
@@ -163,23 +187,24 @@ def leave_email(request: Request, body: EmailIn) -> ChatOut:
     email = body.email.strip()
     if not EMAIL.match(email):
         raise HTTPException(400, "Please check your email address.")
-    session = get_session(body.session_id)
+    sid = body.session_id
+    session = get_session(sid, body.state)
     with session.lock:
         suggestion = chat_booking.email_typo(email)
         if suggestion:
-            return ChatOut(reply=f"Just to check, did you mean {suggestion}? Please enter it again.", mode="email_form")
+            return _out(sid, session, reply=f"Just to check, did you mean {suggestion}? Please enter it again.", mode="email_form")
         lead = {"email": email, "fit": "unknown", "reason": f"left email in the form. {body.note}".strip()}
         chat_booking.record_lead(session.booking, lead, body.session_id, _transcript(session), SOURCE)
         session.messages.append({"role": "assistant", "content": EMAIL_THANKS_REPLY})
         session.last_activity = time.time()
-        return ChatOut(reply=EMAIL_THANKS_REPLY, mode="done")
+        return _out(sid, session, reply=EMAIL_THANKS_REPLY, mode="done")
 
 
 @app.post("/chat", response_model=ChatOut)
 @limiter.limit(config.IP_RATE_LIMIT)
 def chat(request: Request, body: ChatIn) -> ChatOut:
     sid = body.session_id
-    session = get_session(sid)
+    session = get_session(sid, body.state)
     message = body.message.strip()
 
     with session.lock:
@@ -189,16 +214,16 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
 
         if spend.over_limit():
             chat_log.log(sid, "blocked", reason="daily spend cap reached")
-            return ChatOut(reply=EMAIL_FORM_REPLY, mode="email_form")
+            return _out(sid, session, reply=EMAIL_FORM_REPLY, mode="email_form")
         if len(session.sent_times) >= config.SESSION_MESSAGES_PER_HOUR:
             chat_log.log(sid, "blocked", reason="session hourly message limit")
-            return ChatOut(reply=SLOW_DOWN_REPLY, mode="email_form")
+            return _out(sid, session, reply=SLOW_DOWN_REPLY, mode="email_form")
         if session.visitor_messages >= config.MAX_VISITOR_MESSAGES_PER_SESSION:
             chat_log.log(sid, "blocked", reason="conversation length cap")
-            return ChatOut(reply=EMAIL_FORM_REPLY, mode="email_form")
+            return _out(sid, session, reply=EMAIL_FORM_REPLY, mode="email_form")
         if len(message) > config.MAX_MESSAGE_CHARS:
             chat_log.log(sid, "blocked", reason="message too long", length=len(message))
-            return ChatOut(reply=TOO_LONG_REPLY)
+            return _out(sid, session, reply=TOO_LONG_REPLY)
 
         session.sent_times.append(now)
         session.visitor_messages += 1
@@ -212,14 +237,14 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
                 reply = guardrails.ensure_disclosure(reply)
             session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
             chat_log.log(sid, "agent", text=reply)
-            return ChatOut(reply=reply)
+            return _out(sid, session, reply=reply)
 
         chat_log.log(sid, "visitor", text=message)
         if session.booking.offered and message.strip().rstrip(".") in ("1", "2", "3"):
             reply, slots = chat_booking.pick(session.booking, message.strip().rstrip("."), sid, _transcript(session), SOURCE)
             session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
             chat_log.log(sid, "agent", text=reply)
-            return ChatOut(reply=reply, slots=slots)
+            return _out(sid, session, reply=reply, slots=slots)
         first_reply = not any(m["role"] == "assistant" for m in session.messages)
         history = session.messages + [{"role": "user", "content": message}]
 
@@ -227,7 +252,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             response = model.reply(SYSTEM_PROMPT, history)
         except Exception as e:  # any failure (network, missing key, outage) still leaves the visitor a path
             chat_log.log(sid, "error", error=f"{type(e).__name__}: {e}")
-            return ChatOut(reply=ERROR_REPLY, mode="email_form")
+            return _out(sid, session, reply=ERROR_REPLY, mode="email_form")
 
         raw = response.text
         typed = " ".join(m["content"] for m in history if m["role"] == "user")
@@ -253,21 +278,22 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             reply = f"{reply} {extra}".strip()
             session.messages[-1]["content"] = reply
         chat_log.log(sid, "agent", text=reply, cost_usd=round(response.cost_usd, 5), **(response.usage or {}))
-        return ChatOut(reply=reply, slots=slots)
+        return _out(sid, session, reply=reply, slots=slots)
 
 
 @app.post("/book", response_model=ChatOut)
 @limiter.limit(config.IP_RATE_LIMIT)
 def book(request: Request, body: BookIn) -> ChatOut:
     """A time button was clicked (or "Other times")."""
-    session = get_session(body.session_id)
+    sid = body.session_id
+    session = get_session(sid, body.state)
     with session.lock:
         session.last_activity = time.time()
         reply, slots = chat_booking.pick(session.booking, body.choice, body.session_id, _transcript(session), SOURCE)
         clicked = "Other times, please." if body.choice == chat_booking.MORE else "(I clicked one of the call times.)"
         session.messages += [{"role": "user", "content": clicked}, {"role": "assistant", "content": reply}]
         chat_log.log(body.session_id, "agent", text=reply)
-        return ChatOut(reply=reply, slots=slots)
+        return _out(sid, session, reply=reply, slots=slots)
 
 
 @app.get("/health")
