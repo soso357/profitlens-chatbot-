@@ -30,6 +30,7 @@ Confirmed facts only. Anything unconfirmed goes to docs/spec.md "Open questions"
 - Booking calendar, notification recipient and Zoho sending address: ioseb@useprofitlens.com.
 - Calls bookable all 7 days, 19:00 to 03:00 Georgia time (Asia/Tbilisi, no daylight saving).
 - Chat model: Claude Sonnet 5 everywhere, locally and on Render (ADR 0016).
+- Telegram group "ProfitLens leads" became a supergroup when a founder was added (2026-09-25): chat ID is now -1004318522269 (was -5552197383). Adding members or showing history to new members can change it again; Telegram's error then names the new ID.
 
 ## Accounts (credentials never written here)
 - Anthropic API: account on platform.claude.com under profitlenstemplate@gmail.com (set up by a founder, 2026-09-24). $10 prepaid credit, auto reload OFF (founder's instruction: do not turn it on). Key name soso-chatbot, no expiry, lives only in .env.
