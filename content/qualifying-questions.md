@@ -11,23 +11,20 @@ DRAFT for founders to edit. The agent asks these one at a time, in this order, i
 
 ## Fit questions
 
-5. Is your restaurant open and serving customers right now?
-   Fits if: yes. Does not fit if: not open yet, or closed.
-
-6. Would you describe it as mainly a place to eat (food first), rather than mainly a bar or a drinks spot?
+5. Would you describe it as mainly a place to eat (food first), rather than mainly a bar or a drinks spot?
    Fits if: food first. Does not fit if: mainly a bar, nightclub or drinks venue.
 
-7. Which is closer: casual (counter service, cafe, diner, family restaurant) or sit down mid range? Or is it fine dining?
+6. Which is closer: casual (counter service, cafe, diner, family restaurant) or sit down mid range? Or is it fine dining?
    Fits if: casual or mid range. Does not fit if: fine dining. FOUNDER TO CONFIRM: is fine dining a "no fit", or a "talk to a founder"?
 
-8. How many locations do you have?
+7. How many locations do you have?
    Fits if: one to three. Does not fit if: four or more, or part of a franchise or chain.
 
-9. Are you the person who sets or changes menu prices (or closely involved in it)?
+8. Are you the person who sets or changes menu prices (or closely involved in it)?
    Fits if: yes. Does not fit if: no. FOUNDER TO CONFIRM: if a manager is chatting for the owner, should the agent still book?
 
-10. Roughly how many dishes are on your menu? About 15 or more?
-    Fits if: 15 or more. Does not fit if: fewer than 15.
+9. Roughly how many dishes are on your menu? About 15 or more?
+   Fits if: 15 or more. Does not fit if: fewer than 15.
 
 ## Scoring
 
