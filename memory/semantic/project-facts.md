@@ -27,7 +27,7 @@ Confirmed facts only. Anything unconfirmed goes to docs/spec.md "Open questions"
 ## Booking and email (confirmed 2026-09-22)
 - Booking calendar, notification recipient and Zoho sending address: ioseb@useprofitlens.com.
 - Calls bookable all 7 days, 19:00 to 03:00 Georgia time (Asia/Tbilisi, no daylight saving).
-- Chat model: Claude Sonnet 5 (ADR 0016, 2026-09-24; was Haiku 4.5).
+- Chat model: Sonnet 5 for real visitors (ADR 0016); Haiku 4.5 during testing (ADR 0017, from 2026-09-25). Switch Render's CLAUDE_MODEL back to claude-sonnet-5 before the homepage launch.
 
 ## Accounts (credentials never written here)
 - Anthropic API: account on platform.claude.com under profitlenstemplate@gmail.com (set up by a founder, 2026-09-24). $10 prepaid credit, auto reload OFF (founder's instruction: do not turn it on). Key name soso-chatbot, no expiry, lives only in .env.

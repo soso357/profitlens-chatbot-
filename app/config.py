@@ -20,7 +20,7 @@ CONTENT_DIR = ROOT / "content"
 LOG_DIR = Path(os.getenv("LOG_DIR", ROOT / "logs"))
 DATA_DIR = Path(os.getenv("DATA_DIR", ROOT / "data"))
 
-MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5")  # ADR 0016
+MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5")  # ADR 0016 (Haiku while testing: ADR 0017)
 # US dollars per million tokens: input, output, 5 minute cache write, cache read.
 # Source: platform.claude.com/docs/en/about-claude/pricing (checked 2026-09-24).
 MODEL_PRICES = {

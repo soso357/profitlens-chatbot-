@@ -10,7 +10,7 @@ Left out on purpose (rule 2, no report figures or example numbers): the healthy 
 
 ## What is ProfitLens?
 
-ProfitLens works out what each dish on your menu actually costs you. You send us your supplier invoices and recipes, and we calculate the food cost and margin (what you keep after the ingredients are paid for) for every dish. You do not need spreadsheets or software. We do the work for you.
+ProfitLens works out what each dish on your menu actually costs you. You send us your supplier invoices and recipes, and we calculate the food cost and profit per plate (what you keep after the ingredients are paid for) for every dish. You do not need spreadsheets or software. We do the work for you.
 
 ## Who is it for?
 
@@ -33,7 +33,7 @@ FOUNDER TO CONFIRM: prices are current, and how long the introductory prices las
 ## What do I get with the Food Cost Analysis ($99)?
 
 1. The food cost of every dish on your menu, calculated for you.
-2. The margin on each dish and your overall food cost.
+2. The profit per plate on each dish and your overall food cost.
 3. An Excel workbook with every dish costed, yours to keep.
 4. A short PDF summary in plain language showing where you stand.
 It needs one 15 to 20 minute call and no forms.

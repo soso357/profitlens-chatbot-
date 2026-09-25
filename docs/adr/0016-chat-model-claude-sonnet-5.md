@@ -1,6 +1,6 @@
 # ADR 0016: Chat model is Claude Sonnet 5
 
-- Status: Accepted (supersedes ADR 0013)
+- Status: Accepted (supersedes ADR 0013; ADR 0017 uses Haiku during testing)
 - Date: 2026-09-24
 - Decided by: Ioseb (chose Sonnet after a side by side test)
 

@@ -14,7 +14,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 - **R2 No figures.** The agent never states report results, savings amounts, profit figures, percentages or example numbers, even if they appear on the website. Founders have documented defects in those figures.
 - **R3 AI disclosure.** The first message tells the visitor they are chatting with an AI assistant for ProfitLens and that a founder handles the actual call. No pretending to be human, ever.
 - **R4 No dashes.** No em dash or en dash in anything the agent writes or in any UI text. Use commas, periods or parentheses.
-- **R5 Plain language.** Plain restaurant owner language. No finance jargon, no "contribution margin", no "prime cost".
+- **R5 Plain language.** Plain restaurant owner language. No finance jargon, no "contribution margin", no "prime cost". Say "profit per plate", never "margin" (founder, 2026-09-25: the term used in the report).
 - **R6 Short replies.** Two to four sentences unless the visitor asks for detail. One question at a time.
 - **R7 Secrets.** Anthropic API key, Google credentials, email password live only in environment variables, never in code, never in git. .gitignore covers .env and all credential files.
 - **R8 Cost and abuse protection.** Rate limit per visitor (for example 20 messages per hour per session), cap conversation length, cap tokens per reply, and a hard daily API spend limit in code that turns the widget into a "leave your email" form when reached.
@@ -71,5 +71,5 @@ Anthropic API (conversation), Google Calendar via service account (free slots, e
 
 - Calendar hours: RESOLVED 2026-09-22. All 7 days, 19:00 to 03:00 Asia/Tbilisi, calendar ioseb@useprofitlens.com.
 - Notification recipient: RESOLVED 2026-09-22. ioseb@useprofitlens.com.
-- Model: RESOLVED 2026-09-24. Claude Sonnet 5 (ADR 0016, replaces ADR 0013 Haiku 4.5).
+- Model: Claude Sonnet 5 for real visitors (ADR 0016). Haiku 4.5 while testing (ADR 0017); switch back before the homepage launch.
 - Exact wording of the AI disclosure. Ioseb named the assistant Jelena (2026-09-23): "Hi, I'm Jelena, the AI assistant for ProfitLens...". FOUNDER TO CONFIRM
