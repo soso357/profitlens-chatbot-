@@ -6,7 +6,7 @@ DRAFT for founders to edit. The agent asks these one at a time, in this order, i
 
 1. What is your first name?
 2. What is the name of your restaurant?
-3. Which city and state is it in? (This also tells the agent which time zone to use for booking.)
+3. Which state is it in? (This tells the agent which time zone to use for booking. Ask only for the state, not the city.)
 4. What is the best email to reach you?
 
 ## Fit questions
