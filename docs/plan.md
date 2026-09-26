@@ -12,6 +12,16 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Foundation v2 step 3: agent harness, what Claude may do (2026-09-26, foundation-v2 section 5; approved by Ioseb 2026-09-26)
+1. .claude/settings.json gets three lists:
+   - allow (no prompt): tests, evals, lint, git status/diff/log/add/commit, the project's own scripts.
+   - ask (Ioseb clicks yes): git push, opening a pull request, installing libraries, deleting files, editing content/, CLAUDE.md, settings or hooks, any command that reaches the internet (curl, the live site, Telegram, Gmail, Calendar, Anthropic).
+   - deny (never): merging a pull request, pushing to master, force push, hard reset, skipping git hooks, reading .env or secrets/.
+2. New guard hook (runs before every tool use): refuses writes outside the project, its worktrees and the scratchpad; refuses commits on master; refuses shell commands that read .env or secrets/ (today only the Read tool is blocked, "cat .env" is not); refuses deleting data/, logs/ or leads.csv.
+3. tests/check_harness.py: tries every "never" action against the guard and checks it is refused, and checks allowed ones pass. Added to the evals.
+4. Sandboxing (Claude Code limiting what shell commands can reach) is not switched on in this step: the live checks need the network. Noted as a later option.
+5. Docs: workflow.md section 5, ADR 0024. Then evals, code review, pull request.
+
 ### Foundation v2 step 2: session summaries sorted into project files, memory staleness (2026-09-26, ADR 0022; approved by Ioseb 2026-09-26)
 1. The summarizer also writes a small "Routed" block: work done, open questions (with who must answer), people we wait on, decisions, lessons, and changes to plan, spec, ADRs or rules.
 2. New script distribute.py, run right after each summary (one at a time, even with parallel terminals):

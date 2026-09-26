@@ -13,6 +13,49 @@
     "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/scripts/statusline.py\""
   },
   "permissions": {
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch --show-current*)",
+      "Bash(git branch -a*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout -b *)",
+      "Bash(git switch -c *)",
+      "Bash(git worktree list*)",
+      "Bash(.venv/bin/python -m tests.evals --offline*)",
+      "Bash(.venv/bin/python -m tests.check_*)",
+      "Bash(python3 -m tests.check_*)",
+      "Bash(python3 .claude/scripts/*)"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(gh pr create*)",
+      "Bash(gh *)",
+      "Bash(pip *)",
+      "Bash(.venv/bin/pip *)",
+      "Bash(npm *)",
+      "Bash(rm *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(git worktree remove*)",
+      "Bash(.venv/bin/python -m tests.evals)",
+      "Bash(.venv/bin/python -m tests.live_chat*)",
+      "Bash(.venv/bin/python -m tests.run_conversations*)",
+      "Edit(./content/**)",
+      "Write(./content/**)",
+      "Edit(./CLAUDE.md)",
+      "Write(./CLAUDE.md)",
+      "Edit(./.claude/settings.json)",
+      "Write(./.claude/settings.json)",
+      "Edit(./.githooks/**)",
+      "Write(./.githooks/**)",
+      "WebFetch",
+      "Bash(git branch -D*)",
+      "Bash(git branch -d*)"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.local)",
@@ -26,7 +69,12 @@
       "Bash(git reset --hard*)",
       "Bash(git commit*--no-verify*)",
       "Bash(git push*--no-verify*)",
-      "Bash(ALLOW_MASTER_PUSH=*)"
+      "Bash(ALLOW_MASTER_PUSH=*)",
+      "Bash(gh pr merge*)",
+      "Bash(git clean*)",
+      "Write(./.env)",
+      "Write(./secrets/**)",
+      "Bash(git push origin master*)"
     ]
   },
   "hooks": {
@@ -87,6 +135,18 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/scripts/session_end.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit|Read|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/scripts/guard.py\"",
             "timeout": 5
           }
         ]

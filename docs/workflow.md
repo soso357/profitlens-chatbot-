@@ -83,6 +83,7 @@ Rules:
 
 | Hook | Script | Does |
 |---|---|---|
+| PreToolUse | guard.py | harness guard (ADR 0024): refuses shell access to secrets, writes outside the project, commits and pushes to master, merges, deleting visitor data |
 | SessionStart | session_start.py | one line at start (nothing loaded until resume); after compaction: this task's handoff and a new terminal request |
 | UserPromptSubmit | context_guard.py | handoff nudge at 60%, soft stop at 70%, new terminal after a compaction |
 | PreCompact | pre_compact.py | snapshot (the instructions are in CLAUDE.md) |
@@ -91,7 +92,7 @@ Rules:
 | SessionEnd | session_end.py -> summarize_session.py -> distribute.py | automatic session summary and proposals; one run per session at a time; a resumed session is summarized only from where the last summary ended; a failure shows in the statusline and the next session brief until redone |
 | git commit-msg | .githooks/commit-msg | refuses a commit without a stage label |
 | git pre-push | .githooks/pre-push | refuses a push to master (pull requests only) |
-| permissions.deny | settings.json | Claude cannot read .env or credential files, no force push, no hard reset, no skipping git hooks |
+| permissions allow, ask, deny | settings.json | allow: tests, evals, git status/diff/log/add/commit, project scripts. Ask Ioseb: push, pull requests, installs, deleting files, network, content/, CLAUDE.md, settings, git hooks. Deny: merge, push to master, force push, hard reset, skipping git hooks, .env and credential files (ADR 0024) |
 | plugin security-guidance | (Anthropic) | security warnings on edits, background review of commits |
 
 All project scripts are standard library Python in .claude/scripts/. The summarizer log is memory/working/state/summarizer.log.
