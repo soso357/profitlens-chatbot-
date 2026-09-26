@@ -20,6 +20,14 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Phase 5 alert check, proposal 0013 (2026-09-26, Ioseb chose: warn through the other channel, ADR 0021)
+1. app/alert_health.py: remembers the last result per channel (telegram, email): ok or failing, the reason, the time. Kept in memory only; no visitor data in it.
+2. app/telegram.py and app/email_alerts.py keep the failure reason instead of throwing it away (Telegram's own error text, including the new chat ID when a group was upgraded; for email, missing sign-in file or the Google error). Tokens are never written into a reason.
+3. On failure, a warning goes through the other channel: Telegram broken, the founders get an email; email broken, a Telegram message. At most once an hour per channel. The warning says what broke, the reason, and what to do (for example "update TELEGRAM_CHAT_ID on Render to -100...").
+4. At startup: check that TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, FOUNDER_NOTIFY_EMAIL and the Google sign-in file are present, and ask Telegram whether the chat exists (getChat: posts nothing). Problems follow step 3.
+5. /health gains "alerts": ok or failing per channel, without the reason text (the page is public).
+6. Tests: tests/check_alerts.py, offline, with fake Telegram and Gmail: wrong chat ID, missing token, missing sign-in file, both broken, warning sent once an hour, nothing secret in reasons or /health. Added to tests/evals.py.
+
 ### Phase 4 website widget (2026-09-23)
 1. app/static/widget.js, served at /widget.js: one self contained file (styles and markup built by the script). Framer embed is one script tag; the widget finds the service address from its own src.
 2. Launcher button bottom right, panel over the page, full screen under 480px wide. Geist (inherited from the site, nothing loaded from third parties), body text #666666, no emoji. First message is the AI disclosure, sent by the server (POST /start) so rule R3 is enforced in code.
