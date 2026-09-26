@@ -1,6 +1,6 @@
 # Foundation v2: design for review
 
-Status: DRAFT, waiting for Ioseb's approval. Nothing here is built yet.
+Status: APPROVED 2026-09-26 (Ioseb: all recommended options, ADR 0023). Built step by step, see section 9.
 Date: 2026-09-26. Branch: maintain-foundation-v2.
 Scope: upgrade this ProfitLens repo only (Ioseb, 2026-09-26). Not a reusable template.
 

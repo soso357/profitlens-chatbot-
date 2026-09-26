@@ -20,6 +20,18 @@ Before any code inside a phase, Claude writes a short implementation plan for th
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Foundation v2 step 1: handoff protocol, progress.md, resume, worktrees (2026-09-26, ADR 0022 and 0023; WAITING FOR APPROVAL)
+1. Shared location: handoffs live in the main project folder even when a terminal works in a worktree (scripts find it through git). New folder memory/working/handoffs/, one file per task, plus a generated _index.md (task, type, branch, updated, open or done). The old handoff.md becomes handoffs/phase-5-launch.md.
+2. handoff skill rewritten: the fixed one page template (foundation-v2 section 1.3), records the git commit it was written at, sets Status done when the task is finished. Fix sessions also write memory/incidents/YYYY-MM-DD-slug.md with a required test line; the lesson goes to lessons.md.
+3. New resume skill: lists open handoffs, Ioseb picks one, Claude reads it, docs/progress.md and the files it names, shows what other terminals committed since, then says in three lines where it is. The plan status, proposals and summary warnings move here from the start brief.
+4. session_start.py: a new session gets only "Say resume to continue a task" (plus a failed summary warning, if any). After a compaction it reinjects this session's own task handoff, not another terminal's.
+5. context_guard.py and statusline.py: 60% yellow "handoff" and a nudge to update the task handoff; 70% red "new terminal" and a soft stop (finish the step, update the handoff, commit, tell Ioseb to open a new terminal and say resume). Any compaction: recommend a new terminal at once.
+6. settings.json: automatic compaction moves from 70 to 85 (safety net only).
+7. docs/progress.md created (current phase, done, in progress, open questions, waiting on people, known problems). The status table moves there from plan.md; plan.md links to it.
+8. New parallel-task skill: creates a git worktree (a sibling folder on its own branch) for a second terminal and says which command to run there. Note: .env is not copied into worktrees, so live runs stay in the main folder; offline evals work anywhere.
+9. Docs: workflow.md sections 2 and 3, memory/README.md, CLAUDE.md sessions and compact instructions; ADR 0012 marked partly superseded by 0022.
+10. Tests: tests/check_workflow.py extended, offline: new session gets one line only; compaction reinjects the right task's handoff when two exist; 60 and 70 nudges fire once each; index lists open and hides done; handoffs found from inside a worktree; statusline colours. Then tests.evals --offline, /code-review, pull request.
+
 ### Phase 5 alert check, proposal 0013 (2026-09-26, Ioseb chose: warn through the other channel, ADR 0021)
 1. app/alert_health.py: remembers the last result per channel (telegram, email): ok or failing, the reason, the time. Kept in memory only; no visitor data in it.
 2. app/telegram.py and app/email_alerts.py keep the failure reason instead of throwing it away (Telegram's own error text, including the new chat ID when a group was upgraded; for email, missing sign-in file or the Google error). Tokens are never written into a reason.
