@@ -125,6 +125,11 @@
             "type": "command",
             "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/scripts/handoff_track.py\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/scripts/spec_check.py\" hook",
+            "timeout": 5
           }
         ]
       }

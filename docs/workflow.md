@@ -16,8 +16,8 @@ Principle from the playbook: every stage commits a file the next stage reads, an
 | Stage | Claude does | Ioseb does | Artifact |
 |---|---|---|---|
 | Intent | Drafts from Ioseb's words | Approves | docs/intent.md |
-| Spec | Turns intent into numbered requirements; flags open questions | Resolves questions with founders | docs/spec.md |
-| Plan | Before each phase, writes a phase note: files, order, tests | Approves the note | docs/plan.md |
+| Spec | Turns intent into numbered requirements, each with an acceptance check; flags open questions (skill: spec-to-plan) | Resolves questions with founders; approves each spec version | docs/spec.md (Version, Status) |
+| Plan | Before each phase, writes a phase note citing the approved spec version and the ids it covers; spec_check.py ready must pass | Approves the note | docs/plan.md |
 | Build | Implements in small steps, runs things, verifies | Answers questions, chooses options | code, docs/adr/, docs/build-log.md |
 | Test | `tests.evals`: offline checks plus every scripted conversation with a pass or fail verdict | Tries rude and trick questions himself | tests/, tests/eval-report.md, transcripts |
 | Gate | Demonstrates (skill: phase-gate), /code-review against REVIEW.md, opens a pull request | Reads the pull request | pull request on GitHub |
@@ -88,6 +88,7 @@ Rules:
 | UserPromptSubmit | context_guard.py | handoff nudge at 60%, soft stop at 70%, new terminal after a compaction |
 | PreCompact | pre_compact.py | snapshot (the instructions are in CLAUDE.md) |
 | PostToolUse (Write/Edit) | lint_content.py | blocks dashes and percentages in chatbot text |
+| PostToolUse (Write/Edit) | spec_check.py hook | an edit to an Approved spec sets it back to Draft (ADR 0025) |
 | PostToolUse (Write/Edit) | handoff_track.py | remembers which task this session owns; rebuilds the task index |
 | SessionEnd | session_end.py -> summarize_session.py -> distribute.py | automatic session summary and proposals; one run per session at a time; a resumed session is summarized only from where the last summary ended; a failure shows in the statusline and the next session brief until redone |
 | git commit-msg | .githooks/commit-msg | refuses a commit without a stage label |

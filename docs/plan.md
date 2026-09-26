@@ -12,7 +12,7 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
-### Foundation v2 step 4: spec versions and approval before planning (2026-09-26, foundation-v2 section 6; WAITING FOR APPROVAL)
+### Foundation v2 step 4: spec versions and approval before planning (2026-09-26, foundation-v2 section 6; approved by Ioseb 2026-09-26)
 1. docs/spec.md gets a header: Version, Status (Draft or Approved), Approved by, Date. First version 1.0 as Draft, with lines that are out of date marked for Ioseb (the Zoho and Telegram lines were corrected on 2026-09-26).
 2. Every rule R1 to R14 and behaviour B1 to B12 gets an "acceptance check": the test that proves it (a check file or a scripted conversation), or "manual: how".
 3. A hook: any edit to an approved spec sets its Status back to Draft automatically, until Ioseb approves again.
