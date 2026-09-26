@@ -63,7 +63,7 @@ def reply(system: str, history: list[dict]) -> Reply:
         model=config.MODEL,
         max_tokens=config.MAX_REPLY_TOKENS,
         system=system,
-        messages=_api_messages(history),
+        messages=_api_messages(history),  # pyright: ignore[reportArgumentType] plain dicts are valid messages
         cache_control={"type": "ephemeral"},
     )
     cost = spend.cost_of(response.usage)

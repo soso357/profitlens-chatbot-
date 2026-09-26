@@ -12,7 +12,7 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
-### Foundation v2 step 5: automatic checks on GitHub (2026-09-26, foundation-v2 section 8, tools approved in ADR 0023 C5; WAITING FOR APPROVAL)
+### Foundation v2 step 5: automatic checks on GitHub (2026-09-26, foundation-v2 section 8, tools approved in ADR 0023 C5; approved by Ioseb 2026-09-26)
 1. requirements-dev.txt (development only, never installed on Render): ruff (finds errors and messy code), pyright (checks that values are the kind of thing the code expects), pip-audit (known security holes in libraries).
 2. ruff and pyright settings in pyproject.toml, starting mild (real errors only) so they pass today; fix what they find.
 3. .github/workflows/checks.yml: on every pull request, GitHub runs lint, type check, the offline evals, pip-audit and a secret scanner (gitleaks: finds passwords or keys committed by mistake) and shows a green or red mark.

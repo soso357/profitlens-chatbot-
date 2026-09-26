@@ -13,7 +13,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from app import alert_health, chat_booking, chat_log, config, email_alerts, guardrails, leads, model, session_store, spend, telegram
+from app import alert_health, chat_booking, chat_log, config, email_alerts, guardrails, model, session_store, spend, telegram
 from app.content import DISCLOSURE, SYSTEM_PROMPT
 
 EMAIL_FORM_REPLY = (
@@ -38,7 +38,7 @@ EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="ProfitLens chat")
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # pyright: ignore[reportArgumentType] slowapi's documented handler
 # Spec G7: only our own website may call the service from a browser.
 app.add_middleware(CORSMiddleware, allow_origins=config.ALLOWED_ORIGINS, allow_methods=["GET", "POST"],
                    allow_headers=["Content-Type"])

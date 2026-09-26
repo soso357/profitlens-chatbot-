@@ -1,0 +1,47 @@
+# Automatic checks on every pull request (foundation v2 step 5). Offline only: no API keys, no secrets here.
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+  pull-requests: read   # the secret scanner lists the pull request's commits
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, so the secret scanner sees every commit
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -r requirements.txt -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: .venv/bin/ruff check .
+
+      - name: Type check (pyright)
+        run: .venv/bin/pyright
+
+      - name: Offline evals
+        run: .venv/bin/python -m tests.evals --offline
+
+      - name: Library security audit (pip-audit)
+        run: .venv/bin/pip-audit -r requirements.txt
+
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
