@@ -125,6 +125,10 @@ def set_summary_failure(session_id, info=None):
         f.unlink(missing_ok=True)
 
 
+def all_proposal_titles():
+    return [frontmatter(p)[0].get("title", p.stem) for p in sorted(PROPOSALS.glob("[0-9]*.md"))]
+
+
 def open_proposals():
     out = []
     for p in sorted(PROPOSALS.glob("[0-9]*.md")):
@@ -232,8 +236,9 @@ def deferred_due():
         meta, body = frontmatter(p)
         if meta.get("status") != "deferred":
             continue
-        decision = body.split("## Decision", 1)[-1]
-        age = days_since(decision) if "## Decision" in body else days_since(meta.get("created", ""))
+        decision = body.split("## Decision", 1)[1] if "## Decision" in body else ""
+        dates = re.findall(r"\d{4}-\d{2}-\d{2}", decision)  # the latest deferral counts
+        age = days_since(max(dates)) if dates else days_since(meta.get("created", ""))
         if age is not None and age > DEFERRED_DAYS:
             out.append((p.name, meta.get("title", p.stem), age))
     return out

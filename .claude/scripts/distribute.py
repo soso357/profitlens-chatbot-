@@ -12,7 +12,8 @@ Reads the summary's "## Routed" JSON block:
   changes (plan, spec, ADR, rule) -> proposals; those files are never edited here
 Every automatic line ends with "(from <summary file>)" so a wrong one can be traced and removed.
 Items already present are skipped. One run at a time (OS file lock), also across worktrees.
-The result is kept in memory/working/state/distribute-last.json for the resume brief.
+A failure is kept per summary in memory/working/state/distribute-failed/<summary>.json (shown by
+the resume brief) until that summary is sorted successfully.
 """
 import fcntl
 import json
@@ -23,16 +24,23 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import MAIN_ROOT, MEMORY, STATE, similar  # noqa: E402
+from common import MAIN_ROOT, MEMORY, STATE, similar, words  # noqa: E402
 
 PROGRESS = MAIN_ROOT / "docs" / "progress.md"
 BUILD_LOG = MAIN_ROOT / "docs" / "build-log.md"
 LESSONS = MEMORY / "procedural" / "lessons.md"
-LAST = STATE / "distribute-last.json"
+FAILED = STATE / "distribute-failed"
 SAME = 0.6          # word overlap at which two lines count as the same item
 SAME_LESSON = 0.5
 MAX_PROPOSALS = 5   # per summary, so a bad summary cannot flood the queue
 SECTIONS = {"done": "## Done (newest first)", "open_questions": "## Open questions", "waiting": "## Waiting on people"}
+
+
+def recorded(decision, passage):
+    """True when most of the decision's own words appear in one build log line or ADR decision.
+    Measured on the decision's words, so a short heading or a long ADR cannot match by accident."""
+    wd, wp = words(decision), words(passage)
+    return len(wd) >= 2 and len(wd & wp) / len(wd) >= 0.6
 
 
 def routed_block(text):
@@ -136,12 +144,15 @@ def distribute(summary_path):
             result["lessons"] = len(new)
 
     # decisions: only proposed for recording if the build log has no matching line
-    log = BUILD_LOG.read_text().splitlines() if BUILD_LOG.exists() else []
+    log = [l for l in (BUILD_LOG.read_text().splitlines() if BUILD_LOG.exists() else []) if l.startswith("- ")]
     for adr in sorted((MAIN_ROOT / "docs" / "adr").glob("[0-9]*.md")):  # decisions recorded as ADRs count too
-        log += [l for l in adr.read_text().split("\n\n") if l.strip()]
+        text = adr.read_text()
+        title = text.splitlines()[0] if text else ""
+        m = re.search(r"## Decision\s*\n(.*?)(\n## |\Z)", text, re.S)
+        log.append(title + " " + (m.group(1) if m else ""))
     for d in items.get("decisions") or []:
         text = as_text(d, ["decision", "chosen", "by"])
-        if text and not any(similar(text, l, 0.5) for l in log):
+        if text and not any(recorded(text, l) for l in log):
             proposals.append({"title": f"Record decision: {as_text(d, ['decision'])[:70] or text[:70]}", "kind": "decision",
                               "why": f"Made in {summary_path.name} but not found in docs/build-log.md: {text}",
                               "what": "Confirm with Ioseb, then a build-log line and, for a design choice, an ADR."})
@@ -160,6 +171,16 @@ def distribute(summary_path):
     return result
 
 
+def record_failure(summary_name, info):
+    """Keep (info given) or clear (None) the sorting failure of one summary."""
+    f = FAILED / f"{summary_name}.json"
+    if info:
+        FAILED.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps(info))
+    else:
+        f.unlink(missing_ok=True)
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
@@ -171,7 +192,7 @@ def main():
         except Exception as e:  # never fail silently
             result = {"ok": False, "error": repr(e)[:300], "summary": Path(sys.argv[1]).name}
         result["time"] = time.strftime("%Y-%m-%d %H:%M")
-        LAST.write_text(json.dumps(result))
+        record_failure(result["summary"], None if result["ok"] else result)
     print(json.dumps(result))
     return 0 if result["ok"] else 1
 

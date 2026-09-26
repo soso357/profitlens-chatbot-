@@ -216,7 +216,11 @@ LES = TMP / "memory" / "procedural" / "lessons.md"
 LES.write_text("# Lessons\n\n- 2026-09-22: Scripted edits must fail loudly when the old text is not found.\n")
 PLAN_BEFORE = (TMP / "docs" / "plan.md").read_text()
 (TMP / "docs" / "adr").mkdir(exist_ok=True)
-(TMP / "docs" / "adr" / "0099-x.md").write_text("# ADR 0099\n\n## Decision\n\nNew sessions start clean and load context only on resume.\n")
+(TMP / "docs" / "adr" / "0099-x.md").write_text("# ADR 0099\n\n## Context\n\nLong text about dark mode, colours, "
+                                               "launcher, widget, support.\n\n## Decision\n\nNew sessions start clean "
+                                               "and load context only on resume.\n\n## Consequences\n\nMore terminals.\n")
+(TMP / "memory" / "proposals" / "0901-rejected.md").write_text(
+    "---\ntitle: Change spec: Answer visitors in Portuguese\nstatus: rejected\n---\n\n## Decision\nno.\n")
 SUMS = TMP / "memory" / "episodic" / "sessions"
 
 
@@ -239,9 +243,11 @@ r = distribute(routed_summary("2026-09-26-100000-aaaa.md", {
     "waiting": [{"who": "Ioseb", "what": "buy a new Anthropic API key"}],
     "decisions": [{"decision": "context stop", "chosen": "soft stop at 70 percent", "by": "Ioseb"},
                   {"decision": "Widget colour", "chosen": "dark green launcher button", "by": "founders"},
-                  {"decision": "New session start", "chosen": "start clean, load context only on resume", "by": "Ioseb"}],
+                  {"decision": "New session start", "chosen": "start clean, load context only on resume", "by": "Ioseb"},
+                  {"decision": "Consequences of dark mode", "chosen": "support dark mode in the widget", "by": "Ioseb"}],
     "lessons": ["Scripted edits must fail loudly when old text is not found", "Render env changes need a manual redeploy"],
-    "changes": [{"file": "spec", "what": "Add a rule for visitors writing in Spanish", "why": "a visitor did"}]}))
+    "changes": [{"file": "spec", "what": "Add a rule for visitors writing in Spanish", "why": "a visitor did"},
+                {"file": "spec", "what": "Answer visitors in Portuguese", "why": "again"}]}))
 prog = PROG.read_text()
 done_part = prog.split("## Done (newest first)")[1].split("## ")[0]
 check("done item added at the top of Done, with its source", done_part.strip().startswith(
@@ -264,6 +270,9 @@ check("repeated lesson becomes a rule proposal", any(x.startswith("Make a rule")
 check("decision missing from build log becomes a proposal, logged one does not",
       any("Widget colour" in x for x in titles) and not any("context stop" in x for x in titles))
 check("decision already in an ADR: no proposal", not any("New session start" in x for x in titles))
+check("ADR headings or long unrelated text do not count as recording a decision",
+      any("Consequences of dark mode" in x for x in titles))
+check("a rejected proposal is not proposed again", not any("Portuguese" in x for x in titles))
 check("spec change becomes a proposal; plan.md untouched", any(x.startswith("Change spec") for x in titles)
       and (TMP / "docs" / "plan.md").read_text() == PLAN_BEFORE)
 before = PROG.read_text()
@@ -274,6 +283,8 @@ check("same items again: nothing added, no duplicate proposal", PROG.read_text()
 r3 = distribute(routed_summary("2026-09-26-120000-cccc.md", "{not json"))
 check("broken Routed block: nothing changed, failure kept for the brief", PROG.read_text() == before
       and r3["ok"] is False and "failed" in script("handoffs.py", "", "brief"))
+distribute(routed_summary("2026-09-26-121000-dddd.md", {"done": ["Something else finished fine"]}))
+check("a later good summary does not hide an earlier failure", "cccc" in script("handoffs.py", "", "brief"))
 check("summary without a Routed block is fine", distribute(SUMS / "2026-09-26-100000-aaaa.md")["ok"])
 fs = [routed_summary(f"2026-09-26-13000{i}-par{i}.md", {"done": [f"Parallel result number {i} zebra{i} finished"]})
       for i in range(4)]
@@ -291,7 +302,15 @@ SEM.mkdir(parents=True, exist_ok=True)
 (SEM / "fresh.md").write_text(f"---\ntitle: Fresh\nlast_verified: {time.strftime('%Y-%m-%d')}\n---\nbody\n")
 (TMP / "memory" / "proposals" / "0900-deferred-idea.md").write_text(
     "---\ntitle: Deferred idea\nstatus: deferred\ncreated: 2026-01-01\n---\n\n## Decision\nIoseb, 2026-01-02: deferred.\n")
+(TMP / "memory" / "proposals" / "0902-deferred-no-date.md").write_text(
+    "---\ntitle: Undated deferral\nstatus: deferred\ncreated: 2026-01-01\n---\n\n## Decision\n(pending Ioseb)\n"
+    "Deferred: wait until Phase 6.\n")
+(TMP / "memory" / "proposals" / "0903-deferred-again.md").write_text(
+    "---\ntitle: Deferred twice\nstatus: deferred\ncreated: 2026-01-01\n---\n\n## Decision\nIoseb, 2026-01-02: "
+    f"deferred.\nIoseb, {time.strftime('%Y-%m-%d')}: deferred again.\n")
 b = script("handoffs.py", "", "brief")
+check("undated deferral falls back to the created date", "Undated deferral" in b)
+check("the latest deferral date counts", "Deferred twice" not in b)
 check("brief flags old semantic memory, not fresh", "old.md" in b and "fresh.md" not in b)
 check("brief lists a deferred proposal that is due", "Deferred idea" in b)
 handoff("finished-long-ago", None, status="done", updated="2026-01-01 10:00")

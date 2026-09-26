@@ -66,13 +66,14 @@ def tasks_text():
 
 def staleness_text():
     out = []
-    try:
-        last = json.loads((STATE / "distribute-last.json").read_text())
-        if not last.get("ok"):
-            out.append(f"Sorting summary {last.get('summary')} into the project files failed ({last.get('error')}). "
-                       "Tell Ioseb in one sentence; add its done items and open questions to docs/progress.md by hand.")
-    except Exception:
-        pass
+    for f in sorted((STATE / "distribute-failed").glob("*.json")):
+        try:
+            last = json.loads(f.read_text())
+        except Exception:
+            continue
+        out.append(f"Sorting summary {last.get('summary')} into the project files failed ({last.get('error')}). "
+                   f"Tell Ioseb in one sentence, then redo it: python3 .claude/scripts/distribute.py "
+                   f"memory/episodic/sessions/{last.get('summary')}")
     stale = stale_semantic()
     if stale:
         out.append("Memory to re-check with Ioseb, then set last_verified to today: "
