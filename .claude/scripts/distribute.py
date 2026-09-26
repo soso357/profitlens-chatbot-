@@ -7,8 +7,8 @@ Reads the summary's "## Routed" JSON block:
   done, open_questions, waiting  -> docs/progress.md, automatically
   lessons                        -> memory/procedural/lessons.md, automatically;
                                     a lesson seen before becomes a rule proposal
-  decisions                      -> a proposal "record this decision" if docs/build-log.md
-                                    has no matching line
+  decisions                      -> a proposal "record this decision" if neither docs/build-log.md
+                                    nor an ADR has a matching passage
   changes (plan, spec, ADR, rule) -> proposals; those files are never edited here
 Every automatic line ends with "(from <summary file>)" so a wrong one can be traced and removed.
 Items already present are skipped. One run at a time (OS file lock), also across worktrees.
@@ -107,7 +107,9 @@ def distribute(summary_path):
             "open_questions": [f"- {q} ({w}) {src}" if w else f"- {q} {src}" for q, w in
                                ((as_text(i, ["question", "q"]), (i.get("who") if isinstance(i, dict) else "") or "")
                                 for i in items.get("open_questions") or []) if q],
-            "waiting": [f"- {t} {src}" for t in (as_text(i, ["who", "what"]) for i in items.get("waiting") or []) if t],
+            "waiting": [f"- {t} {src}" for t in (
+                (f"{i.get('who')}: {i.get('what')}" if isinstance(i, dict) and i.get("who") and i.get("what")
+                 else as_text(i, ["who", "what"])) for i in items.get("waiting") or []) if t],
         }
         for key, lines in wanted.items():
             text, n = add_to_progress(text, key, lines)
@@ -135,6 +137,8 @@ def distribute(summary_path):
 
     # decisions: only proposed for recording if the build log has no matching line
     log = BUILD_LOG.read_text().splitlines() if BUILD_LOG.exists() else []
+    for adr in sorted((MAIN_ROOT / "docs" / "adr").glob("[0-9]*.md")):  # decisions recorded as ADRs count too
+        log += [l for l in adr.read_text().split("\n\n") if l.strip()]
     for d in items.get("decisions") or []:
         text = as_text(d, ["decision", "chosen", "by"])
         if text and not any(similar(text, l, 0.5) for l in log):

@@ -215,6 +215,8 @@ PROG.write_text("# Progress\n\n## Done (newest first)\n\n- 2026-09-01: Old thing
 LES = TMP / "memory" / "procedural" / "lessons.md"
 LES.write_text("# Lessons\n\n- 2026-09-22: Scripted edits must fail loudly when the old text is not found.\n")
 PLAN_BEFORE = (TMP / "docs" / "plan.md").read_text()
+(TMP / "docs" / "adr").mkdir(exist_ok=True)
+(TMP / "docs" / "adr" / "0099-x.md").write_text("# ADR 0099\n\n## Decision\n\nNew sessions start clean and load context only on resume.\n")
 SUMS = TMP / "memory" / "episodic" / "sessions"
 
 
@@ -236,7 +238,8 @@ r = distribute(routed_summary("2026-09-26-100000-aaaa.md", {
                        {"question": "Who pays for the Render plan?", "who": "Ioseb"}],
     "waiting": [{"who": "Ioseb", "what": "buy a new Anthropic API key"}],
     "decisions": [{"decision": "context stop", "chosen": "soft stop at 70 percent", "by": "Ioseb"},
-                  {"decision": "Widget colour", "chosen": "dark green launcher button", "by": "founders"}],
+                  {"decision": "Widget colour", "chosen": "dark green launcher button", "by": "founders"},
+                  {"decision": "New session start", "chosen": "start clean, load context only on resume", "by": "Ioseb"}],
     "lessons": ["Scripted edits must fail loudly when old text is not found", "Render env changes need a manual redeploy"],
     "changes": [{"file": "spec", "what": "Add a rule for visitors writing in Spanish", "why": "a visitor did"}]}))
 prog = PROG.read_text()
@@ -245,7 +248,8 @@ check("done item added at the top of Done, with its source", done_part.strip().s
     "- 20") and "Kill switch built" in done_part.strip().splitlines()[0] and "(from 2026-09-26-100000-aaaa.md)" in prog)
 check("new open question added, known one not added twice", "spread over different days" in prog
       and prog.count("Render plan") == 1)
-check("waiting item added under Waiting on people", "new Anthropic API key" in prog.split("## Waiting on people")[1])
+check("waiting item added under Waiting on people as 'who: what'",
+      "- Ioseb: buy a new Anthropic API key" in prog.split("## Waiting on people")[1])
 les = LES.read_text()
 check("new lesson appended with source, repeated lesson not appended", "manual redeploy" in les
       and les.count("fail loudly") == 1)
@@ -259,6 +263,7 @@ check("same item reworded is the same", similar("- 2026-09-20: Kill switch built
 check("repeated lesson becomes a rule proposal", any(x.startswith("Make a rule") for x in titles))
 check("decision missing from build log becomes a proposal, logged one does not",
       any("Widget colour" in x for x in titles) and not any("context stop" in x for x in titles))
+check("decision already in an ADR: no proposal", not any("New session start" in x for x in titles))
 check("spec change becomes a proposal; plan.md untouched", any(x.startswith("Change spec") for x in titles)
       and (TMP / "docs" / "plan.md").read_text() == PLAN_BEFORE)
 before = PROG.read_text()
