@@ -1,6 +1,7 @@
 """Offline checks of the Claude Code workflow scripts (.claude/scripts, .githooks).
 Runs them in a temporary copy of the project folders, with a fake `claude` command,
 so nothing real is touched and no API is called. Run: python3 -m tests.check_workflow"""
+import fcntl
 import json
 import os
 import subprocess
@@ -40,8 +41,9 @@ def script(name, stdin="", *args):
 
 def fake_claude(ok):
     body = ("---\ntitle: Test session\nphase: Workflow\noutcome: done\nreviewed: no\n---\n\n## Goal\nx\n\n"
-            "## Next steps\n1. y\n\n## Proposals\n```json\n[{\"title\": \"Idea\", \"kind\": \"test\"}]\n```\n")
-    FAKE.write_text("#!/bin/sh\ncat > /dev/null\n" + (f"cat <<'X'\n{body}X\n" if ok else "echo 'Not logged in' >&2\nexit 1\n"))
+            "## Next steps\n1. y\n\n## Proposals\n```json\n[{\"title\": \"Idea PID\", \"kind\": \"test\"}]\n```\n")
+    # PID becomes the process id: every run gets a different title, so parallel runs cannot share a file name
+    FAKE.write_text("#!/bin/sh\ncat > /dev/null\n" + (f"cat <<'X' | sed \"s/PID/$$/\"\n{body}X\n" if ok else "echo 'Not logged in' >&2\nexit 1\n"))
     FAKE.chmod(0o755)
 
 
@@ -94,21 +96,23 @@ new = sorted((TMP / "memory" / "episodic" / "sessions").glob("*.md"))
 check("resumed session: only the new part, marked as a part",
       len(new) == 2 and any("part: continues" in f.read_text() for f in new))
 
-lock = STATE / "sid-b.summary.lock"
-lock.write_text("")
+held = open(STATE / "sid-b.summary.lock", "w")
+fcntl.flock(held, fcntl.LOCK_EX)
 transcript(TMP / "b.jsonl", 3)
 check("second run for the same session waits out", "another summary" in script(
     "summarize_session.py", "", str(TMP / "b.jsonl"), "sid-b", "exit"))
-lock.unlink()
+held.close()
+check("lock left by a finished run does not block", "wrote" in script(
+    "summarize_session.py", "", str(TMP / "b.jsonl"), "sid-b", "exit"))
 
 outs = []
 threads = [threading.Thread(target=lambda i=i: outs.append(script(
-    "summarize_session.py", "", str(TMP / "b.jsonl"), f"sid-p{i}", "exit"))) for i in range(3)]
+    "summarize_session.py", "", str(TMP / "b.jsonl"), f"sid-p{i}", "exit"))) for i in range(4)]
 [t.start() for t in threads]
 [t.join() for t in threads]
 nums = [p.name[:4] for p in (TMP / "memory" / "proposals").glob("[0-9]*.md")]
-check("parallel runs never reuse a proposal number", len(nums) == len(set(nums)) == 5)
-if len(nums) != 5:
+check("parallel runs with different titles never reuse a proposal number", len(nums) == len(set(nums)) == 7)
+if len(nums) != 7:
     print("   ", sorted(nums), outs)
 
 print("Git hooks:")

@@ -9,6 +9,7 @@ counter in a temporary folder. It reads the calendar (free times) but books noth
 Writes tests/eval-report.md. Exit code 1 if anything failed: run before every pull request.
 """
 import os
+import socket
 import subprocess
 import sys
 import tempfile
@@ -20,7 +21,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PY = sys.executable
 OFFLINE = ["tests.check_guardrails", "tests.check_booking", "tests.check_sessions", "tests.check_workflow"]
-PORT = 8765
 
 
 def run(module, env=None):
@@ -33,15 +33,24 @@ def run(module, env=None):
     return r.returncode == 0, tail
 
 
-def safe_env():
+def free_port():
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
+def safe_env(port):
     tmp = tempfile.mkdtemp(prefix="profitlens-eval-")
     return dict(os.environ, TELEGRAM_BOT_TOKEN="", TELEGRAM_CHAT_ID="", FOUNDER_NOTIFY_EMAIL="", TEST_PAGES="1",
                 IP_RATE_LIMIT="1000/hour", LOG_DIR=f"{tmp}/logs", DATA_DIR=f"{tmp}/data",
-                EVAL_BASE=f"http://127.0.0.1:{PORT}")
+                EVAL_BASE=f"http://127.0.0.1:{port}")
 
 
-def wait_up(url, seconds=30):
+def wait_up(url, server, seconds=30):
+    """True once our own server answers. False if it exited (e.g. the port was taken) or never answered."""
     for _ in range(seconds * 4):
+        if server.poll() is not None:
+            return False
         try:
             urllib.request.urlopen(url, timeout=1)
             return True
@@ -56,11 +65,12 @@ def main():
     offline = "--offline" in sys.argv
     rows = [(m, *run(m)) for m in OFFLINE]
     if not offline:
-        env = safe_env()
-        server = subprocess.Popen([PY, "-m", "uvicorn", "app.main:app", "--port", str(PORT)], cwd=ROOT, env=env,
+        port = free_port()  # a fresh port each run, so an old server can never answer instead
+        env = safe_env(port)
+        server = subprocess.Popen([PY, "-m", "uvicorn", "app.main:app", "--port", str(port)], cwd=ROOT, env=env,
                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
-            if wait_up(env["EVAL_BASE"] + "/health"):
+            if wait_up(env["EVAL_BASE"] + "/health", server):
                 rows.append(("tests.run_conversations", *run("tests.run_conversations", env)))
             else:
                 rows.append(("tests.run_conversations", False, "local service did not start"))

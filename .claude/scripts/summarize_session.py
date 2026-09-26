@@ -12,11 +12,12 @@ Usage: summarize_session.py <transcript.jsonl> <session_id> <reason> [--dry-run]
 4. Rebuilds the memory index.
 
 A resumed session is summarized again only for the part after the last summary
-(the line count is kept in memory/working/state/<id>.summary.json). A lock file
+(the line count is kept in memory/working/state/<id>.summary.json). An OS file lock
 stops two runs for the same session from writing at once. A failed run is
 recorded in memory/working/state/<id>.summary-failed.json, which the statusline and
 the session brief show until a later run for that session succeeds.
 """
+import fcntl
 import json
 import os
 import re
@@ -33,7 +34,6 @@ from common import (GUARD_ENV, PROPOSALS, ROOT, SESSIONS, STATE, is_real_user_te
 MIN_USER_MESSAGES = 3
 MAX_CHARS = 90_000
 MODEL = os.environ.get("PL_SUMMARY_MODEL", "sonnet")
-LOCK_MAX_AGE = 15 * 60  # a lock older than this is left over from a crash
 
 PROMPT = """You are writing the end-of-session record for a software project: a website chat agent for ProfitLens, built with Claude Code by Ioseb (not a software engineer). Below is a condensed transcript of one Claude Code session. Tool output was removed.
 
@@ -141,24 +141,21 @@ def save_proposals(summary_text, session_file, sid):
     except Exception:
         return []
     PROPOSALS.mkdir(parents=True, exist_ok=True)
+    STATE.mkdir(parents=True, exist_ok=True)
     saved = []
+    numbering = open(STATE / "proposals.lock", "w")
+    fcntl.flock(numbering, fcntl.LOCK_EX)  # one run at a time picks numbers; released on exit, even after a crash
     for it in items[:3]:
         if not isinstance(it, dict) or not it.get("title"):
             continue
-        while True:  # O_EXCL: a number taken by a parallel run is never overwritten
-            p = PROPOSALS / f"{next_proposal_number():04d}-{slugify(it['title'])}.md"
-            try:
-                fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
-                break
-            except FileExistsError:
-                time.sleep(0.05)
-        os.close(fd)
+        p = PROPOSALS / f"{next_proposal_number():04d}-{slugify(it['title'])}.md"
         p.write_text(
             f"---\ntitle: {it['title']}\nstatus: proposed\nkind: {it.get('kind', 'other')}\n"
             f"source: {session_file}\ncreated: {time.strftime('%Y-%m-%d')}\n---\n\n"
             f"## Why\n{it.get('why', '')}\n\n## What\n{it.get('what', '')}\n\n## Decision\n(pending Ioseb)\n"
         )
         saved.append(p.name)
+    numbering.close()
     return saved
 
 
@@ -167,17 +164,15 @@ def progress_path(sid):
 
 
 def acquire_lock(sid):
+    """An OS lock on <id>.summary.lock: the system releases it when the process ends, even after a crash,
+    so there is never a stale lock to clear. Returns the open file, or None if another run holds it."""
     STATE.mkdir(parents=True, exist_ok=True)
-    lock = session_state_path(sid).with_suffix(".summary.lock")
+    f = open(session_state_path(sid).with_suffix(".summary.lock"), "w")
     try:
-        if time.time() - lock.stat().st_mtime > LOCK_MAX_AGE:
-            lock.unlink()
-    except FileNotFoundError:
-        pass
-    try:
-        os.close(os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL))
-        return lock
-    except FileExistsError:
+        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return f
+    except BlockingIOError:
+        f.close()
         return None
 
 
@@ -198,7 +193,7 @@ def main():
         print(f"{stamp} FAILED {sid}: {e!r}")
         set_summary_failure(sid, {"time": stamp, "error": repr(e)[:300], "transcript": transcript})
     finally:
-        lock.unlink(missing_ok=True)
+        lock.close()
 
 
 def summarize(transcript, sid, reason, stamp, dry=False):
