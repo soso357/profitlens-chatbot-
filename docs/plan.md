@@ -12,7 +12,7 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
-### Foundation v2 step 3: agent harness, what Claude may do (2026-09-26, foundation-v2 section 5; WAITING FOR APPROVAL)
+### Foundation v2 step 3: agent harness, what Claude may do (2026-09-26, foundation-v2 section 5; approved by Ioseb 2026-09-26)
 1. .claude/settings.json gets three lists:
    - allow (no prompt): tests, evals, lint, git status/diff/log/add/commit, the project's own scripts.
    - ask (Ioseb clicks yes): git push, opening a pull request, installing libraries, deleting files, editing content/, CLAUDE.md, settings or hooks, any command that reaches the internet (curl, the live site, Telegram, Gmail, Calendar, Anthropic).
