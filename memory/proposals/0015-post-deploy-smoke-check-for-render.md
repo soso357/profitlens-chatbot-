@@ -1,6 +1,6 @@
 ---
 title: Post-deploy smoke check for Render
-status: proposed
+status: approved
 kind: test
 source: 2026-09-26-919cea64.md
 created: 2026-09-26
@@ -13,4 +13,4 @@ Multiple live bugs (session loss on restart, Telegram alerts failing, buying phr
 A short automated script run after each deploy that sends one test message through the live endpoint and confirms a reply, a lead is saved, and a Telegram alert arrives, before Ioseb is told a fix is live.
 
 ## Decision
-(pending Ioseb)
+Ioseb, 2026-09-26 (proposal review): approved. Part of the Deploy step; alerts from the smoke check must be marked TEST.

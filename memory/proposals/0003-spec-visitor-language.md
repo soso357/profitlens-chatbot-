@@ -1,6 +1,6 @@
 ---
 title: Decide what the agent does when a visitor writes in Spanish or another language
-status: proposed
+status: deferred
 kind: spec
 source: 2026-09-22 workflow setup session
 created: 2026-09-22
@@ -13,4 +13,4 @@ Many independent US restaurant owners write in Spanish. The spec and the approve
 A founder decision, then a new behaviour row in docs/spec.md (B13) and two scripted test conversations.
 
 ## Decision
-(pending Ioseb and the founders)
+Ioseb, 2026-09-26 (proposal review): deferred until the founders decide what Jelena does in other languages.
