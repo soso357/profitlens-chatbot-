@@ -13,7 +13,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from app import chat_booking, chat_log, config, guardrails, leads, model, session_store, spend
+from app import alert_health, chat_booking, chat_log, config, email_alerts, guardrails, leads, model, session_store, spend, telegram
 from app.content import DISCLOSURE, SYSTEM_PROMPT
 
 EMAIL_FORM_REPLY = (
@@ -42,6 +42,17 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Spec G7: only our own website may call the service from a browser.
 app.add_middleware(CORSMiddleware, allow_origins=config.ALLOWED_ORIGINS, allow_methods=["GET", "POST"],
                    allow_headers=["Content-Type"])
+
+
+@app.on_event("startup")
+def check_alert_channels() -> None:
+    """ADR 0021: find broken alert settings at startup, not when the first lead is lost. In the background
+    so the service starts at once; a failure is reported through the other channel."""
+    def run() -> None:
+        telegram.check()
+        email_alerts.check()
+    threading.Thread(target=run, daemon=True).start()
+
 
 if config.TEST_PAGES:
     from app.test_booking import router as test_booking_router
@@ -313,4 +324,4 @@ def book(request: Request, body: BookIn) -> ChatOut:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "model": config.MODEL, "spent_today_usd": round(spend.spent_today(), 4),
-            "daily_limit_usd": config.DAILY_SPEND_LIMIT_USD}
+            "daily_limit_usd": config.DAILY_SPEND_LIMIT_USD, "alerts": alert_health.status()}
