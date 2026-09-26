@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+"""Git pre-push hook (ADR 0020): master changes only through a GitHub pull request.
+
+Render deploys whatever is on master, so a push straight to master would deploy
+unreviewed code. Push a branch and open a pull request instead; Ioseb merges it.
+Emergency override (Ioseb's say-so only): ALLOW_MASTER_PUSH=1 git push ...
+"""
+import os
+import sys
+
+if os.environ.get("ALLOW_MASTER_PUSH") == "1":
+    sys.exit(0)
+for line in sys.stdin:
+    parts = line.split()
+    if len(parts) == 4 and parts[2] in ("refs/heads/master", "refs/heads/main"):
+        sys.stderr.write("Push refused: master only changes through a pull request (ADR 0020).\n"
+                         "Push your branch (git push -u origin <branch>) and open a PR with gh pr create.\n")
+        sys.exit(1)

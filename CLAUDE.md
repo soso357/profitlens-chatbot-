@@ -7,7 +7,7 @@ An AI chat widget for useprofitlens.com (done for you food cost analysis for ind
 Ioseb leads marketing, runs this build for the founders (Sophie, Leli, Tamuna), and is not a software engineer.
 - Explain every technical term the first time, in one plain sentence. Reuse or extend memory/semantic/glossary.md.
 - When choosing between approaches, give two or three options with plain pros and cons and wait. Never make a design decision silently. Record the choice (skill: new-adr).
-- Phase gate: when a phase is done, demonstrate it, list what you could not do and why, then stop and wait for "approved" (skill: phase-gate).
+- Phase gate: when a phase is done, run the evals and /code-review, open a pull request that demonstrates it and lists what you could not do and why, then stop. Ioseb approves by merging (skill: phase-gate, ADR 0020).
 
 ## Where things are (read only what the task needs)
 
@@ -34,14 +34,16 @@ Ioseb leads marketing, runs this build for the founders (Sophie, Leli, Tamuna), 
 6. Log every decision as one line in docs/build-log.md (not in this file); design choices also get an ADR. Update the plan status table when a phase moves.
 7. Another Claude session may be working in this repo. Re-read shared files right before editing them. Stage files by name, never `git add -A`.
 8. Same mistake twice: add it to memory/procedural/lessons.md and propose a rule.
+9. Work on a branch, never master. Every commit message starts with its stage: `[Plan]`, `[Design]`, `[Build P5]`, `[Test P5]`, `[Deploy P5]` or `[Maintain]` (git hooks enforce both; never use --no-verify).
 
 ## Commands
 
 ```
 .venv/bin/pip install -r requirements.txt
 .venv/bin/uvicorn app.main:app --reload            # run the chat service locally
-.venv/bin/python -m tests.check_guardrails         # offline guardrail checks
-.venv/bin/python -m tests.run_conversations        # scripted conversations (service must be running)
+.venv/bin/python -m tests.evals                    # all checks + scripted conversations, pass/fail (before every PR)
+.venv/bin/python -m tests.evals --offline          # same without API calls
+git config core.hooksPath .githooks                # once per clone: commit label and no-push-to-master hooks
 python3 .claude/scripts/lint_content.py --all      # dashes and percentages in chatbot text
 python3 .claude/scripts/memory_index.py search <words>
 ```
@@ -52,16 +54,10 @@ python3 .claude/scripts/memory_index.py search <words>
 - 60% context: write memory/working/handoff.md (skill: handoff). 70%: auto compaction, handoff reinjected. After 3 compactions tell Ioseb to open a new terminal or /clear.
 - End: a background job writes the session summary and improvement proposals to memory/.
 
+## Compact instructions
+
+When compacting, keep: the current phase and its gate status, every decision Ioseb made this session and the option chosen, questions still waiting for him, files changed, the branch and pull request in progress, and the exact next step. Drop tool output, file dumps and research already saved in docs/. memory/working/handoff.md, if updated in the last hour, is authoritative.
+
 ## Improving the setup
 
 When you notice something useful Ioseb did not ask for (a repeated task, a spec gap, a missing guardrail or test), record it with the propose-capability skill and mention it in one sentence. Build only what Ioseb approves.
-- 2026-09-22: Telegram bot is @profitlbot. Founder alerts group "ProfitLens leads", chat ID -5552197383 (not a secret; stored in .env.example). Test message delivered. Ioseb chose to keep the bot token that was shared in chat rather than revoke it.
-- 2026-09-22 (end of day): WHERE WE STOPPED. Phase 1 code is built and offline checks pass (tests/check_guardrails.py). Waiting for Ioseb to create an Anthropic API key and the .env file (he runs: cp .env.example .env, adds the Telegram token and the key). Next: run the 17 conversations (tests/run_conversations.py, start uvicorn with IP_RATE_LIMIT=500/hour), show transcripts and guardrail catches, then wait for "approved". Still open: Ioseb has not said whether he added the .claude/, docs/ and memory/ files.
-- 2026-09-22: Phase 3 calendar method changed by Ioseb: "sign in once" (OAuth as the calendar owner) instead of a service account, because on a free Google account a service account cannot add guests or create Meet links. Rule 10 stack note: Google Calendar API via OAuth for the owner's account. Google setup (account, Cloud project, API, sign-in screen) is being done early; booking code still waits for Phases 1 and 2 to be approved.
-- 2026-09-22: Booking calendar is profitlenstemplate@gmail.com (Ioseb's choice), not ioseb@useprofitlens.com. Emails and notifications still use ioseb@useprofitlens.com.
-- 2026-09-22: Google setup done (Phase 3 step 1). Cloud project "ProfitLens Chatbot" on profitlenstemplate@gmail.com, Calendar API on, sign-in screen published to production (homepage and privacy policy set to useprofitlens.com). One-time sign-in done with scripts/google_signin.py; long-lasting sign-in saved to secrets/google-token.json (git-ignored). Calendar readable. Booking code not written yet (waits for Phases 1 and 2).
-- 2026-09-22: Test done: calendar free times found (shown in US Eastern), TEST event created with a Meet link, alert posted to Telegram. Note for Phase 2: Python's built-in urllib fails SSL on this Mac ("self-signed certificate in chain"); use an ssl context from certifi (already installed) for Telegram calls.
-- 2026-09-22: Founder email alerts go to ioseb@useprofitlens.com AND profitlenstemplate@gmail.com (Ioseb's request), sent through Zoho from ioseb@useprofitlens.com. Local client test page at /test-booking (only when TEST_PAGES=1) books real calendar events and sends Telegram and email alerts.
-- 2026-09-22: Zoho dropped (Ioseb). Rule 10 stack change: founder alert emails are sent through the Gmail API from profitlenstemplate@gmail.com, using the same Google sign-in (gmail.send permission added). Clients get Google Calendar's own invite email with the Meet link. No Zoho app password needed.
-- 2026-09-23: Client-side booking test passed (Ioseb): pick time on /test-booking, call created with Meet link, Google invite to client, Telegram alert, Gmail alert to both founder addresses. Test calls left in the calendar for Wed 23 Sep (Ioseb chose to keep them). Next: Anthropic key, then Phase 1 test run.
-- 2026-09-23: WHERE WE STOPPED. Done: Phase 1 code, Google Calendar + Gmail sign-in, Telegram, booking module and local test pages (/test-booking, /test-chat, only with TEST_PAGES=1). Waiting on: Anthropic key in .env (Ioseb, next session). Next: restart server with key, Ioseb tries /test-chat, run the 17 test conversations, Phase 1 approval, then Phase 2 (qualifying + leads), Phase 3 booking inside the chat, Phase 4 widget, Phase 5 Render + hidden test page.

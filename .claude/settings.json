@@ -23,7 +23,10 @@
       "Edit(./.env)",
       "Edit(./secrets/**)",
       "Bash(git push --force*)",
-      "Bash(git reset --hard*)"
+      "Bash(git reset --hard*)",
+      "Bash(git commit*--no-verify*)",
+      "Bash(git push*--no-verify*)",
+      "Bash(ALLOW_MASTER_PUSH=*)"
     ]
   },
   "hooks": {

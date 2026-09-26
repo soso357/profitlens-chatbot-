@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Git commit-msg hook (ADR 0020): every commit names its stage of the loop.
+
+First line must start with a label such as:
+  [Plan] [Design] [Build P5] [Test P5] [Deploy P5] [Maintain]
+Stages: Plan (intent.md), Design (spec.md), Build (plan.md + code), Test (tests
+and evals), Deploy (pull request and review), Maintain (fixes, workflow, memory).
+The phase number (P0 to P9) is optional. Merge and revert commits made by git or
+GitHub are allowed as they are.
+Turned on once per clone with: git config core.hooksPath .githooks
+"""
+import re
+import sys
+
+LABEL = re.compile(r"^\[(Plan|Design|Build|Test|Deploy|Maintain)( P\d)?\] \S")
+AUTO = re.compile(r"^(Merge |Revert |fixup! |squash! )")
+
+first = next((l for l in open(sys.argv[1], errors="replace") if l.strip() and not l.startswith("#")), "")
+if LABEL.match(first) or AUTO.match(first):
+    sys.exit(0)
+sys.stderr.write(
+    "Commit refused: the first line must start with a stage label, for example\n"
+    "  [Build P5] Kill switch for the chat (R8)\n"
+    "Stages: Plan, Design, Build, Test, Deploy, Maintain. Phase (P0 to P9) is optional.\n"
+    f"Got: {first.strip()!r}\n")
+sys.exit(1)

@@ -56,3 +56,9 @@ Inventing a policy, price, timeline or guarantee is the worst possible defect, b
 - The Zoho Mail address and app password for notifications (for example info@useprofitlens.com).
 - Which founder receives booking notifications.
 - Founder edits of content/approved-answers.md, content/qualifying-questions.md, content/handoff-rules.md.
+
+## Change history
+
+Maintain step of the loop (ADR 0020): at every phase gate Ioseb is asked whether anything here changed. Each change gets a dated line; a change here starts a new loop (spec, plan, build).
+
+- 2026-09-22: First version, approved by Ioseb.
