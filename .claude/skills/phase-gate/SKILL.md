@@ -15,7 +15,7 @@ Do not say a phase is done until every item is true.
 5. Run `python3 .claude/scripts/lint_content.py --all` and confirm it prints OK (R4, R2).
 6. Run `/code-review` against REVIEW.md. Fix every Important finding; list the Nits.
 7. Maintain check: ask Ioseb one question, "Has anything changed in why we build this or for whom?" If yes, update docs/intent.md and add a dated line to its "Change history". If intent changed, check spec.md still follows from it.
-8. Update the status table in docs/plan.md ("waiting for merge") and add a line to docs/build-log.md.
+8. Update the status table in docs/progress.md ("waiting for merge") and add a line to docs/build-log.md.
 9. Push the branch and open a pull request (`gh pr create`). The description is the demonstration, in plain English: what works, how you verified it (eval score, review result), what you could not do and why, what you need from Ioseb or the founders.
 10. Tell Ioseb the link. Stop. His approval is clicking Merge on GitHub (a plain "approved" in the chat also counts, then Claude merges with `gh pr merge --merge`). Render deploys master after the merge.
 11. After the merge: `git switch master && git pull`, mark the phase approved in docs/plan.md in a `[Maintain]` commit on the next branch.

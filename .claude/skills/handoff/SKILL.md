@@ -1,39 +1,53 @@
 ---
 name: handoff
-description: Write or update memory/working/handoff.md so work can continue after compaction or in a new session. Use when context reaches 60% (a hook will say so), before a break, before /clear, or when the user says handoff, pause, or "continue in a new window".
+description: Write or update this task's handoff in memory/working/handoffs/ so work can continue in a new session. Use when context reaches 60% or 70% (a hook will say so), when a task is finished, when the session type changes, before a break or /clear, or when the user says handoff, pause, or "continue in a new window".
 ---
 
-# Handoff
+# Handoff (ADR 0022)
 
-Write memory/working/handoff.md (replace the old content). Under 60 lines. Plain English. No secrets.
+One handoff per task or branch. Several terminals may be open, so write only your own task's file.
+
+1. Find the path (works from a worktree too): `python3 .claude/scripts/handoffs.py path <task name>`. Reuse the existing slug if this task already has a handoff (`python3 .claude/scripts/handoffs.py list`).
+2. Write it with the Write tool (replace the old content), exactly this template, one page, plain English, no secrets, no visitor data:
 
 ```
-# Handoff (YYYY-MM-DD HH:MM, session <first 8 chars of id if known>)
+---
+task: <slug>
+type: Plan | Build | Fix | Content
+branch: <git branch>
+worktree: <folder, if not the main project folder>
+commit: <output of git rev-parse --short HEAD>
+updated: YYYY-MM-DD HH:MM
+status: open | done
+---
 
 ## Goal
-What the user is trying to achieve in this session, in their words.
+One or two lines, in Ioseb's words.
 
-## Current state
-Phase and gate status. What works right now, verified how.
+## State
+What works now and how it was verified. What is half done.
 
-## Decisions made this session
-- decision, option chosen, by whom (and ADR number if written)
+## Decisions
+- decision, option chosen, by whom, ADR number
 
-## Files touched
-- path: what changed
-
-## Waiting on the user
-- questions asked and not answered yet
+## Open questions
+- question (who must answer: Ioseb or a founder)
 
 ## Next step
-The single exact next action, then the one after.
+The single next action, then the one after.
 
 ## Do not redo
-Research or work already saved elsewhere (link paths instead of repeating content).
+- what failed and why; research already saved elsewhere (paths only)
+
+## Files
+- path: what changed (mark uncommitted ones with *)
 ```
 
-Then:
-1. If a decision was made and has no ADR yet, write it (skill: new-adr) and add a line to docs/build-log.md.
-2. If the user is leaving this terminal, tell them: open a new terminal in this folder, start `claude`, and say "continue from the handoff". The session start hook will point the new session to it.
+Not carried forward: tool output, file contents, dead ends without a lesson, anything already in docs/ (link it).
 
-Do not duplicate content from docs/ or memory/semantic/. Reference paths.
+3. Then:
+   - Every decision without an ADR: write it (skill: new-adr) and a line in docs/build-log.md.
+   - Open questions and people we wait on also go in docs/progress.md (one home for them).
+   - Task finished: set `status: done`, move the result to the "Done" list in docs/progress.md.
+   - Fix session: also write the incident note (memory/incidents/README.md has the template). The "Test added" line is required; the lesson goes to memory/procedural/lessons.md.
+4. If the session should end (70%, task done, type changed), tell Ioseb in two lines: open a new terminal in this folder, start `claude`, say resume.

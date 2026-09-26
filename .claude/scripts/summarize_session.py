@@ -28,7 +28,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import (GUARD_ENV, PROPOSALS, ROOT, SESSIONS, STATE, is_real_user_text, open_proposals,  # noqa: E402
+from common import (GUARD_ENV, MAIN_ROOT, PROPOSALS, ROOT, SESSIONS, STATE, is_real_user_text, open_proposals,  # noqa: E402
                     scrub, session_state_path, set_summary_failure)
 
 MIN_USER_MESSAGES = 3
@@ -226,6 +226,7 @@ def summarize(transcript, sid, reason, stamp, dry=False):
     body = body.replace("—", ", ").replace("–", " to ")
     if not body.startswith("---"):
         body = body[body.find("---"):]
+    body = close_header(body)
     SESSIONS.mkdir(parents=True, exist_ok=True)
     out = SESSIONS / f"{time.strftime('%Y-%m-%d-%H%M%S')}-{sid[:8]}.md"
     part = f"\npart: continues an earlier summary of this session (transcript line {start + 1} on)" if start else ""
@@ -235,7 +236,16 @@ def summarize(transcript, sid, reason, stamp, dry=False):
     set_summary_failure(sid, None)
     props = save_proposals(body, out.name, sid)
     subprocess.run([sys.executable, str(Path(__file__).with_name("memory_index.py")), "build", "--quiet"])
-    print(f"{stamp} wrote {out.relative_to(ROOT)}; proposals: {props or 'none'}")
+    print(f"{stamp} wrote {out.relative_to(MAIN_ROOT)}; proposals: {props or 'none'}")
+
+
+def close_header(body):
+    """The model sometimes leaves out the closing --- of the header; without it no field
+    (reviewed, ended) can be read, and every summary looks unreviewed."""
+    first = body.find("\n## ")
+    if body.startswith("---\n") and first != -1 and "\n---" not in body[3:first]:
+        body = body[:first] + "\n---" + body[first:]
+    return body
 
 
 if __name__ == "__main__":

@@ -30,30 +30,35 @@ Source of truth for each thing is exactly one file (playbook rule): requirements
 
 ## 2. A normal session
 
-1. Start `claude` in the project folder. The session start hook briefs Claude: plan status, last session's next steps, open proposals, any leftover handoff.
-2. If the last summary is marked unreviewed, Claude skims it and fixes anything wrong.
-3. Work. Every choice between approaches: two or three options, plain pros and cons, wait. Then an ADR (skill: new-adr).
-4. At 60% context the statusline turns yellow and a hook asks Claude to write the handoff (skill: handoff). At 70% Claude Code compacts automatically and the handoff is reinjected. The counter goes up by one.
-5. After 3 compactions the statusline turns red: "STOP: open a new terminal or /clear". Continue in a new terminal and say "continue from the handoff".
-6. When you close the session, a background job writes the session summary to memory/episodic/sessions/ and any improvement ideas to memory/proposals/. Nothing to do by hand.
-7. Commit on the branch when a step works, with a stage label. At the phase gate: evals, review, pull request, Ioseb merges.
+1. Start `claude` in the project folder (or in a task's worktree). Nothing is loaded (ADR 0022). Say **resume**: Claude lists the open tasks, you pick one, Claude reads its handoff and docs/progress.md, checks what other terminals committed since, and says in three lines where it is (skill: resume).
+2. One session, one task, one type: Plan, Build, Fix (live incident) or Content and review. If the type changes, Claude writes the handoff and suggests a new terminal. For a second task at the same time, Claude sets up a worktree (skill: parallel-task).
+3. If the last summary is marked unreviewed, Claude skims it and fixes anything wrong.
+4. Work. Every choice between approaches: two or three options, plain pros and cons, wait. Then an ADR (skill: new-adr).
+5. At 60% context the statusline turns yellow and Claude updates the task handoff. At 70% it turns red "new terminal": Claude finishes the step, hands off, commits and asks you to open a new terminal and say resume.
+6. Fix sessions end with an incident note in memory/incidents/ and a new test.
+7. When you close the session, a background job writes the session summary to memory/episodic/sessions/ and any improvement ideas to memory/proposals/. Nothing to do by hand.
+8. Commit on the branch when a step works, with a stage label. At the phase gate: evals, review, pull request, Ioseb merges.
 
 ## 3. Context handoff and compaction
 
 | Context used | Statusline | What happens |
 |---|---|---|
 | under 60% | green bar | normal work |
-| 60 to 69% | yellow "handoff" | hook injects: write memory/working/handoff.md now (once per cycle) |
-| 70% | red "compacting" | auto compaction (CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70). PreCompact hook saves snapshot.md and tells the compactor what must survive |
-| after compaction | "compactions n/3" | SessionStart(compact) hook reinjects handoff.md; counter +1; context counter effectively starts again |
-| 3 compactions | red "STOP" | Claude tells you once to open a new terminal or /clear |
+| 60 to 69% | yellow "handoff" | hook: update this task's handoff in memory/working/handoffs/ (once per cycle) |
+| 70 to 84% | red "new terminal" | hook: soft stop (ADR 0023 C3): finish the step, hand off, commit, ask for a new terminal; you may say continue |
+| 85% | | safety net: auto compaction (CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=85). PreCompact hook saves a per session snapshot |
+| after compaction | red "compacted" | SessionStart(compact) hook reinjects this session's own task handoff (never another terminal's) and asks for a new terminal |
 
 What must survive a compaction is written in the "Compact instructions" section of CLAUDE.md (Claude Code reads it when compacting). The PreCompact hook only saves the snapshot: Claude Code rejects extra context from that hook, as the first real compaction test (2026-09-26) showed. tests/check_workflow.py checks all of this offline.
 
-Why 3: each compaction is a summary of a summary. By the third, early decisions survive only as paraphrase, and the files in docs/ and memory/ are a better starting point than the conversation.
+Why a new session instead of compaction (ADR 0022): each compaction is a summary of a summary and early decisions survive only as paraphrase. The files in docs/ and the task handoff are a better starting point than the conversation.
+
+Which task a session owns: the hook handoff_track.py records it when Claude writes a handoff; otherwise the open handoff on the same branch. Handoffs, snapshots and state always live in the main project folder, also for terminals in a worktree.
+
+When sources disagree: founder ADRs 0001 to 0006, spec.md, other ADRs, plan.md, progress.md, lessons, session summaries, handoffs. The higher one wins; Claude flags the lower one.
 
 Two kinds of ending:
-- **New terminal**: keeps this terminal's history; the new session picks up from handoff.md and the latest summary.
+- **New terminal**: keeps this terminal's history; say resume and pick the task.
 - **/clear**: same terminal, empty context; the start hook briefs the fresh context the same way.
 
 ## 4. Capability evolution (self improvement)
@@ -78,10 +83,11 @@ Rules:
 
 | Hook | Script | Does |
 |---|---|---|
-| SessionStart | session_start.py | brief at start; handoff reinjection and counter after compaction |
-| UserPromptSubmit | context_guard.py | handoff nudge at 60%, session limit nudge |
+| SessionStart | session_start.py | one line at start (nothing loaded until resume); after compaction: this task's handoff and a new terminal request |
+| UserPromptSubmit | context_guard.py | handoff nudge at 60%, soft stop at 70%, new terminal after a compaction |
 | PreCompact | pre_compact.py | snapshot (the instructions are in CLAUDE.md) |
 | PostToolUse (Write/Edit) | lint_content.py | blocks dashes and percentages in chatbot text |
+| PostToolUse (Write/Edit) | handoff_track.py | remembers which task this session owns; rebuilds the task index |
 | SessionEnd | session_end.py -> summarize_session.py | automatic session summary and proposals; one run per session at a time; a resumed session is summarized only from where the last summary ended; a failure shows in the statusline and the next session brief until redone |
 | git commit-msg | .githooks/commit-msg | refuses a commit without a stage label |
 | git pre-push | .githooks/pre-push | refuses a push to master (pull requests only) |
