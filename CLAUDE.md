@@ -15,7 +15,8 @@ Ioseb leads marketing, runs this build for the founders (Sophie, Leli, Tamuna), 
 |---|---|
 | Why we build this | docs/intent.md |
 | What the chatbot must do: rules R1 to R14, behaviours B, code guardrails G | docs/spec.md |
-| Phases, current status, per phase plans | docs/plan.md |
+| Where the project stands now: phase status, done, open questions | docs/progress.md |
+| Phases and per phase plans | docs/plan.md |
 | Decisions and why (founder decisions 0001 to 0006 are not reopened without a founder) | docs/adr/ |
 | Event log | docs/build-log.md |
 | What the chatbot knows (founders own it) | content/ |
@@ -31,7 +32,7 @@ Ioseb leads marketing, runs this build for the founders (Sophie, Leli, Tamuna), 
 3. Secrets only in environment variables. Never read or print .env or credential files. New libraries need approval.
 4. Before writing code in a phase, add a short plan to docs/plan.md "Phase notes" and get it approved.
 5. Test with at least ten realistic visitor conversations per phase, including rude, off topic and trick questions.
-6. Log every decision as one line in docs/build-log.md (not in this file); design choices also get an ADR. Update the plan status table when a phase moves.
+6. Log every decision as one line in docs/build-log.md (not in this file); design choices also get an ADR. Update docs/progress.md when a phase or task moves.
 7. Another Claude session may be working in this repo. Re-read shared files right before editing them. Stage files by name, never `git add -A`.
 8. Same mistake twice: add it to memory/procedural/lessons.md and propose a rule.
 9. Work on a branch, never master. Every commit message starts with its stage: `[Plan]`, `[Design]`, `[Build P5]`, `[Test P5]`, `[Deploy P5]` or `[Maintain]` (git hooks enforce both; never use --no-verify).
@@ -50,13 +51,15 @@ python3 .claude/scripts/memory_index.py search <words>
 
 ## Sessions and memory (automatic, see docs/workflow.md)
 
-- Start: a hook briefs you with plan status, the last session's next steps, open proposals and any handoff. If the last summary says `reviewed: no`, skim and correct it.
-- 60% context: write memory/working/handoff.md (skill: handoff). 70%: auto compaction, handoff reinjected. After 3 compactions tell Ioseb to open a new terminal or /clear.
+- Start: nothing is loaded. When Ioseb says "resume" (skill: resume), list open tasks, he picks one, load its handoff and docs/progress.md (ADR 0022).
+- One session, one task, one type (Plan, Build, Fix, Content). Each task has its own handoff in memory/working/handoffs/ (skill: handoff). A parallel task gets its own worktree (skill: parallel-task).
+- 60% context: update the task handoff. 70%: finish the step, hand off, commit, ask Ioseb for a new terminal (soft stop). Compaction at 85% is only a safety net.
+- Fix sessions write an incident note with a required test (memory/incidents/).
 - End: a background job writes the session summary and improvement proposals to memory/.
 
 ## Compact instructions
 
-When compacting, keep: the current phase and its gate status, every decision Ioseb made this session and the option chosen, questions still waiting for him, files changed, the branch and pull request in progress, and the exact next step. Drop tool output, file dumps and research already saved in docs/. memory/working/handoff.md, if updated in the last hour, is authoritative.
+When compacting, keep: the current phase and its gate status, every decision Ioseb made this session and the option chosen, questions still waiting for him, files changed, the branch and pull request in progress, and the exact next step. Drop tool output, file dumps and research already saved in docs/. This session's task handoff in memory/working/handoffs/, if updated in the last hour, is authoritative.
 
 ## Improving the setup
 

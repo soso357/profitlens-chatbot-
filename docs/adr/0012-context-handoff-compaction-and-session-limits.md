@@ -1,6 +1,6 @@
 # ADR 0012: Context handoff, compaction and session limits
 
-- Status: Accepted
+- Status: Superseded by 0022
 - Date: 2026-09-22
 - Decided by: Ioseb
 

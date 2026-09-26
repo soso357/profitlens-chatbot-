@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """PreCompact hook (ADR 0012).
 
-Saves a mechanical snapshot (git status, recent user requests) next to the
-handoff, in case Claude did not get to write one. It prints nothing: Claude Code
+Saves a mechanical snapshot (git status, recent user requests) per session in
+memory/working/snapshots/, in case Claude did not get to write one. It prints nothing: Claude Code
 does not accept extra context from a PreCompact hook (a real compaction test on
 2026-09-26 showed it rejected), so what must survive the compaction is in the
 "Compact instructions" section of CLAUDE.md, and the SessionStart(compact) hook
-reinjects the handoff or this snapshot afterwards.
+reinjects the session's task handoff or this snapshot afterwards.
 """
 import json
 import os
@@ -15,7 +15,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import GUARD_ENV, ROOT, WORKING, is_real_user_text, read_hook_input, scrub  # noqa: E402
+from common import GUARD_ENV, ROOT, SNAPSHOTS, is_real_user_text, read_hook_input, scrub, session_state_path  # noqa: E402
 
 
 def recent_user_messages(transcript_path, limit=6):
@@ -41,7 +41,7 @@ def main():
     if os.environ.get(GUARD_ENV):
         return
     data = read_hook_input()
-    WORKING.mkdir(parents=True, exist_ok=True)
+    SNAPSHOTS.mkdir(parents=True, exist_ok=True)
     try:
         git = subprocess.run(["git", "-C", str(ROOT), "status", "--short"], capture_output=True, text=True, timeout=5).stdout
     except Exception:
@@ -49,14 +49,15 @@ def main():
     snap = [
         f"# Auto snapshot before compaction ({time.strftime('%Y-%m-%d %H:%M')}, trigger: {data.get('trigger', '?')})",
         "",
-        "Written by a hook, not by Claude. Use handoff.md first; this is the fallback.",
+        "Written by a hook, not by Claude. The task handoff comes first; this is the fallback.",
         "",
         "## Uncommitted changes",
         "```", git.rstrip() or "(clean)", "```",
         "",
         "## Last user requests",
     ] + [f"- {m}" for m in recent_user_messages(data.get("transcript_path", ""))]
-    (WORKING / "snapshot.md").write_text(scrub("\n".join(snap)) + "\n")
+    # one file per session: parallel terminals never overwrite each other's snapshot
+    (SNAPSHOTS / session_state_path(data.get("session_id")).with_suffix(".md").name).write_text(scrub("\n".join(snap)) + "\n")
 
 
 if __name__ == "__main__":

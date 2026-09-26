@@ -62,3 +62,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-26: Foundation v2 design drafted (docs/foundation-v2.md) from Ioseb's 8 point brief. Scope: upgrade ProfitLens only. Handoff interview decisions recorded in ADR 0022. Choices C1 to C7 waiting for Ioseb.
 - 2026-09-26: Foundation v2 approved, all recommended options C1 to C7 (ADR 0023).
 - 2026-09-26: Foundation v2 step 1 plan note written in plan.md, waiting for approval.
+- 2026-09-26: Foundation v2 step 1 built: one handoff per task (memory/working/handoffs/), resume skill, new sessions load nothing, soft stop at 70%, compaction at 85%, docs/progress.md with the status table, parallel-task skill (worktrees share the main folder's memory), incident notes. Also fixed: session summaries whose header was never closed looked unreviewed forever. check_workflow and offline evals pass.

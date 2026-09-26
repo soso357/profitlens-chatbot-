@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """Project statusline (ADR 0012).
 
-Shows: model | folder (branch) | context bar and % | compactions | open proposals | failed summaries.
+Shows: model | folder (branch) | task | context bar and % | compaction | open proposals | failed summaries.
+Colours (ADR 0022): green, yellow "handoff" from 60%, red "new terminal" from 70%.
 Also records the context % per session so the context_guard hook can act on it,
 because hooks do not receive the context percentage themselves.
 """
 import json
-import subprocess
 import sys
 
 sys.path.insert(0, __import__("os").path.dirname(__file__))
-from common import (COMPACT_PCT, HANDOFF_PCT, MAX_COMPACTIONS, load_state, open_proposals, save_state,  # noqa: E402
-                    summary_failures)
+from common import (HANDOFF_PCT, MAX_COMPACTIONS, STOP_PCT, current_branch, load_state, open_proposals,  # noqa: E402
+                    save_state, summary_failures)
 
 DIM, RED, YEL, GRN, CYA, BOLD, RST = "\033[2m", "\033[31m", "\033[33m", "\033[32m", "\033[36m", "\033[1m", "\033[0m"
 
@@ -26,12 +26,7 @@ def main():
     sid = d.get("session_id") or "unknown"
     pct = (d.get("context_window") or {}).get("used_percentage")
 
-    branch = ""
-    try:
-        branch = subprocess.run(["git", "--no-optional-locks", "-C", cwd, "branch", "--show-current"],
-                                capture_output=True, text=True, timeout=1).stdout.strip()
-    except Exception:
-        pass
+    branch = current_branch(cwd)
 
     state = load_state(sid)
     if pct is not None:
@@ -43,22 +38,22 @@ def main():
     n = int(state.get("compactions", 0))
 
     parts = [f"{CYA}{model}{RST}", f"{DIM}{cwd.rsplit('/', 1)[-1]}{RST}" + (f" {YEL}({branch}){RST}" if branch else "")]
+    if state.get("task"):
+        parts.append(f"{DIM}task {state['task']}{RST}")
 
     if pct is not None:
         p = int(pct)
         filled = min(10, p // 10)
         bar = "#" * filled + "." * (10 - filled)
-        if p >= COMPACT_PCT:
-            parts.append(f"{RED}[{bar}] {p}% compacting{RST}")
+        if p >= STOP_PCT:
+            parts.append(f"{BOLD}{RED}[{bar}] {p}% new terminal{RST}")
         elif p >= HANDOFF_PCT:
             parts.append(f"{YEL}[{bar}] {p}% handoff{RST}")
         else:
             parts.append(f"{GRN}[{bar}] {p}%{RST}")
 
     if n >= MAX_COMPACTIONS:
-        parts.append(f"{BOLD}{RED}STOP: {n} compactions. Open a new terminal or /clear{RST}")
-    elif n > 0:
-        parts.append(f"{YEL}compactions {n}/{MAX_COMPACTIONS}{RST}")
+        parts.append(f"{BOLD}{RED}compacted: open a new terminal and say resume{RST}")
 
     try:
         props = [p for p in open_proposals() if p[1] == "proposed"]

@@ -1,45 +1,21 @@
 #!/usr/bin/env python3
-"""SessionStart hook (ADR 0009, 0012).
+"""SessionStart hook (ADR 0009, 0022).
 
-startup / resume / clear: brief Claude with the plan status, the last session's
-next steps, open improvement proposals and any leftover handoff. Rebuild the
-memory index.
-compact: count the compaction, reinject the handoff, warn at the limit.
-Output stays short: this text costs context in every session.
+startup / resume / clear: load nothing (Ioseb's choice, ADR 0022). One line says how to
+continue; a failed session summary is still reported. Rebuilds the memory index.
+compact: count the compaction, reinject this session's own task handoff (or its
+snapshot), and ask for a new terminal.
+The full brief (open tasks, phase status, last summary, proposals) is shown by the
+resume skill through handoffs.py brief.
 """
 import os
-import re
 import subprocess
 import sys
-import time
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import (GUARD_ENV, HANDOFF, MAX_COMPACTIONS, ROOT, SESSIONS, WORKING, emit_context,  # noqa: E402
-                    frontmatter, load_state, open_proposals, read_hook_input, save_state, summary_failures)
-
-
-def plan_status():
-    try:
-        text = (ROOT / "docs" / "plan.md").read_text()
-        rows = [l for l in text.splitlines() if l.startswith("| ") and ("IN PROGRESS" in l or "WAITING" in l)]
-        return "\n".join(rows[:4])
-    except Exception:
-        return ""
-
-
-def last_summary():
-    files = sorted(SESSIONS.glob("*.md"), key=lambda f: (frontmatter(f)[0].get("ended", ""), f.name))
-    if not files:
-        return ""
-    meta, body = frontmatter(files[-1])
-    unreviewed = sum(frontmatter(f)[0].get("reviewed", "no") == "no" for f in files)
-    m = re.search(r"## Next steps\n(.*?)(\n## |\Z)", body, re.S)
-    nxt = m.group(1).strip() if m else ""
-    flag = " (unreviewed: skim it and correct anything wrong)" if meta.get("reviewed", "no") == "no" else ""
-    older = (f"\n{unreviewed - 1} older summaries are also unreviewed: ask Ioseb whether to check them now."
-             if unreviewed > 1 else "")
-    return (f"Last session: {files[-1].name}{flag}\n{meta.get('title', '')}\nNext steps it recorded:\n{nxt[:1200]}"
-            + older)
+from common import (GUARD_ENV, MAX_COMPACTIONS, ROOT, SNAPSHOTS, emit_context, handoff_for_session,  # noqa: E402
+                    list_handoffs, load_state, read_hook_input, save_state, session_state_path)
+from handoffs import failures_text  # noqa: E402
 
 
 def main():
@@ -48,57 +24,41 @@ def main():
     data = read_hook_input()
     source = data.get("source", "startup")
     sid = data.get("session_id") or "unknown"
-    out = []
+    cwd = data.get("cwd") or str(ROOT)
 
     if source == "compact":
         state = load_state(sid)
         state["compactions"] = int(state.get("compactions", 0)) + 1
         save_state(sid, state)
-        n = state["compactions"]
-        out.append(f"This session was just compacted (compaction {n} of {MAX_COMPACTIONS} recommended).")
-        for f in (HANDOFF, WORKING / "snapshot.md"):
-            if f.exists() and time.time() - f.stat().st_mtime < 3 * 3600:
-                out.append(f"--- {f.relative_to(ROOT)} ---\n{f.read_text()[:4000]}")
+        out = [f"This session was just compacted (compaction {state['compactions']})."]
+        own = handoff_for_session(state, cwd)
+        snap = SNAPSHOTS / session_state_path(sid).with_suffix(".md").name
+        for f in (own, snap):
+            if f and f.exists():
+                out.append(f"--- {f.name} (this session's task) ---\n{f.read_text()[:4000]}")
                 break
-        if n >= MAX_COMPACTIONS:
-            out.append("LIMIT REACHED: tell the user now, once, that they should continue in a new terminal "
-                       "window or type /clear. The handoff and session summary will carry the context.")
+        if state["compactions"] >= MAX_COMPACTIONS:
+            out.append("Compaction is only a safety net (ADR 0022). Finish the current small step, update this "
+                       "task's handoff (skill: handoff), commit, then tell Ioseb once: open a new terminal in "
+                       "this folder, start claude and say resume.")
         emit_context("SessionStart", "\n\n".join(out))
         return
 
-    for script, args in (("memory_index.py", ["build", "--quiet"]), ("obsidian_map.py", [])):
+    for script, args in (("memory_index.py", ["build", "--quiet"]), ("obsidian_map.py", []),
+                         ("handoffs.py", ["index"])):
         try:
             subprocess.Popen([sys.executable, str(ROOT / ".claude" / "scripts" / script), *args],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         except Exception:
             pass
 
-    ps = plan_status()
-    if ps:
-        out.append("Plan status (docs/plan.md):\n" + ps)
-    ls = last_summary()
-    if ls:
-        out.append(ls)
-    fails = summary_failures()
+    n = len(list_handoffs())
+    out = [f"ProfitLens: nothing loaded yet (ADR 0022). {n} open task{'s' if n != 1 else ''}. "
+           "Do not start on any of them by yourself. When Ioseb says resume, use the resume skill."]
+    fails = failures_text()
     if fails:
-        lines = [f"- session {sid[:8]} at {v.get('time', '?')}: {v.get('error', '')[:160]}\n  redo: python3 "
-                 f".claude/scripts/summarize_session.py {v.get('transcript', '?')} {sid} retry" for sid, v in fails.items()]
-        out.append("SESSION SUMMARY FAILED (tell Ioseb at the start, in one sentence, and offer to redo it; "
-                   "'Not logged in' means he must run claude and /login first):\n" + "\n".join(lines))
-    props = open_proposals()
-    if props:
-        lines = [f"- {name[:4]} [{status}] {title[:90]}" for name, status, title in props]
-        extra = (" There are more than 8 waiting: suggest a short review session to decide them."
-                 if sum(s == "proposed" for _, s, _ in props) > 8 else "")
-        out.append("Open improvement proposals (memory/proposals/). Mention the 'proposed' ones to the user "
-                   "once, briefly, when there is a natural pause; build 'approved' ones when asked." + extra
-                   + "\n" + "\n".join(lines))
-    if HANDOFF.exists() and time.time() - HANDOFF.stat().st_mtime < 7 * 86400:
-        out.append(f"A handoff from an earlier session exists at memory/working/handoff.md "
-                   f"(updated {time.strftime('%Y-%m-%d %H:%M', time.localtime(HANDOFF.stat().st_mtime))}). "
-                   "Read it if the user is continuing that work.")
-    if out:
-        emit_context("SessionStart", "ProfitLens session brief (from hooks):\n\n" + "\n\n".join(out))
+        out.append(fails)
+    emit_context("SessionStart", "\n\n".join(out))
 
 
 if __name__ == "__main__":

@@ -1,26 +1,18 @@
 # Plan: build phases
 
-Stage 3 artifact. The phase text below is the founders' brief, unchanged. Claude updates only the status table and the per phase notes.
+Stage 3 artifact. The phase text below is the founders' brief, unchanged. Claude updates only the per phase notes; status is in docs/progress.md.
 Rule R12: at the end of every phase, run it, show it working, list what could not be done and why, then stop and wait for "approved" (skill: phase-gate).
 Before any code inside a phase, Claude writes a short implementation plan for that phase under "Phase notes" (files touched, order, tests) and gets it approved.
 
 ## Status
 
-| Phase | Status | Gate |
-|---|---|---|
-| 0 Setup and approved answers | DONE | approved 2026-09-22 |
-| 1 Chat service (local) | DONE (17 conversations with the real API key, Haiku and Sonnet compared, Sonnet chosen) | approved 2026-09-24 by Ioseb |
-| 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
-| 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
-| 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: Framer hidden test page, then 30 day deletion, kill switch, weekly digest, README, privacy text, new API key, paid plan with disk | not approved |
-| W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
+The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds the phases and the per phase plans.
 
 ## Phase notes
 
 (Per phase implementation plans go here, newest phase first.)
 
-### Foundation v2 step 1: handoff protocol, progress.md, resume, worktrees (2026-09-26, ADR 0022 and 0023; WAITING FOR APPROVAL)
+### Foundation v2 step 1: handoff protocol, progress.md, resume, worktrees (2026-09-26, ADR 0022 and 0023; approved by Ioseb 2026-09-26)
 1. Shared location: handoffs live in the main project folder even when a terminal works in a worktree (scripts find it through git). New folder memory/working/handoffs/, one file per task, plus a generated _index.md (task, type, branch, updated, open or done). The old handoff.md becomes handoffs/phase-5-launch.md.
 2. handoff skill rewritten: the fixed one page template (foundation-v2 section 1.3), records the git commit it was written at, sets Status done when the task is finished. Fix sessions also write memory/incidents/YYYY-MM-DD-slug.md with a required test line; the lesson goes to lessons.md.
 3. New resume skill: lists open handoffs, Ioseb picks one, Claude reads it, docs/progress.md and the files it names, shows what other terminals committed since, then says in three lines where it is. The plan status, proposals and summary warnings move here from the start brief.

@@ -6,7 +6,7 @@
     "pyright-lsp@claude-plugins-official": true
   },
   "env": {
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70"
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "85"
   },
   "statusLine": {
     "type": "command",
@@ -72,6 +72,11 @@
             "type": "command",
             "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/scripts/lint_content.py\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/scripts/handoff_track.py\"",
+            "timeout": 5
           }
         ]
       }

@@ -2,21 +2,40 @@
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
 
 ROOT = Path(os.environ.get("CLAUDE_PROJECT_DIR") or Path(__file__).resolve().parents[2])
-MEMORY = ROOT / "memory"
+
+
+def main_root(root):
+    """The main project folder. In a git worktree (a second copy of the project on its own
+    branch, ADR 0023) this is the original folder, so every terminal shares one memory."""
+    try:
+        common = subprocess.run(["git", "-C", str(root), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+                                capture_output=True, text=True, timeout=3).stdout.strip()
+        if common.endswith("/.git") and Path(common).parent.is_dir():
+            return Path(common).parent
+    except Exception:
+        pass
+    return root
+
+
+MAIN_ROOT = main_root(ROOT)
+MEMORY = MAIN_ROOT / "memory"
 WORKING = MEMORY / "working"
 STATE = WORKING / "state"
+SNAPSHOTS = WORKING / "snapshots"
+HANDOFFS = WORKING / "handoffs"          # one handoff per task (ADR 0022)
 SESSIONS = MEMORY / "episodic" / "sessions"
 PROPOSALS = MEMORY / "proposals"
-HANDOFF = WORKING / "handoff.md"
 
-HANDOFF_PCT = 60        # ask Claude to write the handoff
-COMPACT_PCT = 70        # auto compaction (CLAUDE_AUTOCOMPACT_PCT_OVERRIDE)
-MAX_COMPACTIONS = 3     # after this many, recommend a fresh session
+HANDOFF_PCT = 60        # ask Claude to update the task handoff
+STOP_PCT = 70           # soft stop: hand off and continue in a new terminal (ADR 0022, 0023 C3)
+COMPACT_PCT = 85        # auto compaction, safety net only (CLAUDE_AUTOCOMPACT_PCT_OVERRIDE)
+MAX_COMPACTIONS = 1     # after this many, recommend a fresh session
 
 # Set in the environment of the background summarizer so no hook re-enters.
 GUARD_ENV = "PL_WORKFLOW_SUMMARIZER"
@@ -119,3 +138,53 @@ def is_real_user_text(content):
 
 def emit_context(event, text):
     print(json.dumps({"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}}))
+
+
+# Handoffs (ADR 0022): memory/working/handoffs/<task>.md with a small header, one per task or branch.
+
+def task_slug(text):
+    return re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")[:60] or "task"
+
+
+def list_handoffs(include_done=False):
+    """[(slug, meta)] newest first. meta has task, type, branch, worktree, commit, updated, status."""
+    out = []
+    for f in HANDOFFS.glob("*.md"):
+        if f.name.startswith("_"):
+            continue
+        meta, _ = frontmatter(f)
+        meta.setdefault("status", "open")
+        meta.setdefault("updated", time.strftime("%Y-%m-%d %H:%M", time.localtime(f.stat().st_mtime)))
+        if include_done or meta["status"] != "done":
+            out.append((f.stem, meta))
+    return sorted(out, key=lambda x: x[1]["updated"], reverse=True)
+
+
+def write_handoff_index():
+    rows = ["# Open and recent tasks (generated, do not edit)", "",
+            "| Task | Type | Branch | Updated | Status |", "|---|---|---|---|---|"]
+    for slug, m in list_handoffs(include_done=True):
+        rows.append(f"| {slug} | {m.get('type', '?')} | {m.get('branch', '?')} | {m['updated']} | {m['status']} |")
+    HANDOFFS.mkdir(parents=True, exist_ok=True)
+    (HANDOFFS / "_index.md").write_text("\n".join(rows) + "\n")
+
+
+def current_branch(cwd):
+    try:
+        return subprocess.run(["git", "--no-optional-locks", "-C", str(cwd), "branch", "--show-current"],
+                              capture_output=True, text=True, timeout=2).stdout.strip()
+    except Exception:
+        return ""
+
+
+def handoff_for_session(state, cwd):
+    """This session's own task handoff: the one it wrote (recorded by handoff_track.py), else the
+    newest open one on the same branch. Never another terminal's task on another branch."""
+    task = state.get("task")
+    if task and (HANDOFFS / f"{task}.md").exists():
+        return HANDOFFS / f"{task}.md"
+    branch = current_branch(cwd)
+    for slug, m in list_handoffs():
+        if branch and m.get("branch") == branch:
+            return HANDOFFS / f"{slug}.md"
+    return None
