@@ -72,10 +72,29 @@ def send(text: str) -> bool:
 
 
 def check() -> bool:
-    """Startup check (ADR 0021): does the bot see the chat? Posts nothing."""
+    """Startup check (ADR 0021): does the bot see the chat, and may it post there? Posts nothing."""
     if not _configured():
         return False
-    return _result(*_call("getChat", {"chat_id": config.TELEGRAM_CHAT_ID}))
+    ok, chat = _call("getChat", {"chat_id": config.TELEGRAM_CHAT_ID})
+    if not ok:
+        return _result(ok, chat)
+    ok, me = _call("getMe", {})
+    if not ok:
+        return _result(ok, me)
+    ok, member = _call("getChatMember", {"chat_id": config.TELEGRAM_CHAT_ID, "user_id": (me.get("result") or {}).get("id")})
+    if not ok:
+        return _result(ok, member)
+    m = member.get("result") or {}
+    status = m.get("status")
+    group_allows = ((chat.get("result") or {}).get("permissions") or {}).get("can_send_messages", True)
+    if status in ("left", "kicked") or (status == "restricted" and not m.get("can_send_messages", False)) \
+            or (status == "member" and not group_allows):
+        alert_health.record("telegram", False, f"the bot cannot post in the group (its status there: {status})",
+                            "in the ProfitLens leads group, add @profitlbot back or allow it to send messages "
+                            "(making it an admin always works).")
+        return False
+    alert_health.record("telegram", True)
+    return True
 
 
 def send_long(text: str, limit: int = 3900) -> bool:

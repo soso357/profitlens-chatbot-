@@ -24,6 +24,8 @@ def record(channel: str, ok: bool, reason: str = "", hint: str = "") -> None:
         warn = not ok and now - _last_warned[channel] >= WARN_EVERY_SECONDS
         if warn:
             _last_warned[channel] = now
+        elif ok:
+            _last_warned[channel] = 0.0  # recovered: a new failure is reported at once, not an hour later
     if warn:
         if WARN_IN_BACKGROUND:
             threading.Thread(target=_warn, args=(channel, reason, hint), daemon=True).start()

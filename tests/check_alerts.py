@@ -20,13 +20,15 @@ email_alerts._creds = lambda: None
 
 TG, MAIL = [], []  # what reached the fake Telegram and the fake Gmail
 tg_answer = {"ok": True}
+tg_by_method = {}  # answers for single methods, used by the startup check tests
 mail_error = None
 
 
 def fake_call(method, params):
-    if tg_answer.get("ok"):
+    answer = tg_by_method.get(method, tg_answer)
+    if answer.get("ok"):
         TG.append((method, params.get("text", "")))
-    return bool(tg_answer.get("ok")), tg_answer
+    return bool(answer.get("ok")), answer
 
 
 def fake_deliver(raw):
@@ -83,8 +85,19 @@ tg_answer = {"ok": True}
 telegram.send("x")
 check("status back to ok", alert_health.status()["telegram"] == "ok" and alert_health.reason("telegram") == "")
 
+print("Recovered, then broken again within the hour:")
+reset()
+tg_answer = {"ok": False, "error_code": 400, "description": "Bad Request: chat not found"}
+telegram.send("x")
+tg_answer = {"ok": True}
+telegram.send("x")
+tg_answer = {"ok": False, "error_code": 403, "description": "Forbidden: bot was kicked from the supergroup chat"}
+telegram.send("x")
+check("second failure after a recovery is reported at once", len(MAIL) == 2 and "profitlbot" in mail_text())
+
 print("Email sign-in expired:")
 reset()
+tg_answer = {"ok": True}
 mail_error = Exception("invalid_grant: Token has been expired or revoked.")
 check("send reports failure", email_alerts.alert_founders("Lead", "body") is False)
 check("status failing", alert_health.status()["email"] == "failing")
@@ -112,8 +125,20 @@ print("Startup check and /health:")
 reset()
 tg_answer, mail_error = {"ok": True}, None
 alert_health._state["telegram"]["ok"] = alert_health._state["email"]["ok"] = None
-check("startup check posts nothing to the group", telegram.check() and TG == [("getChat", "")])
+tg_by_method = {"getMe": {"ok": True, "result": {"id": 42}},
+                "getChatMember": {"ok": True, "result": {"status": "administrator"}}}
+check("startup check posts nothing to the group",
+      telegram.check() and [m for m, _ in TG] == ["getChat", "getMe", "getChatMember"])
 check("startup email check sends nothing", email_alerts.check() and MAIL == [])
+for member, chat_perm, name in [({"status": "restricted", "can_send_messages": False}, True, "restricted bot"),
+                                ({"status": "member"}, False, "group lets only admins post"),
+                                ({"status": "left"}, True, "bot removed")]:
+    reset()
+    tg_by_method = {"getMe": {"ok": True, "result": {"id": 42}}, "getChatMember": {"ok": True, "result": member},
+                    "getChat": {"ok": True, "result": {"permissions": {"can_send_messages": chat_perm}}}}
+    check(f"startup check catches: {name}", telegram.check() is False and "cannot post" in mail_text())
+tg_by_method = {}
+alert_health._state["telegram"]["ok"] = True
 from app import main  # noqa: E402
 
 body = TestClient(main.app).get("/health").json()

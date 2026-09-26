@@ -1,6 +1,6 @@
 # Eval report
 
-Run on 2026-09-26 14:37. Result: **PASS**
+Run on 2026-09-26 14:39 (offline only). Result: **PASS**
 
 | Check | Result | Last line |
 |---|---|---|
@@ -9,6 +9,3 @@ Run on 2026-09-26 14:37. Result: **PASS**
 | tests.check_sessions | PASS | 7 of 7 passed |
 | tests.check_alerts | PASS | ALL CHECKS PASSED |
 | tests.check_workflow | PASS | ALL CHECKS PASSED |
-| tests.run_conversations | PASS | Score: 17 of 17 passed. Transcripts in tests/transcripts.md |
-
-Transcripts with a verdict per conversation: tests/transcripts.md
