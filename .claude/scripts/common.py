@@ -31,11 +31,17 @@ SNAPSHOTS = WORKING / "snapshots"
 HANDOFFS = WORKING / "handoffs"          # one handoff per task (ADR 0022)
 SESSIONS = MEMORY / "episodic" / "sessions"
 PROPOSALS = MEMORY / "proposals"
+SEMANTIC = MEMORY / "semantic"
 
 HANDOFF_PCT = 60        # ask Claude to update the task handoff
 STOP_PCT = 70           # soft stop: hand off and continue in a new terminal (ADR 0022, 0023 C3)
 COMPACT_PCT = 85        # auto compaction, safety net only (CLAUDE_AUTOCOMPACT_PCT_OVERRIDE)
 MAX_COMPACTIONS = 1     # after this many, recommend a fresh session
+
+# Staleness (foundation v2 step 2)
+VERIFY_DAYS = 60        # semantic memory not verified for this long is flagged
+DEFERRED_DAYS = 30      # deferred proposals come back after this long
+DONE_HANDOFF_DAYS = 14  # handoffs marked done are deleted after this long
 
 # Set in the environment of the background summarizer so no hook re-enters.
 GUARD_ENV = "PL_WORKFLOW_SUMMARIZER"
@@ -188,3 +194,74 @@ def handoff_for_session(state, cwd):
         if branch and m.get("branch") == branch:
             return HANDOFFS / f"{slug}.md"
     return None
+
+
+# Staleness (foundation v2 step 2)
+
+def days_since(text):
+    """Days since the first YYYY-MM-DD in text, or None if there is no date."""
+    m = re.search(r"\d{4}-\d{2}-\d{2}", text or "")
+    if not m:
+        return None
+    try:
+        return int((time.time() - time.mktime(time.strptime(m.group(0), "%Y-%m-%d"))) // 86400)
+    except ValueError:
+        return None
+
+
+def stale_note(path):
+    """For a semantic memory file: '' if verified recently, else a short warning."""
+    try:
+        meta, _ = frontmatter(path)
+    except Exception:
+        return ""
+    age = days_since(meta.get("last_verified", ""))
+    if age is None:
+        return "never verified"
+    return f"not verified for {age} days" if age > VERIFY_DAYS else ""
+
+
+def stale_semantic():
+    return [(p, n) for p in sorted(SEMANTIC.glob("*.md")) if (n := stale_note(p))]
+
+
+def deferred_due():
+    """Deferred proposals whose decision date is more than DEFERRED_DAYS ago."""
+    out = []
+    for p in sorted(PROPOSALS.glob("[0-9]*.md")):
+        meta, body = frontmatter(p)
+        if meta.get("status") != "deferred":
+            continue
+        decision = body.split("## Decision", 1)[-1]
+        age = days_since(decision) if "## Decision" in body else days_since(meta.get("created", ""))
+        if age is not None and age > DEFERRED_DAYS:
+            out.append((p.name, meta.get("title", p.stem), age))
+    return out
+
+
+def cleanup_done_handoffs():
+    """Delete handoffs marked done more than DONE_HANDOFF_DAYS ago. Returns the deleted names."""
+    gone = []
+    for slug, m in list_handoffs(include_done=True):
+        age = days_since(m.get("updated", ""))
+        if m.get("status") == "done" and age is not None and age > DONE_HANDOFF_DAYS:
+            (HANDOFFS / f"{slug}.md").unlink(missing_ok=True)
+            gone.append(slug)
+    return gone
+
+
+def words(text):
+    text = re.sub(r"\(from [^)]*\)", "", (text or "").lower())
+    text = re.sub(r"^- \d{4}-\d{2}-\d{2}[^:]*:", "", text.strip())  # a list line's own date is not content
+    return {w for w in re.findall(r"[a-z0-9]+", text) if len(w) > 3 or any(c.isdigit() for c in w)}
+
+
+def similar(a, b, threshold=0.6):
+    """True when the shorter text's longer words mostly appear in the other (same item, reworded).
+    Different numbers mean different items ("step 1 merged" is not "step 2 merged")."""
+    wa, wb = words(a), words(b)
+    if not wa or not wb:
+        return False
+    if {w for w in wa if any(c.isdigit() for c in w)} != {w for w in wb if any(c.isdigit() for c in w)}:
+        return False
+    return len(wa & wb) / min(len(wa), len(wb)) >= threshold

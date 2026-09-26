@@ -12,7 +12,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import MAIN_ROOT as ROOT, MEMORY, frontmatter  # noqa: E402
+from common import MAIN_ROOT as ROOT, MEMORY, frontmatter, stale_note  # noqa: E402
 # ROOT is the main folder: the index is shared by every worktree and must not be rebuilt from a worktree's copy.
 
 DB = MEMORY / "index.sqlite"
@@ -74,7 +74,9 @@ def main():
         for kind, path, title, snip in query(
                 "SELECT kind, path, title, snippet(fts, 3, '[', ']', ' ... ', 12) FROM fts WHERE fts MATCH ? "
                 "ORDER BY rank LIMIT 10", (q,)):
-            print(f"{kind:8} {path}\n         {title}\n         {snip}\n")
+            note = stale_note(ROOT / path) if kind == "semantic" else ""
+            print(f"{kind:8} {path}" + (f"  [{note}: check before relying on it]" if note else "")
+                  + f"\n         {title}\n         {snip}\n")
     elif cmd == "recent":
         n = int(rest[0]) if rest else 5
         for path, title, date in query("SELECT path, title, date FROM docs WHERE kind='session' ORDER BY date DESC LIMIT ?", (n,)):

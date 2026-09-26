@@ -12,7 +12,7 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
-### Foundation v2 step 2: session summaries sorted into project files, memory staleness (2026-09-26, ADR 0022; WAITING FOR APPROVAL)
+### Foundation v2 step 2: session summaries sorted into project files, memory staleness (2026-09-26, ADR 0022; approved by Ioseb 2026-09-26)
 1. The summarizer also writes a small "Routed" block: work done, open questions (with who must answer), people we wait on, decisions, lessons, and changes to plan, spec, ADRs or rules.
 2. New script distribute.py, run right after each summary (one at a time, even with parallel terminals):
    - done, open questions, waiting on people: added to docs/progress.md automatically, one line each, ending with the source summary's name so any wrong line can be traced and removed. Items already there are not added twice.

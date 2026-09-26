@@ -9,7 +9,8 @@ Usage: summarize_session.py <transcript.jsonl> <session_id> <reason> [--dry-run]
    fire again) to write a structured summary.
 3. Saves memory/episodic/sessions/<date>-<hhmmss>-<id8>.md and any improvement
    proposals as memory/proposals/NNNN-<slug>.md with status 'proposed'.
-4. Rebuilds the memory index.
+4. Sorts the summary into progress.md, lessons and proposals (distribute.py).
+5. Rebuilds the memory index.
 
 A resumed session is summarized again only for the part after the last summary
 (the line count is kept in memory/working/state/<id>.summary.json). An OS file lock
@@ -29,7 +30,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import (GUARD_ENV, MAIN_ROOT, PROPOSALS, ROOT, SESSIONS, STATE, is_real_user_text, open_proposals,  # noqa: E402
-                    scrub, session_state_path, set_summary_failure)
+                    scrub, session_state_path, set_summary_failure, similar)
 
 MIN_USER_MESSAGES = 3
 MAX_CHARS = 90_000
@@ -68,6 +69,20 @@ reviewed: no
 ```json
 []
 ```
+
+## Routed
+```json
+{{"done": [], "open_questions": [], "waiting": [], "decisions": [], "lessons": [], "changes": []}}
+```
+
+For "## Routed" (a script files these into the project, so be exact and brief, one line per item):
+- "done": finished results only, e.g. "Kill switch built and tested (pull request #4)". Not steps or attempts.
+- "open_questions": {{"question": "...", "who": "Ioseb" or "founders"}}, only questions still unanswered at the end.
+- "waiting": {{"who": "...", "what": "..."}}, actions a person still has to do.
+- "decisions": {{"decision": "...", "chosen": "...", "by": "..."}}, only choices a person made.
+- "lessons": mistakes or surprises that should change how future sessions work.
+- "changes": {{"file": "plan|spec|adr|rule", "what": "...", "why": "..."}}, only changes the session showed are needed but did not make.
+Use empty lists when nothing fits. Never put secrets or website visitors' personal data here.
 
 For "## Proposals": propose improvements to the project or to the development setup that the session revealed but the user did NOT explicitly ask for. Examples: a repeated manual task that should become a skill, a chatbot behaviour the spec does not cover, a missing guardrail or test, a rule Claude broke twice. Each item: {{"title": "...", "kind": "skill|rule|hook|spec|test|doc", "why": "evidence from this session", "what": "what would be created or changed"}}. At most 3. Use [] if nothing is clearly worth it. Do not repeat these existing proposals:
 {existing}
@@ -140,18 +155,25 @@ def save_proposals(summary_text, session_file, sid):
         items = json.loads(m.group(1))
     except Exception:
         return []
+    return write_proposals(items[:3], session_file)
+
+
+def write_proposals(items, source):
+    """Write proposals with status 'proposed'. Skips one whose title matches an open proposal."""
     PROPOSALS.mkdir(parents=True, exist_ok=True)
     STATE.mkdir(parents=True, exist_ok=True)
     saved = []
     numbering = open(STATE / "proposals.lock", "w")
     fcntl.flock(numbering, fcntl.LOCK_EX)  # one run at a time picks numbers; released on exit, even after a crash
-    for it in items[:3]:
+    for it in items:
         if not isinstance(it, dict) or not it.get("title"):
+            continue
+        if any(similar(it["title"], title) for _, _, title in open_proposals()):
             continue
         p = PROPOSALS / f"{next_proposal_number():04d}-{slugify(it['title'])}.md"
         p.write_text(
             f"---\ntitle: {it['title']}\nstatus: proposed\nkind: {it.get('kind', 'other')}\n"
-            f"source: {session_file}\ncreated: {time.strftime('%Y-%m-%d')}\n---\n\n"
+            f"source: {source}\ncreated: {time.strftime('%Y-%m-%d')}\n---\n\n"
             f"## Why\n{it.get('why', '')}\n\n## What\n{it.get('what', '')}\n\n## Decision\n(pending Ioseb)\n"
         )
         saved.append(p.name)
@@ -235,6 +257,9 @@ def summarize(transcript, sid, reason, stamp, dry=False):
     progress_path(sid).write_text(json.dumps({"lines": total, "summary": out.name}))
     set_summary_failure(sid, None)
     props = save_proposals(body, out.name, sid)
+    routed = subprocess.run([sys.executable, str(Path(__file__).with_name("distribute.py")), str(out)],
+                            capture_output=True, text=True, timeout=120)
+    print(f"{stamp} distribute: {(routed.stdout or routed.stderr).strip()[:400]}")
     subprocess.run([sys.executable, str(Path(__file__).with_name("memory_index.py")), "build", "--quiet"])
     print(f"{stamp} wrote {out.relative_to(MAIN_ROOT)}; proposals: {props or 'none'}")
 
