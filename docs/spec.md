@@ -19,7 +19,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 - **R7 Secrets.** Anthropic API key, Google credentials, email password live only in environment variables, never in code, never in git. .gitignore covers .env and all credential files.
 - **R8 Cost and abuse protection.** Rate limit per visitor (for example 20 messages per hour per session), cap conversation length, cap tokens per reply, and a hard daily API spend limit in code that turns the widget into a "leave your email" form when reached.
 - **R9 Privacy.** Store only what is needed (conversation transcript, name, restaurant, email, booking). Transcripts deleted after 30 days automatically. Website privacy policy must be updated to mention the chat.
-- **R10 Stack.** Python 3.11+, FastAPI, official anthropic Python library, Google Calendar API via a service account, Zoho Mail SMTP (EU servers, .zoho.eu). Front end: one self-contained HTML plus JavaScript widget served by the same service. Hosting: Render. A different library needs approval first.
+- **R10 Stack.** Python 3.11+, FastAPI, official anthropic Python library, Google Calendar API and Gmail API through a one time Google sign-in as the calendar owner (Zoho dropped by Ioseb, 2026-09-22 and 2026-09-26). Front end: one self-contained HTML plus JavaScript widget served by the same service. Hosting: Render. A different library needs approval first.
 - **R11 Launch gate.** The widget goes live on useprofitlens.com only after founders approve it on a hidden test page. Until then it runs on the Render URL alone.
 - **R12 Phase gate.** At the end of every phase: run it, show it working, list what could not be done and why, stop and wait for "approved".
 - **R13 Tested, not one pass.** Each phase is tested with at least ten realistic visitor conversations (including rude, off-topic and trick questions) before demonstrating.
@@ -61,11 +61,11 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | Conversation transcript | logs (Render disk in Phase 5) | 30 days, then deleted automatically |
 | Lead (name, restaurant, city, state, email, answers, fit result, transcript reference) | leads.csv | until founders delete |
 | Booking | Google Calendar event | founders manage |
-| Conversation copy in Telegram (every conversation, after 30 quiet minutes, ADR 0015) | founders' Telegram group | founders delete by hand after 30 days |
+| Conversation copy in Telegram (every message, live, ADR 0019) | founders' Telegram group | founders delete by hand after 30 days |
 
 ## 6. Integrations
 
-Anthropic API (conversation), Google Calendar via service account (free slots, events with Meet link), Zoho SMTP (founder notifications, visitor confirmation, weekly digest; the record of every alert), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
+Anthropic API (conversation), Google Calendar (free slots, events with Meet link; Google sends the visitor's invite), Gmail API from the booking account (founder notifications, weekly digest; the record of every alert), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
 
 ## 7. Open questions
 

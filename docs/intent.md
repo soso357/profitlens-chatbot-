@@ -53,7 +53,6 @@ Inventing a policy, price, timeline or guarantee is the worst possible defect, b
 
 - Anthropic API key with a monthly spend limit set.
 - The Google account whose calendar holds the calls, working hours and time zone for calls.
-- The Zoho Mail address and app password for notifications (for example info@useprofitlens.com).
 - Which founder receives booking notifications.
 - Founder edits of content/approved-answers.md, content/qualifying-questions.md, content/handoff-rules.md.
 
