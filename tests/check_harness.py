@@ -58,6 +58,14 @@ for name, tool, inp, cwd in [
     ("hard reset", "Bash", {"command": "git reset --hard origin/master"}, ROOT),
     ("write outside the project", "Write", {"file_path": str(Path.home() / "Desktop" / "x.txt")}, ROOT),
     ("write to the shell profile", "Edit", {"file_path": str(Path.home() / ".zshrc")}, ROOT),
+    ("second chained push to master", "Bash", {"command": "git push origin maintain-x && git push origin master"}, ROOT),
+    ("bare push while on master", "Bash", {"command": "git push"}, MASTER),
+    ("push HEAD while on master", "Bash", {"command": "git push origin HEAD"}, MASTER),
+    ("force push with a + refspec", "Bash", {"command": "git push origin +maintain-x"}, ROOT),
+    ("Grep with a glob for the env file", "Grep", {"pattern": "KEY", "path": str(ROOT), "glob": f"{ENVF}*"}, ROOT),
+    ("Glob into secrets/", "Glob", {"pattern": "secrets/**"}, ROOT),
+    ("secret file hidden after a commit message", "Bash",
+     {"command": f"git commit -m '[Maintain] x' && cat {ENVF}"}, BRANCH),
 ]:
     check(name, guard(tool, cwd, **inp))
 
@@ -77,6 +85,14 @@ for name, tool, inp, cwd in [
      {"file_path": str(Path.home() / ".claude" / "projects" / "p" / "memory" / "a.md")}, ROOT),
     ("read the example env file", "Read", {"file_path": str(ROOT / f"{ENVF}.example")}, ROOT),
     ("tests data folder is not visitor data", "Write", {"file_path": str(ROOT / "tests" / "data" / "x.json")}, ROOT),
+    ("delete in tests/data is fine", "Bash", {"command": "rm tests/data/x.json"}, ROOT),
+    ("rm next to an unrelated data/ mention", "Bash", {"command": "rm /tmp/x && ls app/data/"}, ROOT),
+    ("branch with 'main' in its name", "Bash", {"command": "git push -u origin phase-5-main-flow"}, ROOT),
+    ("bare push on a branch", "Bash", {"command": "git push"}, BRANCH),
+    ("commit message that mentions the env file", "Bash",
+     {"command": f"git commit -m '[Maintain] ignore {ENVF} in git'"}, BRANCH),
+    ("pull request body that mentions secrets/", "Bash",
+     {"command": "gh pr create --title x --body \"$(cat <<'EOF'\nsecrets/ stay out of git\nEOF\n)\""}, ROOT),
 ]:
     check(name, not guard(tool, cwd, **inp))
 
@@ -89,6 +105,9 @@ check("content/, CLAUDE.md and settings ask first", all(r in perm["ask"] for r i
     "Edit(./content/**)", "Edit(./CLAUDE.md)", "Edit(./.claude/settings.json)")))
 check("merge and env file reading denied", "Bash(gh pr merge*)" in perm["deny"] and f"Read(./{ENVF})" in perm["deny"])
 check("nothing is both allowed and denied", not set(perm["allow"]) & set(perm["deny"]))
+check("work-destroying git commands are not auto-allowed", not any(
+    r in perm["allow"] for r in ("Bash(git branch*)", "Bash(git switch *)", "Bash(git checkout *)"))
+      and "Bash(git branch -D*)" in perm["ask"])
 check("guard hook registered before tool use",
       any("guard.py" in h["command"] for e in s["hooks"].get("PreToolUse", []) for h in e["hooks"]))
 
