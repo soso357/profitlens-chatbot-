@@ -15,7 +15,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(__file__))
 from common import (GUARD_ENV, HANDOFF, MAX_COMPACTIONS, ROOT, SESSIONS, WORKING, emit_context,  # noqa: E402
-                    frontmatter, load_state, open_proposals, read_hook_input, save_state)
+                    frontmatter, load_state, open_proposals, read_hook_input, save_state, summary_failures)
 
 
 def plan_status():
@@ -28,14 +28,18 @@ def plan_status():
 
 
 def last_summary():
-    files = sorted(SESSIONS.glob("*.md"))
+    files = sorted(SESSIONS.glob("*.md"), key=lambda f: (frontmatter(f)[0].get("ended", ""), f.name))
     if not files:
         return ""
     meta, body = frontmatter(files[-1])
+    unreviewed = sum(frontmatter(f)[0].get("reviewed", "no") == "no" for f in files)
     m = re.search(r"## Next steps\n(.*?)(\n## |\Z)", body, re.S)
     nxt = m.group(1).strip() if m else ""
     flag = " (unreviewed: skim it and correct anything wrong)" if meta.get("reviewed", "no") == "no" else ""
-    return f"Last session: {files[-1].name}{flag}\n{meta.get('title', '')}\nNext steps it recorded:\n{nxt[:1200]}"
+    older = (f"\n{unreviewed - 1} older summaries are also unreviewed: ask Ioseb whether to check them now."
+             if unreviewed > 1 else "")
+    return (f"Last session: {files[-1].name}{flag}\n{meta.get('title', '')}\nNext steps it recorded:\n{nxt[:1200]}"
+            + older)
 
 
 def main():
@@ -75,11 +79,20 @@ def main():
     ls = last_summary()
     if ls:
         out.append(ls)
+    fails = summary_failures()
+    if fails:
+        lines = [f"- session {sid[:8]} at {v.get('time', '?')}: {v.get('error', '')[:160]}\n  redo: python3 "
+                 f".claude/scripts/summarize_session.py {v.get('transcript', '?')} {sid} retry" for sid, v in fails.items()]
+        out.append("SESSION SUMMARY FAILED (tell Ioseb at the start, in one sentence, and offer to redo it; "
+                   "'Not logged in' means he must run claude and /login first):\n" + "\n".join(lines))
     props = open_proposals()
     if props:
-        lines = [f"- {name} [{status}] {title}" for name, status, title in props[:8]]
+        lines = [f"- {name[:4]} [{status}] {title[:90]}" for name, status, title in props]
+        extra = (" There are more than 8 waiting: suggest a short review session to decide them."
+                 if sum(s == "proposed" for _, s, _ in props) > 8 else "")
         out.append("Open improvement proposals (memory/proposals/). Mention the 'proposed' ones to the user "
-                   "once, briefly, when there is a natural pause; build 'approved' ones when asked:\n" + "\n".join(lines))
+                   "once, briefly, when there is a natural pause; build 'approved' ones when asked." + extra
+                   + "\n" + "\n".join(lines))
     if HANDOFF.exists() and time.time() - HANDOFF.stat().st_mtime < 7 * 86400:
         out.append(f"A handoff from an earlier session exists at memory/working/handoff.md "
                    f"(updated {time.strftime('%Y-%m-%d %H:%M', time.localtime(HANDOFF.stat().st_mtime))}). "

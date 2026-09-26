@@ -78,6 +78,28 @@ def frontmatter(path):
     return meta, text
 
 
+def summary_failures():
+    """Sessions whose summary failed and has not been redone: {session_id: {time, error, transcript}}.
+    One file per session (<id>.summary-failed.json), so parallel runs never overwrite each other."""
+    out = {}
+    for f in STATE.glob("*.summary-failed.json"):
+        try:
+            out[f.name[:-len(".summary-failed.json")]] = json.loads(f.read_text())
+        except Exception:
+            pass
+    return out
+
+
+def set_summary_failure(session_id, info=None):
+    """Record (info given) or clear (info None) a failed summary for one session."""
+    f = session_state_path(session_id).with_suffix(".summary-failed.json")
+    if info:
+        STATE.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps(info))
+    else:
+        f.unlink(missing_ok=True)
+
+
 def open_proposals():
     out = []
     for p in sorted(PROPOSALS.glob("[0-9]*.md")):
