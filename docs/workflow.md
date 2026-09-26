@@ -20,7 +20,7 @@ Principle from the playbook: every stage commits a file the next stage reads, an
 | Plan | Before each phase, writes a phase note citing the approved spec version and the ids it covers; spec_check.py ready must pass | Approves the note | docs/plan.md |
 | Build | Implements in small steps, runs things, verifies | Answers questions, chooses options | code, docs/adr/, docs/build-log.md |
 | Test | `tests.evals`: offline checks plus every scripted conversation with a pass or fail verdict | Tries rude and trick questions himself | tests/, tests/eval-report.md, transcripts |
-| Gate | Demonstrates (skill: phase-gate), /code-review against REVIEW.md, opens a pull request | Reads the pull request | pull request on GitHub |
+| Gate | Demonstrates (skill: phase-gate), /code-review against REVIEW.md, opens a pull request. GitHub then runs the mechanical checks by itself (.github/workflows/checks.yml): lint (ruff), type check (pyright), offline evals, library audit (pip-audit), secret scan (gitleaks) | Merges only on a green mark | pull request on GitHub |
 | Deploy | Never pushes master (a git hook refuses it) | Clicks Merge; Render deploys master. Founders approve the widget on the hidden test page | merged pull request, Render, Framer |
 | Maintain | Asks at each gate whether intent changed; turns incidents into test conversations and proposals | Answers; founders read transcripts weekly for the first month | docs/intent.md change history, proposals, tests |
 

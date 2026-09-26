@@ -1,0 +1,4 @@
+# Development only: never installed on Render (foundation v2 step 5, ADR 0023 C5)
+ruff==0.16.9
+pyright==1.1.414
+pip-audit==2.10.1

@@ -1,0 +1,18 @@
+# Settings for the development checks only (foundation v2 step 5). Start mild: real errors only.
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [".venv", "memory", "logs", "data"]
+
+[tool.ruff.lint]
+select = ["E9", "F"]   # syntax errors, undefined names, unused imports and variables
+
+[tool.pyright]
+include = ["app", ".claude/scripts", "scripts"]   # tests prove themselves by running (tests.evals)
+venvPath = "."
+venv = ".venv"
+extraPaths = [".claude/scripts"]
+typeCheckingMode = "basic"
+pythonVersion = "3.11"
+reportMissingModuleSource = false

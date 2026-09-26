@@ -12,6 +12,14 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Foundation v2 step 5: automatic checks on GitHub (2026-09-26, foundation-v2 section 8, tools approved in ADR 0023 C5; approved by Ioseb 2026-09-26)
+1. requirements-dev.txt (development only, never installed on Render): ruff (finds errors and messy code), pyright (checks that values are the kind of thing the code expects), pip-audit (known security holes in libraries).
+2. ruff and pyright settings in pyproject.toml, starting mild (real errors only) so they pass today; fix what they find.
+3. .github/workflows/checks.yml: on every pull request, GitHub runs lint, type check, the offline evals, pip-audit and a secret scanner (gitleaks: finds passwords or keys committed by mistake) and shows a green or red mark.
+4. No API calls and no secrets in GitHub: only offline checks run there.
+5. Ioseb switches on "require checks to pass before merging" in GitHub settings once (Claude gives the 4 clicks).
+6. Docs: workflow.md, CLAUDE.md commands line (asks Ioseb). Then code review, pull request; the pull request itself is the first real CI run.
+
 ### Foundation v2 step 4: spec versions and approval before planning (2026-09-26, foundation-v2 section 6; approved by Ioseb 2026-09-26)
 1. docs/spec.md gets a header: Version, Status (Draft or Approved), Approved by, Date. First version 1.0 as Draft, with lines that are out of date marked for Ioseb (the Zoho and Telegram lines were corrected on 2026-09-26).
 2. Every rule R1 to R14 and behaviour B1 to B12 gets an "acceptance check": the test that proves it (a check file or a scripted conversation), or "manual: how".
