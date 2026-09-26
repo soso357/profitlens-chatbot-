@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """PreCompact hook (ADR 0012).
 
-1. Saves a mechanical snapshot (git status, recent user requests) next to the
-   handoff, in case Claude did not get to write one.
-2. Gives the compactor instructions about what must survive.
+Saves a mechanical snapshot (git status, recent user requests) next to the
+handoff, in case Claude did not get to write one. It prints nothing: Claude Code
+does not accept extra context from a PreCompact hook (a real compaction test on
+2026-09-26 showed it rejected), so what must survive the compaction is in the
+"Compact instructions" section of CLAUDE.md, and the SessionStart(compact) hook
+reinjects the handoff or this snapshot afterwards.
 """
 import json
 import os
@@ -12,7 +15,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import GUARD_ENV, HANDOFF, ROOT, WORKING, emit_context, is_real_user_text, read_hook_input, scrub  # noqa: E402
+from common import GUARD_ENV, ROOT, WORKING, is_real_user_text, read_hook_input, scrub  # noqa: E402
 
 
 def recent_user_messages(transcript_path, limit=6):
@@ -43,7 +46,6 @@ def main():
         git = subprocess.run(["git", "-C", str(ROOT), "status", "--short"], capture_output=True, text=True, timeout=5).stdout
     except Exception:
         git = "(git unavailable)"
-    handoff_age = time.time() - HANDOFF.stat().st_mtime if HANDOFF.exists() else None
     snap = [
         f"# Auto snapshot before compaction ({time.strftime('%Y-%m-%d %H:%M')}, trigger: {data.get('trigger', '?')})",
         "",
@@ -55,16 +57,6 @@ def main():
         "## Last user requests",
     ] + [f"- {m}" for m in recent_user_messages(data.get("transcript_path", ""))]
     (WORKING / "snapshot.md").write_text(scrub("\n".join(snap)) + "\n")
-
-    fresh = handoff_age is not None and handoff_age < 3600
-    emit_context("PreCompact", (
-        "Compaction instructions for the ProfitLens project: keep the current phase and its gate status, "
-        "every decision the user made in this session and which option they chose, questions still waiting "
-        "for the user, files changed, and the exact next step. Drop tool output, file dumps and research detail "
-        "that is already saved in docs/. "
-        + ("memory/working/handoff.md was updated in the last hour and is authoritative." if fresh
-           else "No fresh handoff exists; memory/working/snapshot.md has a mechanical snapshot.")
-    ))
 
 
 if __name__ == "__main__":

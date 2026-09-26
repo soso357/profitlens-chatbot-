@@ -1,6 +1,6 @@
 ---
 title: Validate generated docs before commit
-status: proposed
+status: rejected
 kind: test
 source: 2026-09-23-919cea64.md
 created: 2026-09-23
@@ -13,4 +13,4 @@ ADR 0007 was generated with a double-backslash escaping bug that had to be caugh
 A lint/test step that checks generated ADRs and other scripted docs for common formatting mistakes (escaping, broken links) before they are committed.
 
 ## Decision
-(pending Ioseb)
+Ioseb, 2026-09-26 (proposal review): rejected. Too little value for the effort.

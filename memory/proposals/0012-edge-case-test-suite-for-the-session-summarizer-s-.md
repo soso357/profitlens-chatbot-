@@ -1,6 +1,6 @@
 ---
 title: Edge-case test suite for the session summarizer's skip logic
-status: proposed
+status: built
 kind: test
 source: 2026-09-23-919cea64.md
 created: 2026-09-23
@@ -13,4 +13,4 @@ The summarizer's first skip rule would have wrongly skipped a real session (sing
 A small test suite covering summarizer skip-rule edge cases (single message, no assistant reply, very short sessions) so bugs like this are caught automatically instead of by manual spot-check.
 
 ## Decision
-(pending Ioseb)
+Built 2026-09-26: tests/check_workflow.py covers the summarizer skip rule, failure record and retry, resumed sessions, the lock, parallel proposal numbering, the statusline, context guard, compaction counter and the git hooks. Part of tests/evals.py.

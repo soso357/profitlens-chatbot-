@@ -1,6 +1,6 @@
 ---
 title: Skill to take in founder edits of the content files safely
-status: proposed
+status: deferred
 kind: skill
 source: 2026-09-22 workflow setup session
 created: 2026-09-22
@@ -13,4 +13,4 @@ The founders will return edited versions of content/approved-answers.md, qualify
 A project skill `founder-content-intake`: a checklist plus the existing lint hook, producing a short "what changed and what still needs a founder" note for Ioseb.
 
 ## Decision
-(pending Ioseb)
+Ioseb, 2026-09-26 (proposal review): deferred. Founders' approved answers v2 are in; revisit when they send more edits.

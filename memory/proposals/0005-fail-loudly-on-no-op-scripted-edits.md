@@ -1,6 +1,6 @@
 ---
 title: Fail loudly on no-op scripted edits
-status: proposed
+status: built
 kind: rule
 source: 2026-09-22-919cea64.md
 created: 2026-09-22
@@ -13,4 +13,4 @@ A scripted text replacement in the phase-gate skill silently did nothing (the gr
 A rule that automated edit/replace scripts must verify the target text was found and changed, and raise an error if not.
 
 ## Decision
-(pending Ioseb)
+Ioseb, 2026-09-26 (proposal review): approved as a rule; built as a line in memory/procedural/lessons.md.

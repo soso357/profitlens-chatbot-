@@ -7,10 +7,17 @@ Usage: summarize_session.py <transcript.jsonl> <session_id> <reason> [--dry-run]
    questions, files changed. Tool output is dropped.
 2. Runs a headless Claude call from a temporary folder (so project hooks do not
    fire again) to write a structured summary.
-3. Saves memory/episodic/sessions/<date>-<id8>.md and any improvement proposals
-   as memory/proposals/NNNN-<slug>.md with status 'proposed'.
+3. Saves memory/episodic/sessions/<date>-<hhmmss>-<id8>.md and any improvement
+   proposals as memory/proposals/NNNN-<slug>.md with status 'proposed'.
 4. Rebuilds the memory index.
+
+A resumed session is summarized again only for the part after the last summary
+(the line count is kept in memory/working/state/<id>.summary.json). An OS file lock
+stops two runs for the same session from writing at once. A failed run is
+recorded in memory/working/state/<id>.summary-failed.json, which the statusline and
+the session brief show until a later run for that session succeeds.
 """
+import fcntl
 import json
 import os
 import re
@@ -21,7 +28,8 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import GUARD_ENV, PROPOSALS, ROOT, SESSIONS, is_real_user_text, open_proposals, scrub  # noqa: E402
+from common import (GUARD_ENV, PROPOSALS, ROOT, SESSIONS, STATE, is_real_user_text, open_proposals,  # noqa: E402
+                    scrub, session_state_path, set_summary_failure)
 
 MIN_USER_MESSAGES = 3
 MAX_CHARS = 90_000
@@ -70,9 +78,12 @@ Condensed transcript (session {sid}, ended because: {reason}):
 """
 
 
-def condense(path):
-    tool_names, lines, user_count, files = {}, [], 0, set()
-    for raw in open(path, errors="replace"):
+def condense(path, start_line=0):
+    """Condense transcript lines from start_line on. Returns (text, user messages, files, total lines)."""
+    tool_names, lines, user_count, files, n = {}, [], 0, set(), 0
+    for n, raw in enumerate(open(path, errors="replace"), 1):
+        if n <= start_line:
+            continue
         try:
             e = json.loads(raw)
         except Exception:
@@ -109,7 +120,7 @@ def condense(path):
     if len(text) > MAX_CHARS:
         half = MAX_CHARS // 2
         text = text[:half] + "\n\n[... middle of session omitted ...]\n\n" + text[-half:]
-    return scrub(text), user_count, len(files)
+    return scrub(text), user_count, len(files), n
 
 
 def next_proposal_number():
@@ -130,19 +141,39 @@ def save_proposals(summary_text, session_file, sid):
     except Exception:
         return []
     PROPOSALS.mkdir(parents=True, exist_ok=True)
+    STATE.mkdir(parents=True, exist_ok=True)
     saved = []
+    numbering = open(STATE / "proposals.lock", "w")
+    fcntl.flock(numbering, fcntl.LOCK_EX)  # one run at a time picks numbers; released on exit, even after a crash
     for it in items[:3]:
         if not isinstance(it, dict) or not it.get("title"):
             continue
-        n = next_proposal_number()
-        p = PROPOSALS / f"{n:04d}-{slugify(it['title'])}.md"
+        p = PROPOSALS / f"{next_proposal_number():04d}-{slugify(it['title'])}.md"
         p.write_text(
             f"---\ntitle: {it['title']}\nstatus: proposed\nkind: {it.get('kind', 'other')}\n"
             f"source: {session_file}\ncreated: {time.strftime('%Y-%m-%d')}\n---\n\n"
             f"## Why\n{it.get('why', '')}\n\n## What\n{it.get('what', '')}\n\n## Decision\n(pending Ioseb)\n"
         )
         saved.append(p.name)
+    numbering.close()
     return saved
+
+
+def progress_path(sid):
+    return session_state_path(sid).with_suffix(".summary.json")
+
+
+def acquire_lock(sid):
+    """An OS lock on <id>.summary.lock: the system releases it when the process ends, even after a crash,
+    so there is never a stale lock to clear. Returns the open file, or None if another run holds it."""
+    STATE.mkdir(parents=True, exist_ok=True)
+    f = open(session_state_path(sid).with_suffix(".summary.lock"), "w")
+    try:
+        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return f
+    except BlockingIOError:
+        f.close()
+        return None
 
 
 def main():
@@ -150,9 +181,29 @@ def main():
     dry = "--dry-run" in sys.argv
     transcript, sid, reason = (args + ["", "unknown", "other"])[:3]
     stamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    text, user_count, n_files = condense(transcript)
+    if dry:
+        return summarize(transcript, sid, reason, stamp, dry=True)
+    lock = acquire_lock(sid)
+    if not lock:
+        print(f"{stamp} skip {sid}: another summary of this session is running")
+        return
+    try:
+        summarize(transcript, sid, reason, stamp)
+    except Exception as e:  # never fail silently
+        print(f"{stamp} FAILED {sid}: {e!r}")
+        set_summary_failure(sid, {"time": stamp, "error": repr(e)[:300], "transcript": transcript})
+    finally:
+        lock.close()
+
+
+def summarize(transcript, sid, reason, stamp, dry=False):
+    try:
+        start = int(json.loads(progress_path(sid).read_text()).get("lines", 0))
+    except Exception:
+        start = 0
+    text, user_count, n_files, total = condense(transcript, start)
     if user_count < MIN_USER_MESSAGES and n_files == 0 and not dry:
-        print(f"{stamp} skip {sid}: {user_count} user messages and no files changed")
+        print(f"{stamp} skip {sid}: {user_count} new user messages and no files changed")
         return
     existing = "\n".join(f"- {t}" for _, _, t in open_proposals()) or "(none)"
     prompt = PROMPT.format(existing=existing, sid=sid[:8], reason=reason, transcript=text)
@@ -167,16 +218,21 @@ def main():
             input=prompt, capture_output=True, text=True, cwd=tmp, env=env, timeout=600,
         )
     if r.returncode != 0 or "## Next steps" not in r.stdout:
-        print(f"{stamp} FAILED {sid}: rc={r.returncode} {r.stderr[:500]} {r.stdout[:300]}")
+        err = f"rc={r.returncode} {r.stderr.strip()[:300]} {r.stdout.strip()[:200]}".strip()
+        print(f"{stamp} FAILED {sid}: {err}")
+        set_summary_failure(sid, {"time": stamp, "error": err, "transcript": transcript})
         return
     body = scrub(r.stdout.strip())
     body = body.replace("—", ", ").replace("–", " to ")
     if not body.startswith("---"):
         body = body[body.find("---"):]
     SESSIONS.mkdir(parents=True, exist_ok=True)
-    out = SESSIONS / f"{time.strftime('%Y-%m-%d')}-{sid[:8]}.md"
-    body = body.replace("reviewed: no", f"reviewed: no\nsession: {sid}\nended: {stamp}\nreason: {reason}", 1)
+    out = SESSIONS / f"{time.strftime('%Y-%m-%d-%H%M%S')}-{sid[:8]}.md"
+    part = f"\npart: continues an earlier summary of this session (transcript line {start + 1} on)" if start else ""
+    body = body.replace("reviewed: no", f"reviewed: no\nsession: {sid}\nended: {stamp}\nreason: {reason}{part}", 1)
     out.write_text(body + "\n")
+    progress_path(sid).write_text(json.dumps({"lines": total, "summary": out.name}))
+    set_summary_failure(sid, None)
     props = save_proposals(body, out.name, sid)
     subprocess.run([sys.executable, str(Path(__file__).with_name("memory_index.py")), "build", "--quiet"])
     print(f"{stamp} wrote {out.relative_to(ROOT)}; proposals: {props or 'none'}")

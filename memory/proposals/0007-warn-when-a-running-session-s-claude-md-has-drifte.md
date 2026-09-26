@@ -1,6 +1,6 @@
 ---
 title: Warn when a running session's CLAUDE.md has drifted from disk
-status: proposed
+status: rejected
 kind: hook
 source: 2026-09-23-919cea64.md
 created: 2026-09-23
@@ -13,4 +13,4 @@ The other terminal kept a stale CLAUDE.md loaded for the whole session and kept 
 A hook or startup check that records a hash of CLAUDE.md at session start and warns Claude if the on-disk file changes mid-session, prompting a re-read.
 
 ## Decision
-(pending Ioseb)
+Ioseb, 2026-09-26 (proposal review): rejected. Claude Code already tells the session when CLAUDE.md changes on disk.
