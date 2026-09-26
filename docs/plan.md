@@ -12,6 +12,17 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Foundation v2 step 2: session summaries sorted into project files, memory staleness (2026-09-26, ADR 0022; approved by Ioseb 2026-09-26)
+1. The summarizer also writes a small "Routed" block: work done, open questions (with who must answer), people we wait on, decisions, lessons, and changes to plan, spec, ADRs or rules.
+2. New script distribute.py, run right after each summary (one at a time, even with parallel terminals):
+   - done, open questions, waiting on people: added to docs/progress.md automatically, one line each, ending with the source summary's name so any wrong line can be traced and removed. Items already there are not added twice.
+   - lessons: added to memory/procedural/lessons.md automatically; if the same lesson appears a second time, a rule proposal is created.
+   - decisions: if docs/build-log.md has no matching line, a proposal "record this decision" is created (Ioseb confirms; nothing is written to ADRs automatically).
+   - changes to plan, spec, ADRs or rules: become proposals, never edited automatically.
+3. On resume, Claude tidies progress.md: removes questions already answered and done items older than 30 days (moves them nowhere; git keeps history).
+4. Staleness: files in memory/semantic/ get a "last verified" date line; the resume brief and recall search flag any older than 60 days. Deferred proposals come back after 30 days. Handoffs marked done are deleted after 14 days.
+5. Tests, offline with the fake claude command: routed items land in the right file; duplicates skipped; lesson twice gives a rule proposal; plan change gives a proposal and plan.md is untouched; a broken Routed block changes nothing and is reported; two summaries at once do not corrupt progress.md; stale flags and cleanup. Then evals, /code-review, pull request.
+
 ### Foundation v2 step 1: handoff protocol, progress.md, resume, worktrees (2026-09-26, ADR 0022 and 0023; approved by Ioseb 2026-09-26)
 1. Shared location: handoffs live in the main project folder even when a terminal works in a worktree (scripts find it through git). New folder memory/working/handoffs/, one file per task, plus a generated _index.md (task, type, branch, updated, open or done). The old handoff.md becomes handoffs/phase-5-launch.md.
 2. handoff skill rewritten: the fixed one page template (foundation-v2 section 1.3), records the git commit it was written at, sets Status done when the task is finished. Fix sessions also write memory/incidents/YYYY-MM-DD-slug.md with a required test line; the lesson goes to lessons.md.

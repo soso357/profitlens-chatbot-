@@ -1,4 +1,5 @@
 ---
+last_verified: 2026-09-26
 title: Glossary of technical terms explained to Ioseb
 ---
 

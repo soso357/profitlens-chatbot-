@@ -14,10 +14,11 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
 | 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: Framer hidden test page, then 30 day deletion, kill switch, weekly digest, README, privacy text, new API key, paid plan with disk | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
-| F Foundation v2 (docs/foundation-v2.md) | IN PROGRESS: step 1 of 7 (handoff protocol, progress.md, resume, worktrees) on branch maintain-foundation-v2 | design approved 2026-09-26 (ADR 0023) |
+| F Foundation v2 (docs/foundation-v2.md) | IN PROGRESS: step 1 of 7 merged (pull request #3); step 2 (summary sorting, memory staleness) in pull request, waiting for merge | design approved 2026-09-26 (ADR 0023) |
 
 ## Done (newest first)
 
+- 2026-09-26: Foundation v2 step 1: one handoff per task, resume, progress.md, worktrees, incident notes (pull request #3).
 - 2026-09-26: Foundation v2 design approved, all recommended options (ADR 0022, 0023).
 - 2026-09-26: Alert channels fail loudly (ADR 0021), pull request #2.
 - 2026-09-26: Pull request flow with stage labels and evals (ADR 0020), pull request #1.
@@ -27,7 +28,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" to pick one).
 - phase-5-launch (Build, master): take the widget from the hidden test page to the homepage.
-- foundation-v2 (Build, maintain-foundation-v2): step 1 of 7.
+- foundation-v2 (Build, maintain-foundation-v2-step2): step 2 of 7.
 
 ## Open questions
 

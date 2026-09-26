@@ -6,15 +6,16 @@
   handoffs.py list          open tasks, newest first
   handoffs.py brief         everything the resume skill shows: open tasks, phase status,
                             last session's next steps, proposals, failed summaries
-  handoffs.py index         rebuild memory/working/handoffs/_index.md
+  handoffs.py index         delete handoffs done more than 14 days ago, rebuild _index.md
 """
+import json
 import os
 import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import (HANDOFFS, ROOT, SESSIONS, frontmatter, list_handoffs, open_proposals,  # noqa: E402
-                    summary_failures, task_slug, write_handoff_index)
+from common import (HANDOFFS, ROOT, SESSIONS, STATE, cleanup_done_handoffs, deferred_due, frontmatter,  # noqa: E402
+                    list_handoffs, open_proposals, stale_semantic, summary_failures, task_slug, write_handoff_index)
 
 
 def phase_status():
@@ -63,8 +64,29 @@ def tasks_text():
     return "Open tasks (memory/working/handoffs/):\n" + "\n".join(lines)
 
 
+def staleness_text():
+    out = []
+    for f in sorted((STATE / "distribute-failed").glob("*.json")):
+        try:
+            last = json.loads(f.read_text())
+        except Exception:
+            continue
+        out.append(f"Sorting summary {last.get('summary')} into the project files failed ({last.get('error')}). "
+                   f"Tell Ioseb in one sentence, then redo it: python3 .claude/scripts/distribute.py "
+                   f"memory/episodic/sessions/{last.get('summary')}")
+    stale = stale_semantic()
+    if stale:
+        out.append("Memory to re-check with Ioseb, then set last_verified to today: "
+                   + "; ".join(f"{p.name} ({n})" for p, n in stale))
+    due = deferred_due()
+    if due:
+        out.append("Deferred proposals due to be asked again: "
+                   + "; ".join(f"{name[:4]} {title[:60]} ({age} days)" for name, title, age in due))
+    return "\n".join(out)
+
+
 def brief():
-    parts = [tasks_text(), phase_status(), last_summary(), failures_text()]
+    parts = [tasks_text(), phase_status(), last_summary(), failures_text(), staleness_text()]
     props = open_proposals()
     if props:
         lines = [f"- {name[:4]} [{status}] {title[:90]}" for name, status, title in props]
@@ -82,6 +104,7 @@ def main():
     elif cmd == "list":
         print(tasks_text())
     elif cmd == "index":
+        cleanup_done_handoffs()
         write_handoff_index()
     else:
         print(brief())

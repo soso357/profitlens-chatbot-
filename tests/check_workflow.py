@@ -206,6 +206,119 @@ check("parallel runs with different titles never reuse a proposal number", len(n
 if len(nums) != 7:
     print("   ", sorted(nums), outs)
 
+print("Summaries sorted into project files (step 2):")
+PROG = TMP / "docs" / "progress.md"
+PROG.write_text("# Progress\n\n## Done (newest first)\n\n- 2026-09-01: Old thing done.\n\n## Open questions\n\n"
+                "- Who pays for the Render plan? (Ioseb)\n\n## Waiting on people\n\n- Founders: approve the test page.\n")
+(TMP / "docs" / "build-log.md").write_text("- 2026-09-26: Ioseb chose soft stop at 70 percent for context.\n")
+(TMP / "memory" / "procedural").mkdir(parents=True, exist_ok=True)
+LES = TMP / "memory" / "procedural" / "lessons.md"
+LES.write_text("# Lessons\n\n- 2026-09-22: Scripted edits must fail loudly when the old text is not found.\n")
+PLAN_BEFORE = (TMP / "docs" / "plan.md").read_text()
+(TMP / "docs" / "adr").mkdir(exist_ok=True)
+(TMP / "docs" / "adr" / "0099-x.md").write_text("# ADR 0099\n\n## Context\n\nLong text about dark mode, colours, "
+                                               "launcher, widget, support.\n\n## Decision\n\nNew sessions start clean "
+                                               "and load context only on resume.\n\n## Consequences\n\nMore terminals.\n")
+(TMP / "memory" / "proposals" / "0901-rejected.md").write_text(
+    "---\ntitle: Change spec: Answer visitors in Portuguese\nstatus: rejected\n---\n\n## Decision\nno.\n")
+SUMS = TMP / "memory" / "episodic" / "sessions"
+
+
+def routed_summary(name, routed):
+    f = SUMS / name
+    f.write_text("---\ntitle: t\nreviewed: no\n---\n\n## Next steps\n1. x\n\n## Routed\n```json\n"
+                 + (routed if isinstance(routed, str) else json.dumps(routed)) + "\n```\n")
+    return f
+
+
+def distribute(f):
+    return json.loads(script("distribute.py", "", str(f)).strip().splitlines()[-1])
+
+
+nprops = len(list((TMP / "memory" / "proposals").glob("[0-9]*.md")))
+r = distribute(routed_summary("2026-09-26-100000-aaaa.md", {
+    "done": ["Kill switch built and tested (pull request #4)"],
+    "open_questions": [{"question": "Should call times be spread over different days?", "who": "Ioseb"},
+                       {"question": "Who pays for the Render plan?", "who": "Ioseb"}],
+    "waiting": [{"who": "Ioseb", "what": "buy a new Anthropic API key"}],
+    "decisions": [{"decision": "context stop", "chosen": "soft stop at 70 percent", "by": "Ioseb"},
+                  {"decision": "Widget colour", "chosen": "dark green launcher button", "by": "founders"},
+                  {"decision": "New session start", "chosen": "start clean, load context only on resume", "by": "Ioseb"},
+                  {"decision": "Consequences of dark mode", "chosen": "support dark mode in the widget", "by": "Ioseb"}],
+    "lessons": ["Scripted edits must fail loudly when old text is not found", "Render env changes need a manual redeploy"],
+    "changes": [{"file": "spec", "what": "Add a rule for visitors writing in Spanish", "why": "a visitor did"},
+                {"file": "spec", "what": "Answer visitors in Portuguese", "why": "again"}]}))
+prog = PROG.read_text()
+done_part = prog.split("## Done (newest first)")[1].split("## ")[0]
+check("done item added at the top of Done, with its source", done_part.strip().startswith(
+    "- 20") and "Kill switch built" in done_part.strip().splitlines()[0] and "(from 2026-09-26-100000-aaaa.md)" in prog)
+check("new open question added, known one not added twice", "spread over different days" in prog
+      and prog.count("Render plan") == 1)
+check("waiting item added under Waiting on people as 'who: what'",
+      "- Ioseb: buy a new Anthropic API key" in prog.split("## Waiting on people")[1])
+les = LES.read_text()
+check("new lesson appended with source, repeated lesson not appended", "manual redeploy" in les
+      and les.count("fail loudly") == 1)
+titles = [__import__("common").frontmatter(f)[0].get("title", "") for f in sorted((TMP / "memory" / "proposals")
+                                                                                    .glob("[0-9]*.md"))[nprops:]]
+from common import similar  # noqa: E402
+check("different numbers are different items", not similar("Step 1 merged (pull request #3)",
+                                                           "Step 2 merged (pull request #4)"))
+check("same item reworded is the same", similar("- 2026-09-20: Kill switch built and tested (from a.md)",
+                                                "The kill switch was built and tested"))
+check("repeated lesson becomes a rule proposal", any(x.startswith("Make a rule") for x in titles))
+check("decision missing from build log becomes a proposal, logged one does not",
+      any("Widget colour" in x for x in titles) and not any("context stop" in x for x in titles))
+check("decision already in an ADR: no proposal", not any("New session start" in x for x in titles))
+check("ADR headings or long unrelated text do not count as recording a decision",
+      any("Consequences of dark mode" in x for x in titles))
+check("a rejected proposal is not proposed again", not any("Portuguese" in x for x in titles))
+check("spec change becomes a proposal; plan.md untouched", any(x.startswith("Change spec") for x in titles)
+      and (TMP / "docs" / "plan.md").read_text() == PLAN_BEFORE)
+before = PROG.read_text()
+r2 = distribute(routed_summary("2026-09-26-110000-bbbb.md", {
+    "done": ["Kill switch built and tested (pull request #4)"], "changes": [
+        {"file": "spec", "what": "Add a rule for visitors writing in Spanish", "why": "again"}]}))
+check("same items again: nothing added, no duplicate proposal", PROG.read_text() == before and r2["proposals"] == [])
+r3 = distribute(routed_summary("2026-09-26-120000-cccc.md", "{not json"))
+check("broken Routed block: nothing changed, failure kept for the brief", PROG.read_text() == before
+      and r3["ok"] is False and "failed" in script("handoffs.py", "", "brief"))
+distribute(routed_summary("2026-09-26-121000-dddd.md", {"done": ["Something else finished fine"]}))
+check("a later good summary does not hide an earlier failure", "cccc" in script("handoffs.py", "", "brief"))
+check("summary without a Routed block is fine", distribute(SUMS / "2026-09-26-100000-aaaa.md")["ok"])
+fs = [routed_summary(f"2026-09-26-13000{i}-par{i}.md", {"done": [f"Parallel result number {i} zebra{i} finished"]})
+      for i in range(4)]
+procs = [subprocess.Popen([sys.executable, str(SCRIPTS / "distribute.py"), str(f)], env=ENV, stdout=subprocess.DEVNULL,
+                          stdin=subprocess.DEVNULL) for f in fs]
+[x.wait(timeout=60) for x in procs]
+prog = PROG.read_text()
+check("four summaries sorted at once: all four kept, file intact", all(f"zebra{i}" in prog for i in range(4))
+      and prog.count("## Done") == 1 and prog.count("## Open questions") == 1)
+
+print("Staleness (step 2):")
+SEM = TMP / "memory" / "semantic"
+SEM.mkdir(parents=True, exist_ok=True)
+(SEM / "old.md").write_text("---\ntitle: Old facts\nlast_verified: 2026-01-01\n---\nbody\n")
+(SEM / "fresh.md").write_text(f"---\ntitle: Fresh\nlast_verified: {time.strftime('%Y-%m-%d')}\n---\nbody\n")
+(TMP / "memory" / "proposals" / "0900-deferred-idea.md").write_text(
+    "---\ntitle: Deferred idea\nstatus: deferred\ncreated: 2026-01-01\n---\n\n## Decision\nIoseb, 2026-01-02: deferred.\n")
+(TMP / "memory" / "proposals" / "0902-deferred-no-date.md").write_text(
+    "---\ntitle: Undated deferral\nstatus: deferred\ncreated: 2026-01-01\n---\n\n## Decision\n(pending Ioseb)\n"
+    "Deferred: wait until Phase 6.\n")
+(TMP / "memory" / "proposals" / "0903-deferred-again.md").write_text(
+    "---\ntitle: Deferred twice\nstatus: deferred\ncreated: 2026-01-01\n---\n\n## Decision\nIoseb, 2026-01-02: "
+    f"deferred.\nIoseb, {time.strftime('%Y-%m-%d')}: deferred again.\n")
+b = script("handoffs.py", "", "brief")
+check("undated deferral falls back to the created date", "Undated deferral" in b)
+check("the latest deferral date counts", "Deferred twice" not in b)
+check("brief flags old semantic memory, not fresh", "old.md" in b and "fresh.md" not in b)
+check("brief lists a deferred proposal that is due", "Deferred idea" in b)
+handoff("finished-long-ago", None, status="done", updated="2026-01-01 10:00")
+handoff("finished-today", None, status="done", updated=time.strftime("%Y-%m-%d %H:%M"))
+script("handoffs.py", "", "index")
+check("done handoff older than 14 days deleted, recent one kept",
+      not (HO / "finished-long-ago.md").exists() and (HO / "finished-today.md").exists())
+
 print("Git hooks:")
 msg = TMP / "msg"
 for text, want in [("[Build P5] Kill switch (R8)", 0), ("[Maintain] Summarizer lock", 0),

@@ -36,7 +36,7 @@ Source of truth for each thing is exactly one file (playbook rule): requirements
 4. Work. Every choice between approaches: two or three options, plain pros and cons, wait. Then an ADR (skill: new-adr).
 5. At 60% context the statusline turns yellow and Claude updates the task handoff. At 70% it turns red "new terminal": Claude finishes the step, hands off, commits and asks you to open a new terminal and say resume.
 6. Fix sessions end with an incident note in memory/incidents/ and a new test.
-7. When you close the session, a background job writes the session summary to memory/episodic/sessions/ and any improvement ideas to memory/proposals/. Nothing to do by hand.
+7. When you close the session, a background job writes the session summary to memory/episodic/sessions/ and sorts it (distribute.py): work done, open questions and people we wait on go into docs/progress.md; lessons into lessons.md; decisions not in the build log and any plan, spec, ADR or rule change become proposals for Ioseb. Every automatic line names its source summary. Nothing to do by hand; on the next resume Claude tidies progress.md.
 8. Commit on the branch when a step works, with a stage label. At the phase gate: evals, review, pull request, Ioseb merges.
 
 ## 3. Context handoff and compaction
@@ -88,7 +88,7 @@ Rules:
 | PreCompact | pre_compact.py | snapshot (the instructions are in CLAUDE.md) |
 | PostToolUse (Write/Edit) | lint_content.py | blocks dashes and percentages in chatbot text |
 | PostToolUse (Write/Edit) | handoff_track.py | remembers which task this session owns; rebuilds the task index |
-| SessionEnd | session_end.py -> summarize_session.py | automatic session summary and proposals; one run per session at a time; a resumed session is summarized only from where the last summary ended; a failure shows in the statusline and the next session brief until redone |
+| SessionEnd | session_end.py -> summarize_session.py -> distribute.py | automatic session summary and proposals; one run per session at a time; a resumed session is summarized only from where the last summary ended; a failure shows in the statusline and the next session brief until redone |
 | git commit-msg | .githooks/commit-msg | refuses a commit without a stage label |
 | git pre-push | .githooks/pre-push | refuses a push to master (pull requests only) |
 | permissions.deny | settings.json | Claude cannot read .env or credential files, no force push, no hard reset, no skipping git hooks |
