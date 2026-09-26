@@ -8,7 +8,7 @@ Date: 2026-09-26
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
 Anything marked FOUNDER TO CONFIRM is not decided and must not be implemented as if it were.
-Versions (ADR 0025): Ioseb approves a version; any later edit makes it Draft again (a hook does this) until he approves the next version. A new phase note in docs/plan.md starts with "Spec version X, covers ..." and may only cite an Approved version. Section 8 names the check that proves each id.
+Versions (ADR 0025): when Ioseb approves, Claude runs `spec_check.py approve`, which sets the next version and a fingerprint of the text; any later change makes it Draft again (a hook and the evals check the fingerprint). An open item marked FOUNDER TO CONFIRM names the ids it blocks, e.g. "(blocks R3)". A new phase note in docs/plan.md starts with "Spec version X, covers ..." and may only cite an Approved version. Section 8 names the check that proves each id.
 
 ## 1. Scope
 
@@ -78,7 +78,7 @@ Anthropic API (conversation), Google Calendar (free slots, events with Meet link
 - Calendar hours: RESOLVED 2026-09-22. All 7 days, 19:00 to 03:00 Asia/Tbilisi, calendar ioseb@useprofitlens.com.
 - Notification recipient: RESOLVED 2026-09-22. ioseb@useprofitlens.com.
 - Model: Claude Sonnet 5, for testing and real visitors (ADR 0016).
-- Exact wording of the AI disclosure. Ioseb named the assistant Jelena (2026-09-23): "Hi, I'm Jelena, the AI assistant for ProfitLens...". FOUNDER TO CONFIRM
+- Exact wording of the AI disclosure. Ioseb named the assistant Jelena (2026-09-23): "Hi, I'm Jelena, the AI assistant for ProfitLens...". FOUNDER TO CONFIRM (blocks R3, B1, G2)
 
 ## 8. Acceptance checks
 

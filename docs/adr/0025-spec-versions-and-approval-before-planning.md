@@ -10,7 +10,7 @@ docs/spec.md had no version or approval status, so a phase could be planned from
 
 ## Decision
 
-The spec carries Version, Status (Draft or Approved), Approved by and Date. Any edit to an Approved spec sets it back to Draft (a PostToolUse hook), until Ioseb approves the next version. Section 8 names the check for every R, B and G id: a test, "manual: how", or "none yet". tests/check_spec.py fails when an id has no row or a named test does not exist, and when a phase note dated 2026-09-27 or later does not start with "Spec version X, covers ..." for the approved version, or covers an id that is FOUNDER TO CONFIRM. The skill spec-to-plan holds the steps.
+The spec carries Version, Status (Draft or Approved), Approved by, Date and a Fingerprint (a short hash of its text). Only `spec_check.py approve`, run after Ioseb says approved, sets Approved and the fingerprint. If the text later changes by any tool, a PostToolUse hook sets it back to Draft, and the evals fail on an Approved spec whose fingerprint does not match. Section 8 names the check for every R, B and G id: a test, "manual: how", or "none yet". tests/check_spec.py fails when an id has no row or a named test does not exist, and when a phase note (other than the four tagged [before spec versions]) does not start with "Spec version X, covers ..." for the approved version, or covers an id blocked by a FOUNDER TO CONFIRM item. Such items name the ids they block. The skill spec-to-plan holds the steps.
 
 ## Consequences
 
