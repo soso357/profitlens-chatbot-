@@ -12,7 +12,8 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import MEMORY, ROOT, frontmatter  # noqa: E402
+from common import MAIN_ROOT as ROOT, MEMORY, frontmatter  # noqa: E402
+# ROOT is the main folder: the index is shared by every worktree and must not be rebuilt from a worktree's copy.
 
 DB = MEMORY / "index.sqlite"
 SOURCES = [
@@ -30,7 +31,7 @@ SOURCES = [
 
 def build(quiet=False):
     DB.parent.mkdir(parents=True, exist_ok=True)
-    tmp = DB.with_suffix(".tmp")
+    tmp = DB.with_suffix(f".tmp{os.getpid()}")  # parallel rebuilds never write the same temp file
     tmp.unlink(missing_ok=True)
     con = sqlite3.connect(tmp)
     con.execute("CREATE TABLE docs (kind TEXT, path TEXT, title TEXT, status TEXT, date TEXT, body TEXT)")

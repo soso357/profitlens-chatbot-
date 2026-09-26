@@ -28,7 +28,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import (GUARD_ENV, PROPOSALS, ROOT, SESSIONS, STATE, is_real_user_text, open_proposals,  # noqa: E402
+from common import (GUARD_ENV, MAIN_ROOT, PROPOSALS, ROOT, SESSIONS, STATE, is_real_user_text, open_proposals,  # noqa: E402
                     scrub, session_state_path, set_summary_failure)
 
 MIN_USER_MESSAGES = 3
@@ -236,7 +236,7 @@ def summarize(transcript, sid, reason, stamp, dry=False):
     set_summary_failure(sid, None)
     props = save_proposals(body, out.name, sid)
     subprocess.run([sys.executable, str(Path(__file__).with_name("memory_index.py")), "build", "--quiet"])
-    print(f"{stamp} wrote {out.relative_to(ROOT)}; proposals: {props or 'none'}")
+    print(f"{stamp} wrote {out.relative_to(MAIN_ROOT)}; proposals: {props or 'none'}")
 
 
 def close_header(body):

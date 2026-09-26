@@ -86,12 +86,13 @@ HO.mkdir(parents=True, exist_ok=True)
 
 def handoff(slug, branch, status="open", updated="2026-09-26 10:00"):
     f = HO / f"{slug}.md"
-    f.write_text(f"---\ntask: {slug}\ntype: Build\nbranch: {branch}\nupdated: {updated}\nstatus: {status}\n---\n\n"
+    head = f"branch: {branch}\n" if branch else ""
+    f.write_text(f"---\ntask: {slug}\ntype: Build\n{head}updated: {updated}\nstatus: {status}\n---\n\n"
                  f"## Goal\nGOAL-{slug}\n")
     return f
 
 
-a = handoff("task-a", "branch-a", updated="2026-09-26 10:00")
+a = handoff("task-a", None, updated="2026-09-26 10:00")
 b = handoff("task-b", "branch-b", updated="2026-09-26 11:00")
 handoff("task-old", "branch-c", status="done")
 script("handoff_track.py", json.dumps({"session_id": "s4", "tool_name": "Write", "tool_input": {"file_path": str(a)}}))
@@ -130,6 +131,32 @@ wt_home = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, 
                          env=dict(ENV, CLAUDE_PROJECT_DIR=str(TMP / "wt"))).stdout.strip()
 check("handoffs resolved to the main folder from a worktree",
       Path(wt_home).resolve() == (repo / "memory" / "working" / "handoffs").resolve())
+WT_ENV = dict(ENV, CLAUDE_PROJECT_DIR=str(TMP / "wt"))
+WHO = repo / "memory" / "working" / "handoffs"
+WHO.mkdir(parents=True)
+
+
+def track(sid, f, cwd):
+    subprocess.run([sys.executable, str(SCRIPTS / "handoff_track.py")], env=WT_ENV, capture_output=True, text=True,
+                   input=json.dumps({"session_id": sid, "cwd": str(cwd), "tool_input": {"file_path": str(f)}}))
+    try:
+        return json.loads((repo / "memory" / "working" / "state" / f"{sid}.json").read_text()).get("task")
+    except Exception:
+        return None
+
+
+for slug, br, st in (("own", "maintain-wt", "open"), ("other", "phase-9-x", "open"), ("closed", "maintain-wt", "done")):
+    (WHO / f"{slug}.md").write_text(f"---\ntask: {slug}\ntype: Build\nbranch: {br}\nstatus: {st}\n---\n")
+check("writing an open handoff on this session's branch claims it", track("w1", WHO / "own.md", TMP / "wt") == "own")
+check("writing another terminal's handoff (other branch) does not claim it", track("w2", WHO / "other.md", TMP / "wt") is None)
+check("closing a task (status done) does not claim it", track("w3", WHO / "closed.md", TMP / "wt") is None)
+fake_claude(True)
+transcript(TMP / "wt.jsonl", 3)
+r = subprocess.run([sys.executable, str(SCRIPTS / "summarize_session.py"), str(TMP / "wt.jsonl"), "sid-wt", "exit"],
+                   env=WT_ENV, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=60)
+check("summary written from a worktree lands in the main folder, no false failure",
+      "wrote" in r.stdout and list((repo / "memory" / "episodic" / "sessions").glob("*sid-wt*"))
+      and not (repo / "memory" / "working" / "state" / "sid-wt.summary-failed.json").exists())
 
 print("Session summarizer:")
 tr = TMP / "t.jsonl"
