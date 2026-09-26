@@ -21,7 +21,6 @@ CLAUDE.md requires every technical term to be explained in one plain sentence th
 - **Render**: the hosting company that will run the chat service on the internet.
 - **Service account**: a robot Google account our service uses to read and write the booking calendar.
 - **Skill**: a written procedure Claude Code loads when a task needs it, like a checklist.
-- **SMTP**: the standard way a program sends email (we use Zoho's).
 - **SQLite**: a whole database kept in a single file on disk.
 - **Statusline**: the line at the bottom of Claude Code showing model, context use and warnings.
 - **Virtual environment (.venv)**: a private folder of Python libraries just for this project.

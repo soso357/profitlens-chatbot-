@@ -12,6 +12,14 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Foundation v2 step 4: spec versions and approval before planning (2026-09-26, foundation-v2 section 6; approved by Ioseb 2026-09-26)
+1. docs/spec.md gets a header: Version, Status (Draft or Approved), Approved by, Date. First version 1.0 as Draft, with lines that are out of date marked for Ioseb (the Zoho and Telegram lines were corrected on 2026-09-26).
+2. Every rule R1 to R14 and behaviour B1 to B12 gets an "acceptance check": the test that proves it (a check file or a scripted conversation), or "manual: how".
+3. A hook: any edit to an approved spec sets its Status back to Draft automatically, until Ioseb approves again.
+4. New check tests/check_spec.py, in the evals: header present; every R, B and G id has an acceptance check that points to a test that exists; a new phase note in plan.md starts with "Spec version X, covers ..." and X is the approved version; requirements it covers have no FOUNDER TO CONFIRM.
+5. New skill spec-to-plan: the fixed steps from intent to requirement to spec to Ioseb's approval to phase note.
+6. Docs: workflow.md, ADR 0025. Then evals, code review, pull request. Ioseb then approves spec 1.0 (a separate small pull request after reading it).
+
 ### Foundation v2 step 3: agent harness, what Claude may do (2026-09-26, foundation-v2 section 5; approved by Ioseb 2026-09-26)
 1. .claude/settings.json gets three lists:
    - allow (no prompt): tests, evals, lint, git status/diff/log/add/commit, the project's own scripts.
@@ -45,7 +53,7 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 9. Docs: workflow.md sections 2 and 3, memory/README.md, CLAUDE.md sessions and compact instructions; ADR 0012 marked partly superseded by 0022.
 10. Tests: tests/check_workflow.py extended, offline: new session gets one line only; compaction reinjects the right task's handoff when two exist; 60 and 70 nudges fire once each; index lists open and hides done; handoffs found from inside a worktree; statusline colours. Then tests.evals --offline, /code-review, pull request.
 
-### Phase 5 alert check, proposal 0013 (2026-09-26, Ioseb chose: warn through the other channel, ADR 0021)
+### Phase 5 alert check, proposal 0013 (2026-09-26, Ioseb chose: warn through the other channel, ADR 0021) [before spec versions]
 1. app/alert_health.py: remembers the last result per channel (telegram, email): ok or failing, the reason, the time. Kept in memory only; no visitor data in it.
 2. app/telegram.py and app/email_alerts.py keep the failure reason instead of throwing it away (Telegram's own error text, including the new chat ID when a group was upgraded; for email, missing sign-in file or the Google error). Tokens are never written into a reason.
 3. On failure, a warning goes through the other channel: Telegram broken, the founders get an email; email broken, a Telegram message. At most once an hour per channel. The warning says what broke, the reason, and what to do (for example "update TELEGRAM_CHAT_ID on Render to -100...").
@@ -53,7 +61,7 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 5. /health gains "alerts": ok or failing per channel, without the reason text (the page is public).
 6. Tests: tests/check_alerts.py, offline, with fake Telegram and Gmail: wrong chat ID, missing token, missing sign-in file, both broken, warning sent once an hour, nothing secret in reasons or /health. Added to tests/evals.py.
 
-### Phase 4 website widget (2026-09-23)
+### Phase 4 website widget (2026-09-23) [before spec versions]
 1. app/static/widget.js, served at /widget.js: one self contained file (styles and markup built by the script). Framer embed is one script tag; the widget finds the service address from its own src.
 2. Launcher button bottom right, panel over the page, full screen under 480px wide. Geist (inherited from the site, nothing loaded from third parties), body text #666666, no emoji. First message is the AI disclosure, sent by the server (POST /start) so rule R3 is enforced in code.
 3. Session id and the visible conversation live in sessionStorage: kept while the visitor moves between pages, gone when the tab closes. No cookies.
@@ -62,14 +70,14 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 6. Test without the API key: TEST_PAGES=1 plus MODEL_VIA_CLAUDE_CODE=1 makes the local service get replies from Haiku through the Claude Code login. /widget-test is a local page that embeds the widget like Framer will.
 7. docs/framer-embed.md: the exact snippet, where to paste it in Framer, and the hidden test page steps.
 
-### Phase 2 leads and alerts (2026-09-23)
+### Phase 2 leads and alerts (2026-09-23) [before spec versions]
 1. app/leads.py saves one row per lead to leads.csv (DATA_DIR): time, session, name, restaurant, location, email, fit, outcome (booked, not a fit, founder needed, times offered but not booked), booked time.
 2. The model signals a not a fit visitor or a handoff with a hidden <lead>{...}</lead> block once it has their email; code saves the lead and sends "Chat handoff: founder needed" (or "New lead: not a fit") by Telegram and email with the conversation.
 3. Bookings save a "booked" lead. A fit visitor who saw times but did not pick one is saved as "times offered, not booked" when the conversation goes quiet.
 4. Every conversation goes to Telegram after 30 quiet minutes (ADR 0015). The preview tool sends it when you type quit.
 5. Tests: offline checks for lead saving and the conversation digest; preview runs for a not a fit visitor, a handoff and a booking.
 
-### Phase 3 booking in the chat (2026-09-23, Ioseb chose to build it before Phases 1 and 2 are approved)
+### Phase 3 booking in the chat (2026-09-23, Ioseb chose to build it before Phases 1 and 2 are approved) [before spec versions]
 1. app/chat_booking.py: when the model has name, restaurant, city and state, email and a fit (or unclear) result, it ends its reply with a hidden <offer_times>{...}</offer_times> block. The service strips it, reads the calendar and returns 3 times in the visitor's US time zone (default Eastern). The model never writes times or says a call is booked; only code does (guards R1).
 2. Visitor clicks a time (POST /book) or types 1, 2 or 3. Code re-checks the time, books it with a Meet link (app/booking.py), Google emails the invite, founders get Telegram and email alerts with details, fit result and a short transcript.
 3. "Other times" shows the next 3. Time taken: new times offered. Calendar down: apology, ask for preferred times, founder alert (spec B11).

@@ -21,7 +21,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PY = sys.executable
 OFFLINE = ["tests.check_guardrails", "tests.check_booking", "tests.check_sessions", "tests.check_alerts",
-           "tests.check_workflow", "tests.check_harness"]
+           "tests.check_workflow", "tests.check_harness",
+           "tests.check_spec"]
 
 
 def run(module, env=None):

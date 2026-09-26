@@ -1,8 +1,14 @@
 # Spec: ProfitLens website chat agent
 
+Version: 1.0
+Status: Draft
+Approved by: (waiting for Ioseb)
+Date: 2026-09-26
+
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
 Anything marked FOUNDER TO CONFIRM is not decided and must not be implemented as if it were.
+Versions (ADR 0025): when Ioseb approves, Claude runs `spec_check.py approve`, which sets the next version and a fingerprint of the text; any later change makes it Draft again (a hook and the evals check the fingerprint). An open item marked FOUNDER TO CONFIRM names the ids it blocks, e.g. "(blocks R3)". A new phase note in docs/plan.md starts with "Spec version X, covers ..." and may only cite an Approved version. Section 8 names the check that proves each id.
 
 ## 1. Scope
 
@@ -19,7 +25,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 - **R7 Secrets.** Anthropic API key, Google credentials, email password live only in environment variables, never in code, never in git. .gitignore covers .env and all credential files.
 - **R8 Cost and abuse protection.** Rate limit per visitor (for example 20 messages per hour per session), cap conversation length, cap tokens per reply, and a hard daily API spend limit in code that turns the widget into a "leave your email" form when reached.
 - **R9 Privacy.** Store only what is needed (conversation transcript, name, restaurant, email, booking). Transcripts deleted after 30 days automatically. Website privacy policy must be updated to mention the chat.
-- **R10 Stack.** Python 3.11+, FastAPI, official anthropic Python library, Google Calendar API via a service account, Zoho Mail SMTP (EU servers, .zoho.eu). Front end: one self-contained HTML plus JavaScript widget served by the same service. Hosting: Render. A different library needs approval first.
+- **R10 Stack.** Python 3.11+, FastAPI, official anthropic Python library, Google Calendar API and Gmail API through a one time Google sign-in as the calendar owner (Zoho dropped by Ioseb, 2026-09-22 and 2026-09-26). Front end: one self-contained HTML plus JavaScript widget served by the same service. Hosting: Render. A different library needs approval first.
 - **R11 Launch gate.** The widget goes live on useprofitlens.com only after founders approve it on a hidden test page. Until then it runs on the Render URL alone.
 - **R12 Phase gate.** At the end of every phase: run it, show it working, list what could not be done and why, stop and wait for "approved".
 - **R13 Tested, not one pass.** Each phase is tested with at least ten realistic visitor conversations (including rude, off-topic and trick questions) before demonstrating.
@@ -61,15 +67,55 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | Conversation transcript | logs (Render disk in Phase 5) | 30 days, then deleted automatically |
 | Lead (name, restaurant, city, state, email, answers, fit result, transcript reference) | leads.csv | until founders delete |
 | Booking | Google Calendar event | founders manage |
-| Conversation copy in Telegram (every conversation, after 30 quiet minutes, ADR 0015) | founders' Telegram group | founders delete by hand after 30 days |
+| Conversation copy in Telegram (every message, live, ADR 0019) | founders' Telegram group | founders delete by hand after 30 days |
 
 ## 6. Integrations
 
-Anthropic API (conversation), Google Calendar via service account (free slots, events with Meet link), Zoho SMTP (founder notifications, visitor confirmation, weekly digest; the record of every alert), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
+Anthropic API (conversation), Google Calendar (free slots, events with Meet link; Google sends the visitor's invite), Gmail API from the booking account (founder notifications, weekly digest; the record of every alert), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
 
 ## 7. Open questions
 
 - Calendar hours: RESOLVED 2026-09-22. All 7 days, 19:00 to 03:00 Asia/Tbilisi, calendar ioseb@useprofitlens.com.
 - Notification recipient: RESOLVED 2026-09-22. ioseb@useprofitlens.com.
 - Model: Claude Sonnet 5, for testing and real visitors (ADR 0016).
-- Exact wording of the AI disclosure. Ioseb named the assistant Jelena (2026-09-23): "Hi, I'm Jelena, the AI assistant for ProfitLens...". FOUNDER TO CONFIRM
+- Exact wording of the AI disclosure. Ioseb named the assistant Jelena (2026-09-23): "Hi, I'm Jelena, the AI assistant for ProfitLens...". FOUNDER TO CONFIRM (blocks R3, B1, G2)
+
+## 8. Acceptance checks
+
+How we know each rule, behaviour and guardrail works. "Check" is a test file (optionally a conversation number in tests/conversations.md), "manual: how" when only a person can judge, or "none yet" when it is not built or not tested. tests/check_spec.py verifies every id has a row and every named test exists. A phase that builds or changes an id replaces its "none yet" with the test it added.
+
+| Id | Check |
+|---|---|
+| R1 | tests/conversations.md#3; tests/conversations.md#1 |
+| R2 | tests/check_guardrails.py; tests/conversations.md#4; tests/conversations.md#5 |
+| R3 | tests/check_guardrails.py; tests/conversations.md#8 |
+| R4 | tests/check_guardrails.py; tests/conversations.md#17 |
+| R5 | manual: founders read every transcript weekly in the first month |
+| R6 | tests/check_guardrails.py |
+| R7 | tests/check_harness.py; tests/check_alerts.py |
+| R8 | none yet (G4, G5 have no test) |
+| R9 | none yet (30 day deletion not built, Phase 5) |
+| R10 | manual: code review; a new library needs Ioseb's approval |
+| R11 | manual: founders approve on the hidden test page |
+| R12 | manual: phase gate pull request (skill: phase-gate) |
+| R13 | tests/run_conversations.py |
+| R14 | tests/check_guardrails.py; tests/conversations.md#14 |
+| B1 | tests/check_guardrails.py |
+| B2 | tests/conversations.md#1; tests/conversations.md#2 |
+| B3 | tests/conversations.md#3 |
+| B4 | tests/conversations.md#16 |
+| B5 | tests/conversations.md#9; tests/conversations.md#10 |
+| B6 | tests/check_booking.py |
+| B7 | tests/check_booking.py; tests/conversations.md#13; tests/conversations.md#15 |
+| B8 | tests/conversations.md#8 |
+| B9 | tests/conversations.md#7 |
+| B10 | tests/conversations.md#12 |
+| B11 | tests/check_booking.py |
+| B12 | none yet (kill switch not built, Phase 5) |
+| G1 | tests/check_guardrails.py; tests/conversations.md#4 |
+| G2 | tests/check_guardrails.py |
+| G3 | tests/check_guardrails.py |
+| G4 | none yet |
+| G5 | none yet |
+| G6 | none yet (kill switch not built, Phase 5) |
+| G7 | none yet |
