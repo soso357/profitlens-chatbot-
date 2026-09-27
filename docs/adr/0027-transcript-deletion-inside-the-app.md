@@ -1,6 +1,6 @@
 # ADR 0027: 30 day transcript deletion runs inside the app
 
-- Status: Accepted (how it will run; building it deferred by Ioseb 2026-09-27)
+- Status: Accepted
 - Date: 2026-09-27
 - Decided by: Ioseb (option 1, inside the app)
 - Links: decides R9

@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.0
+Version: 1.1
 Status: Approved
 Approved by: Ioseb
 Date: 2026-09-27
-Fingerprint: bdd3b21d4bf36761
+Fingerprint: 19509d4f68f1755a
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -95,7 +95,7 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | R6 | tests/check_guardrails.py |
 | R7 | tests/check_harness.py; tests/check_alerts.py |
 | R8 | none yet (G4, G5 have no test) |
-| R9 | none yet (30 day deletion not built, Phase 5) |
+| R9 | tests/check_retention.py; manual: privacy policy text on the website (not written yet) |
 | R10 | manual: code review; a new library needs Ioseb's approval |
 | R11 | manual: founders approve on the hidden test page |
 | R12 | manual: phase gate pull request (skill: phase-gate) |

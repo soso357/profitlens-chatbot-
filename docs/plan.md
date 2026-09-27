@@ -12,6 +12,13 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Phase 5 30 day transcript deletion (2026-09-27)
+Spec version 1.1, covers R9. Design: ADR 0027. Approved by Ioseb 2026-09-27.
+1. app/chat_log.py: `delete_old(days=30)` rewrites logs/conversations.jsonl keeping only lines newer than 30 days, under the same lock as writing so no new message is lost; unreadable lines are dropped. Leads and spend files are not touched.
+2. app/main.py: at startup a background thread runs it at once, then every 24 hours.
+3. tests/check_retention.py, added to the evals: lines 31, 29 and 0 days old keep only the last two; a missing or empty log is fine; a message written right after cleanup is kept.
+4. docs/spec.md section 8: R9 points to tests/check_retention.py (spec goes to Draft; Ioseb approves the new version). progress.md and build-log updated.
+
 ### Foundation v2 step 6: context graph (2026-09-27, foundation-v2 section 3, option A in ADR 0023 C4; approved by Ioseb 2026-09-27)
 1. Typed links in file headers (a few labelled lines at the top): ADRs get `decides: R3, B1` and `supersedes: 0012`; test files get `proves: R2, G1` in their docstring; app files get `implements: G1, G3`; skills get `uses: docs/spec.md`. Filled in once by Claude for the existing files.
 2. graph.py builds the links into the existing search index (SQLite) and answers questions: `graph.py what R2` (why it exists, which code enforces it, which tests prove it, which incidents touched it), `graph.py orphans` (a requirement with no code or test, a decision with no requirement, a link to nothing).
