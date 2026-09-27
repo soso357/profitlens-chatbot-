@@ -79,3 +79,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-27: Step 6 code review: 3 findings fixed (decision matching now needs topic AND choice, erring towards a spare proposal; Obsidian links built from the main folder also in worktrees; only generated requirement notes are replaced, Ioseb's own notes stay).
 - 2026-09-27: Foundation v2 complete: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) stays design only per ADR 0023 C6.
 - 2026-09-27: Phase 5: TELEGRAM_CHAT_ID on Render set to the supergroup; Ioseb confirmed test chat messages arrive in Telegram.
+- 2026-09-27: Ioseb decided not to replace the Anthropic API key that was pasted into a chat; risk accepted: whoever has the key can use it outside Jelena, so the app's $5 daily limit does not cover that.

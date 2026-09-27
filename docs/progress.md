@@ -12,7 +12,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: new API key, then 30 day deletion, kill switch, weekly digest, README, privacy text, new API key, paid plan with disk | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: 30 day deletion, kill switch, weekly digest, README, privacy text, paid plan with disk | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
@@ -50,7 +50,6 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 
 - Ioseb: tell the founders the repository is now public (ADR 0026).
 - Founders: approval of the hidden test page https://useprofitlens.com/chat-test.
-- Ioseb: a new Anthropic API key (the current one was pasted into a chat).
 - Ioseb: Read docs/spec.md and reply 'spec approved' (from 2026-09-26-174904-2f71faae.md)
 
 ## Known problems
