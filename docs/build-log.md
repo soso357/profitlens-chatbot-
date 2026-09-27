@@ -87,3 +87,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-27: Ioseb approved spec 1.0 (spec_check.py approve).
 - 2026-09-27: Phase 5 plan note for 30 day transcript deletion approved by Ioseb (spec 1.0, R9).
 - 2026-09-27: 30 day transcript deletion built: chat_log.delete_old at startup and every 24 hours (ADR 0027); tests/check_retention.py in the evals; spec section 8 R9 row updated; Ioseb approved spec 1.1.
+- 2026-09-27: Ioseb skipped the kill switch (G6) for now; emergency off stays Render Suspend (README).

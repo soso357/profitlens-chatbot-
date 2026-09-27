@@ -12,7 +12,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: kill switch, weekly digest, privacy text, paid plan with disk | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: privacy text, weekly digest; kill switch skipped by Ioseb 2026-09-27, privacy text, paid plan with disk | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
