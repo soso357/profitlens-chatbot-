@@ -83,3 +83,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-27: 30 day transcript deletion runs inside the app, at startup and every 24 hours; Ioseb chose this over a Render cron job (ADR 0027).
 - 2026-09-27: Ioseb deferred building the 30 day transcript deletion (plan note written, not approved); next Phase 5 item to be picked.
 - 2026-09-27: README.md for the founders written (health page, where chats and leads arrive, editing content via GitHub pull request, call hours on Render, emergency off via Render suspend until the kill switch exists, costs).
+- 2026-09-27: Removed the deferred 30 day deletion phase note from plan.md: it skipped the spec-to-plan steps (spec is still Draft, so no phase note may cite it). Design kept in ADR 0027; redo via spec-to-plan when picked up.
