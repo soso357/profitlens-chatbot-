@@ -1,4 +1,6 @@
-"""Loads the founder-written content files and builds the system prompt."""
+"""Loads the founder-written content files and builds the system prompt.
+Implements: R1, R3, R5, B2, B3, B4, B8, B9, B10
+"""
 from app.config import CONTENT_DIR
 
 DISCLOSURE = (

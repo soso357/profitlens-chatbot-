@@ -46,6 +46,11 @@ def build(quiet=False):
             con.execute("INSERT INTO docs VALUES (?,?,?,?,?,?)", (kind, rel, title, meta.get("status", ""), date, body))
             con.execute("INSERT INTO fts VALUES (?,?,?,?)", (kind, rel, title, body))
             n += 1
+    try:  # the context graph's links live in the same index (graph.py, step 6)
+        from graph import store
+        store(con, ROOT)
+    except Exception as e:
+        print(f"graph not stored: {e!r}", file=sys.stderr)
     con.commit()
     con.close()
     tmp.replace(DB)

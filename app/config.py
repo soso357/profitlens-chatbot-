@@ -1,4 +1,6 @@
-"""Settings, read from environment variables (the .env file locally, Render settings later)."""
+"""Settings, read from environment variables (the .env file locally, Render settings later).
+Implements: G7
+"""
 import os
 from pathlib import Path
 

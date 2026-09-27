@@ -50,6 +50,22 @@ def link(rel):
     return f"- [[{BASE}/{target}|{label}]]"
 
 
+def vault_path_of(repo_rel):
+    """The vault path (without .md) of a project file, found through the vault's live links."""
+    target = (Path(os.environ.get("CLAUDE_PROJECT_DIR") or Path(__file__).resolve().parents[2]) / repo_rel).resolve()
+    for root, dirs, files in os.walk(VAULT_DIR, followlinks=False):
+        for name in dirs + files:
+            p = Path(root, name)
+            if p.is_symlink():
+                real = p.resolve()
+                if real == target or real in target.parents:
+                    inner = target.relative_to(real) if real != target else Path()
+                    found = (p.relative_to(VAULT_DIR) / inner) if str(inner) != "." else p.relative_to(VAULT_DIR)
+                    s = str(found)
+                    return f"{BASE}/{s[:-3] if s.endswith('.md') else s}"
+    return None
+
+
 def main():
     if not VAULT_DIR.is_dir():
         return
@@ -61,6 +77,13 @@ def main():
         "This map is rebuilt automatically at every Claude session start (.claude/scripts/obsidian_map.py). Do not edit it by hand.",
         "Kept out on purpose: .env and secrets (keys, passwords), logs and data (visitor conversations, rule R9).",
     ]
+    try:  # one note per requirement, linking its decisions, code and tests (graph.py, step 6)
+        from graph import obsidian_notes
+        req = obsidian_notes(VAULT_DIR, vault_path_of)
+        lines += ["", "## Requirements (context graph: each links its decision, code and tests)"] + [
+            f"- [[{BASE}/requirements/{r}|{r}]]" for r in req]
+    except Exception as e:
+        lines += ["", f"(requirement notes not built: {e!r})"]
     seen = set()
     for title, parts in SECTIONS:
         items = [f for part in parts for f in files_under(part) if f not in seen]

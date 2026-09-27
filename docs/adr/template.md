@@ -3,6 +3,7 @@
 - Status: Proposed
 - Date: YYYY-MM-DD
 - Decided by: name (which option was chosen)
+- Links: decides R.., B.., G.. (the spec ids this decision is about; the context graph reads this line)
 
 ## Context
 

@@ -14,7 +14,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
 | 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: Framer hidden test page, then 30 day deletion, kill switch, weekly digest, README, privacy text, new API key, paid plan with disk | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
-| F Foundation v2 (docs/foundation-v2.md) | IN PROGRESS: steps 1 to 5 merged; step 6 (context graph) plan waiting for approval; Ioseb to approve spec 1.0 | design approved 2026-09-26 (ADR 0023) |
+| F Foundation v2 (docs/foundation-v2.md) | IN PROGRESS: steps 1 to 5 merged; step 6 (context graph) in pull request, waiting for merge; Ioseb to approve spec 1.0 | design approved 2026-09-26 (ADR 0023) |
 
 ## Done (newest first)
 

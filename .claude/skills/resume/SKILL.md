@@ -13,9 +13,10 @@ description: Load project context and continue a task. Use when Ioseb says resum
    - the files the handoff names under Files and Next step
 4. Check for drift: `git log --oneline <commit from the handoff>..HEAD` and `git status --short`. Other terminals may have committed since. If a worktree is named, work there (tell Ioseb to open the terminal in that folder if this is not it).
 5. If sources disagree, use the higher one and flag the lower one to be fixed: founder ADRs 0001 to 0006, spec.md, other ADRs, plan.md, progress.md, lessons, session summaries, handoffs.
-6. Tell Ioseb in three lines: where the task is, what changed since, the next step. Then continue.
-7. If the last session summary is unreviewed, skim it and correct it once, briefly. Mention "proposed" proposals once at a natural pause.
-8. Tidy docs/progress.md (session summaries add lines to it automatically, each ending "(from <summary>)"): remove open questions that are answered and people no longer waited on, drop Done items older than 30 days, merge duplicates. Commit it on the branch with the next commit.
-9. If the brief lists memory to re-check or deferred proposals that are due, ask Ioseb about them once, briefly, at a natural pause.
+6. Before changing anything that has a spec id, an ADR or a code file with links, run `python3 .claude/scripts/graph.py what <id, ADR number or path>` to see what else depends on it.
+7. Tell Ioseb in three lines: where the task is, what changed since, the next step. Then continue.
+8. If the last session summary is unreviewed, skim it and correct it once, briefly. Mention "proposed" proposals once at a natural pause.
+9. Tidy docs/progress.md (session summaries add lines to it automatically, each ending "(from <summary>)"): remove open questions that are answered and people no longer waited on, drop Done items older than 30 days, merge duplicates. Commit it on the branch with the next commit.
+10. If the brief lists memory to re-check or deferred proposals that are due, ask Ioseb about them once, briefly, at a natural pause.
 
 One session, one task, one type. If the work turns into another type, write the handoff and suggest a new terminal.

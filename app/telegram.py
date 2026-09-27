@@ -1,4 +1,6 @@
-"""Sends founder alerts to the Telegram group. Failures are reported, not swallowed (ADR 0021)."""
+"""Sends founder alerts to the Telegram group. Failures are reported, not swallowed (ADR 0021).
+Implements: B7
+"""
 import json
 import ssl
 import urllib.error

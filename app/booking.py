@@ -1,4 +1,6 @@
-"""Reads free times from the founders' Google Calendar and books intake calls."""
+"""Reads free times from the founders' Google Calendar and books intake calls.
+Implements: B6
+"""
 import threading
 import uuid
 from datetime import datetime, time, timedelta, timezone
