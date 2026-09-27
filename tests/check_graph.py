@@ -62,5 +62,15 @@ no_code, no_test = graph.orphans(tmp)
 check("orphans: no code for R2 and B1, no test for R2 and B1", set(no_code) == {"R2", "B1"} and set(no_test) == {"R2", "B1"})
 check("what on an unknown node says so", "no links" in graph.what("G9", tmp))
 
+print("Obsidian notes:")
+vault = tmp / "vault"
+(vault / "requirements").mkdir(parents=True)
+(vault / "requirements" / "My own note.md").write_text("Ioseb's thoughts on R2\n")
+(vault / "requirements" / "R99.md").write_text(f"# R99\n\n{graph.MARK}\n")
+graph.obsidian_notes(vault, lambda rel: f"PROFITLENS CHATBOT/{rel}")
+check("a note Ioseb wrote in requirements/ is kept", (vault / "requirements" / "My own note.md").exists())
+check("old generated notes are replaced", not (vault / "requirements" / "R99.md").exists()
+      and (vault / "requirements" / "R2.md").exists())
+
 print(f"\n{'ALL CHECKS PASSED' if not failures else f'{failures} CHECK(S) FAILED'}")
 raise SystemExit(bool(failures))

@@ -30,6 +30,7 @@ MENTION_SOURCES = ["app/*.py", ".claude/scripts/*.py", "tests/*.py", "docs/*.md"
 # tools and tests that name ids and ADR numbers as examples or fixtures, not as real links
 NOT_MENTIONS = {".claude/scripts/graph.py", ".claude/scripts/spec_check.py", ".claude/scripts/distribute.py",
                 "tests/check_graph.py", "tests/check_spec.py", "tests/check_workflow.py"}
+MARK = "Generated from the project by graph.py (rebuilt at every session start, edits here are lost)."
 PROCESS_RULES = {"R7", "R10", "R11", "R12", "R13"}  # about how we work, not code in the chatbot
 
 
@@ -166,15 +167,16 @@ def obsidian_notes(vault_dir, vault_path_of):
     ids, adrs, e = spec_ids(), adr_files(ROOT), edges()
     folder = vault_dir / "requirements"
     folder.mkdir(exist_ok=True)
-    for old in folder.glob("*.md"):
-        old.unlink()
+    for old in folder.glob("*.md"):  # only notes this script wrote; Ioseb's own notes stay
+        if MARK in old.read_text(errors="replace")[:300]:
+            old.unlink()
 
     def wl(repo_path):
         target = vault_path_of(repo_path.split("#")[0])
         return f"[[{target}|{Path(repo_path).name}]]" if target else repo_path
 
     for rid, title in ids.items():
-        rows = [f"# {rid}: {title}", "", f"Generated from the project by graph.py. Source: {wl('docs/spec.md')}", ""]
+        rows = [f"# {rid}: {title}", "", f"{MARK} Source: {wl('docs/spec.md')}", ""]
         for label, relation, side in (("Decided by", "decides", "in"), ("Enforced in code by", "implements", "in"),
                                       ("Proved by", "proved_by", "out"), ("Mentioned in", "mentions", "in")):
             items = [s if side == "in" else d for s, r, d in e if r == relation and (d if side == "in" else s) == rid]

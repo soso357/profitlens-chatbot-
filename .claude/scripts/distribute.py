@@ -39,19 +39,28 @@ SECTIONS = {"done": "## Done (newest first)", "open_questions": "## Open questio
 # question and framing words say nothing about what was decided
 FRAMING = {"what", "which", "when", "where", "whether", "handle", "apply", "decide", "decision", "choose", "chosen",
            "ioseb", "founders", "should", "option", "options", "make", "made", "from", "with", "that", "this", "into",
-           "request", "answers", "since"}
+           "request", "answers", "since", "phase", "step"}
 
 
-def stems(text):
-    """Word stems (first 5 letters), so 'removal' matches 'removed' and 'approved' matches 'approval'."""
-    return {w[:5] for w in words(text) if w not in FRAMING}
+def content_words(text):
+    return {w for w in words(text) if w not in FRAMING and not w.isdigit()}
 
 
-def recorded(decision, passage):
-    """True when half of the decision's own word stems appear in one build log line or ADR decision.
-    Measured on the decision's words, so a short heading or a long ADR cannot match by accident."""
-    sd, sp = stems(decision), stems(passage)
-    return len(sd) >= 2 and len(sd & sp) / len(sd) >= 0.5
+def share(a, b):
+    """Share of the words in a that appear in b; a word matches its other forms ('skip', 'skipped')."""
+    if not a:
+        return 1.0
+    hits = sum(1 for x in a if any(min(len(x), len(y)) >= 4 and x[:4] == y[:4] and
+                                   (y.startswith(x[:5]) or x.startswith(y[:5])) for y in b))
+    return hits / len(a)
+
+
+def recorded(topic, chosen, passage):
+    """True when one build log line or ADR decision names the topic AND most of what was chosen.
+    Errs towards 'not recorded': a spare proposal costs a click, a lost decision costs more
+    ('Kill switch: build it now' must not match 'Kill switch postponed')."""
+    t, c, p = content_words(topic), content_words(chosen), content_words(passage)
+    return len(t | c) >= 2 and share(t, p) >= 0.5 and share(c, p) >= 0.67
 
 
 def routed_block(text):
@@ -163,7 +172,8 @@ def distribute(summary_path):
         log.append(title + " " + (m.group(1) if m else ""))
     for d in items.get("decisions") or []:
         text = as_text(d, ["decision", "chosen"])  # who decided is not content
-        if text and not any(recorded(text, l) for l in log):
+        topic, chosen = (d.get("decision", ""), d.get("chosen", "")) if isinstance(d, dict) else (text, "")
+        if text and not any(recorded(topic, chosen, l) for l in log):
             proposals.append({"title": f"Record decision: {as_text(d, ['decision'])[:70] or text[:70]}", "kind": "decision",
                               "why": f"Made in {summary_path.name} but not found in docs/build-log.md: {text}",
                               "what": "Confirm with Ioseb, then a build-log line and, for a design choice, an ADR."})

@@ -52,7 +52,8 @@ def link(rel):
 
 def vault_path_of(repo_rel):
     """The vault path (without .md) of a project file, found through the vault's live links."""
-    target = (Path(os.environ.get("CLAUDE_PROJECT_DIR") or Path(__file__).resolve().parents[2]) / repo_rel).resolve()
+    from common import MAIN_ROOT  # the vault links into the main folder, also when this runs in a worktree
+    target = (MAIN_ROOT / repo_rel).resolve()
     for root, dirs, files in os.walk(VAULT_DIR, followlinks=False):
         for name in dirs + files:
             p = Path(root, name)
