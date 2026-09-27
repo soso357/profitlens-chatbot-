@@ -36,11 +36,22 @@ MAX_PROPOSALS = 5   # per summary, so a bad summary cannot flood the queue
 SECTIONS = {"done": "## Done (newest first)", "open_questions": "## Open questions", "waiting": "## Waiting on people"}
 
 
+# question and framing words say nothing about what was decided
+FRAMING = {"what", "which", "when", "where", "whether", "handle", "apply", "decide", "decision", "choose", "chosen",
+           "ioseb", "founders", "should", "option", "options", "make", "made", "from", "with", "that", "this", "into",
+           "request", "answers", "since"}
+
+
+def stems(text):
+    """Word stems (first 5 letters), so 'removal' matches 'removed' and 'approved' matches 'approval'."""
+    return {w[:5] for w in words(text) if w not in FRAMING}
+
+
 def recorded(decision, passage):
-    """True when most of the decision's own words appear in one build log line or ADR decision.
+    """True when half of the decision's own word stems appear in one build log line or ADR decision.
     Measured on the decision's words, so a short heading or a long ADR cannot match by accident."""
-    wd, wp = words(decision), words(passage)
-    return len(wd) >= 2 and len(wd & wp) / len(wd) >= 0.6
+    sd, sp = stems(decision), stems(passage)
+    return len(sd) >= 2 and len(sd & sp) / len(sd) >= 0.5
 
 
 def routed_block(text):
@@ -151,7 +162,7 @@ def distribute(summary_path):
         m = re.search(r"## Decision\s*\n(.*?)(\n## |\Z)", text, re.S)
         log.append(title + " " + (m.group(1) if m else ""))
     for d in items.get("decisions") or []:
-        text = as_text(d, ["decision", "chosen", "by"])
+        text = as_text(d, ["decision", "chosen"])  # who decided is not content
         if text and not any(recorded(text, l) for l in log):
             proposals.append({"title": f"Record decision: {as_text(d, ['decision'])[:70] or text[:70]}", "kind": "decision",
                               "why": f"Made in {summary_path.name} but not found in docs/build-log.md: {text}",
