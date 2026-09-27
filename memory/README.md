@@ -24,6 +24,10 @@ How Claude Code remembers this project between sessions (ADR 0009). Every memory
 5. Lessons: when Claude makes the same mistake twice, it adds a line to memory/procedural/lessons.md, then proposes a rule (kind: rule) so it becomes permanent.
 6. Nothing about website visitors (names, emails, transcripts) ever goes in this folder. That data lives only on the server (spec section 5).
 
+## Context graph
+
+Links between rules (spec ids), decisions (ADRs), code, tests and incidents, built from what the files already say (graph.py, ADR 0023 C4): spec section 8 names the tests, app files carry an `Implements:` line, new ADRs a `- Links:` line, and any file that names an id or "ADR NNNN" mentions it. Stored in the index (table edges). `graph.py what R2`, `graph.py orphans`. In Obsidian, the requirements/ folder has one note per rule linking its decision, code and tests.
+
 ## Searching
 
 ```

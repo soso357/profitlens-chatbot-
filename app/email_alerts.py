@@ -1,4 +1,6 @@
-"""Sends short plain emails from the booking Gmail account, using the same Google sign-in as the calendar."""
+"""Sends short plain emails from the booking Gmail account, using the same Google sign-in as the calendar.
+Implements: B7
+"""
 import base64
 from email.message import EmailMessage
 

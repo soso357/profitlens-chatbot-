@@ -269,6 +269,12 @@ check("same item reworded is the same", similar("- 2026-09-20: Kill switch built
 check("repeated lesson becomes a rule proposal", any(x.startswith("Make a rule") for x in titles))
 check("decision missing from build log becomes a proposal, logged one does not",
       any("Widget colour" in x for x in titles) and not any("context stop" in x for x in titles))
+from distribute import recorded  # noqa: E402
+check("decision matching: other word forms match, question words do not count",
+      recorded("Off switch and 30 day deletion", "Skip for now", "- 2026-09-26: Off switch and 30 day deletion: skipped for now.")
+      and not recorded("How to handle the widget colour", "Dark green", "- 2026-09-26: How to handle the audit request."))
+check("decision matching: same topic, different choice is not recorded",
+      not recorded("Kill switch", "build it now in Phase 5", "- 2026-09-27: Kill switch postponed, not built in Phase 5."))
 check("decision already in an ADR: no proposal", not any("New session start" in x for x in titles))
 check("ADR headings or long unrelated text do not count as recording a decision",
       any("Consequences of dark mode" in x for x in titles))

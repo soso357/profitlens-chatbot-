@@ -1,4 +1,6 @@
-"""The chat service. Run locally with: .venv/bin/uvicorn app.main:app --reload"""
+"""The chat service. Run locally with: .venv/bin/uvicorn app.main:app --reload
+Implements: R8, B1, B12, G4, G5, G7
+"""
 import re
 import threading
 import time

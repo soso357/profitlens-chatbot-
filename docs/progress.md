@@ -14,10 +14,14 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
 | 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: Framer hidden test page, then 30 day deletion, kill switch, weekly digest, README, privacy text, new API key, paid plan with disk | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
-| F Foundation v2 (docs/foundation-v2.md) | IN PROGRESS: step 1 of 7 merged (pull request #3); steps 1 to 3 merged; steps 1 to 4 merged; step 5 (checks on GitHub) in pull request, waiting for merge; Ioseb to approve spec 1.0 | design approved 2026-09-26 (ADR 0023) |
+| F Foundation v2 (docs/foundation-v2.md) | IN PROGRESS: steps 1 to 5 merged; step 6 (context graph) in pull request, waiting for merge; Ioseb to approve spec 1.0 | design approved 2026-09-26 (ADR 0023) |
 
 ## Done (newest first)
 
+- 2026-09-27: Repository made public (Ioseb, ADR 0026); merges now need the green checks mark.
+- 2026-09-26: Foundation v2 step 5: automatic checks on GitHub (pull request #7).
+- 2026-09-26: 12 pending proposals reviewed and decided: 0013/0014/0015 approved, 0005 made a standing rule, 0002/0003 deferred, 0004/0007/0008/0009/0010/0011 rejected (from 2026-09-26-174858-298f6ef5.md)
+- 2026-09-26: Confirmed live on Render that Telegram and email alert checks both report ok (from 2026-09-26-174858-298f6ef5.md)
 - 2026-09-26: Foundation v2 step 4: spec versions, acceptance checks, approval before planning (pull request #6).
 - 2026-09-26: Foundation v2 step 3: agent harness, allow/ask/deny lists and guard hook (pull request #5).
 - 2026-09-26: Foundation v2 step 2: session summaries sorted into project files, memory staleness (pull request #4).
@@ -40,11 +44,15 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 - Should the chatbot repeat the visitor's email back to catch typos like "gmial.com"? (Ioseb)
 - Should the three offered call times be spread over different days? (Ioseb)
 - "1 to 3 locations" or "2 to 5 locations", and the "no AI guesswork" wording. (founders, FOUNDER TO CONFIRM in content/)
+- What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)
 
 ## Waiting on people
 
+- Ioseb: tell the founders the repository is now public (ADR 0026).
 - Founders: approval of the hidden test page https://useprofitlens.com/chat-test.
 - Ioseb: a new Anthropic API key (the current one was pasted into a chat).
+- Ioseb: Read docs/spec.md and reply 'spec approved' (from 2026-09-26-174904-2f71faae.md)
+- Ioseb: Set TELEGRAM_CHAT_ID on Render and redeploy (from 2026-09-26-174904-2f71faae.md)
 
 ## Known problems
 

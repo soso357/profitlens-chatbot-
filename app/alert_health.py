@@ -3,6 +3,7 @@
 Remembers the last result of each founder alert channel. When one fails, the reason and the
 fix go to the founders through the other channel, at most once an hour per channel.
 In memory only: no visitor data, nothing secret, reset when the service restarts.
+Implements: B7
 """
 import threading
 import time

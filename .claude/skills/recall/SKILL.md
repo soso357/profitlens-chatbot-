@@ -12,3 +12,5 @@ python3 .claude/scripts/memory_index.py proposals
 ```
 
 Open the files the search returns and read the relevant part. Quote the file path when you tell the user what was found. If memory and the current code disagree, the code and git history win; fix the memory file.
+
+For how things connect (which decision, code and tests belong to a rule, what an ADR affects, what a file is linked to): `python3 .claude/scripts/graph.py what R2` (or an ADR number, or a file path). `graph.py orphans` lists rules with no code or no test.

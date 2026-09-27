@@ -1,4 +1,6 @@
-"""Checks in code that run on every reply, so the rules do not depend on the AI obeying."""
+"""Checks in code that run on every reply, so the rules do not depend on the AI obeying.
+Implements: R2, R3, R4, R6, R14, B1, G1, G2, G3
+"""
 import re
 
 from app.content import APPROVED_ANSWERS, DISCLOSURE

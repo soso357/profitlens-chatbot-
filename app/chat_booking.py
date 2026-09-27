@@ -9,6 +9,7 @@ alerts. It ends a reply with a hidden block and this module does the rest:
         visitor does not fit, or needs a founder: save the lead, alert the founders
 
 Both blocks are removed before the visitor sees the reply.
+Implements: B5, B6, B7, B11
 """
 import json
 import re

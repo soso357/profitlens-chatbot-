@@ -1,4 +1,6 @@
-"""Saves every lead, fit or not, to leads.csv on the server (Phase 2, spec section 5)."""
+"""Saves every lead, fit or not, to leads.csv on the server (Phase 2, spec section 5).
+Implements: B5, B7
+"""
 import csv
 import threading
 from datetime import datetime, timezone

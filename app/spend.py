@@ -1,4 +1,6 @@
-"""Tracks today's API spend in a small file, so a restart does not reset the daily cap."""
+"""Tracks today's API spend in a small file, so a restart does not reset the daily cap.
+Implements: R8, G5
+"""
 import json
 import threading
 from datetime import datetime, timezone
