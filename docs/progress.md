@@ -12,12 +12,17 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: kill switch, weekly digest, privacy text, paid plan with disk | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: privacy text, weekly digest, paid plan with disk; kill switch skipped by Ioseb 2026-09-27 | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
 ## Done (newest first)
 
+- 2026-09-27: Workflow overhead trimmed (ADR 0028): 6 open proposals, Obsidian map and graph check off by default, worktree for phase-5-launch.
+- 2026-09-27: Stale duplicate Obsidian map note resolved and vault shortcuts rebuilt with no data loss (from 2026-09-27-170044-d2856c37.md)
+- 2026-09-27: GitHub branch ruleset (require status checks to pass) confirmed active (from 2026-09-27-170037-2f71faae.md)
+- 2026-09-27: Automatic summarizer duplicate lines and 6 duplicate proposals cleaned up (from 2026-09-27-170037-2f71faae.md)
+- 2026-09-27: Proposal-duplicate matching rewritten to topic-and-choice comparison after a too-loose stem-based version was found by review (from 2026-09-27-170037-2f71faae.md)
 - 2026-09-27: 30 day transcript deletion built (R9, ADR 0027); spec 1.1 approved.
 - 2026-09-27: Spec 1.0 approved by Ioseb. README for the founders merged (pull request #10).
 - 2026-09-27: TELEGRAM_CHAT_ID on Render set to the supergroup; test chat messages reach Telegram (Ioseb confirmed).
@@ -38,7 +43,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 ## In progress
 
 Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" to pick one).
-- phase-5-launch (Build, master): take the widget from the hidden test page to the homepage.
+- phase-5-launch (Build, build-p5-launch): take the widget from the hidden test page to the homepage.
 
 ## Open questions
 
@@ -48,6 +53,8 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 - Should the three offered call times be spread over different days? (Ioseb)
 - Four FOUNDER TO CONFIRM items in content/: reply time promise, fine dining fit, manager chatting for the owner, unclear answers. (founders)
 - What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)
+- Should docs/image.png be deleted since it isn't tracked on GitHub? (Ioseb) (from 2026-09-27-170044-d2856c37.md)
+- Should the privacy text for the website be written now? (Ioseb) (from 2026-09-27-170044-d2856c37.md)
 
 ## Waiting on people
 

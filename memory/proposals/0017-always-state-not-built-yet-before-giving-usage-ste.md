@@ -1,6 +1,6 @@
 ---
 title: Always state 'not built yet' before giving usage steps for an unbuilt feature
-status: proposed
+status: deferred
 kind: rule
 source: 2026-09-26-174858-298f6ef5.md
 created: 2026-09-26
@@ -13,4 +13,4 @@ Ioseb was confused and frustrated ('why are us kidding me?') after being given R
 Add a rule to workflow.md/CLAUDE.md: when describing a feature not yet built, lead with an explicit 'this doesn't exist yet' before any step-by-step instructions.
 
 ## Decision
-(pending Ioseb)
+Ioseb, 2026-09-27 (trim workflow overhead, ADR 0028): deferred. Useful habit, not a launch blocker; revisit after Phase 5.

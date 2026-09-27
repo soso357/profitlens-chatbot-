@@ -1,13 +1,15 @@
 ---
 name: parallel-task
-description: Set up a separate git worktree for a task that runs in a second terminal at the same time as another one. Use when Ioseb wants to work on two things in parallel, opens a second terminal for a different task, or asks for a new parallel session (ADR 0023 C2).
+description: Set up the git worktree for a task. Every open task in memory/working/handoffs/ has its own worktree (ADR 0028). Use when a new task is opened, when an open task has no worktree yet, when Ioseb wants to work on two things in parallel or opens a second terminal, and to remove a worktree once its pull request is merged (ADR 0023 C2).
 ---
 
 # Parallel task (ADR 0023 C2)
 
 A git worktree is a second copy of the project folder on its own branch. Two terminals in two worktrees never switch each other's branch or overwrite each other's files. Memory and handoffs stay shared in the main folder (the scripts find it).
 
-1. Agree the task name and type with Ioseb. Branch name: `phase-N-name` or `maintain-name`.
+Rule (ADR 0028): one worktree per open task. The main folder is only for Maintain work, resume and memory. `git worktree list` should show the main folder plus one worktree per open handoff, and nothing else.
+
+1. Agree the task name and type with Ioseb. If the task already has a branch, use `git worktree add ../PROFITLENS-CHATBOT-wt/<task> <branch>` in step 2 instead. Branch name: `phase-N-name` or `maintain-name`.
 2. From the main folder:
    ```
    git fetch origin
