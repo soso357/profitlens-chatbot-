@@ -82,3 +82,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-27: Ioseb decided not to replace the Anthropic API key that was pasted into a chat; risk accepted: whoever has the key can use it outside Jelena, so the app's $5 daily limit does not cover that.
 - 2026-09-27: 30 day transcript deletion runs inside the app, at startup and every 24 hours; Ioseb chose this over a Render cron job (ADR 0027).
 - 2026-09-27: Ioseb deferred building the 30 day transcript deletion (plan note written, not approved); next Phase 5 item to be picked.
+- 2026-09-27: README.md for the founders written (health page, where chats and leads arrive, editing content via GitHub pull request, call hours on Render, emergency off via Render suspend until the kill switch exists, costs).
