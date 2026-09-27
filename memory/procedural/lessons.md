@@ -15,3 +15,7 @@ When Claude makes the same mistake twice, it goes here: date, what happened, the
 - 2026-09-26: Summarizer sometimes left the frontmatter header unclosed, making summaries always show as unreviewed; the script now closes the header itself. (from 2026-09-26-174904-2f71faae.md)
 - 2026-09-26: Code review before each pull request caught real bugs missed by offline tests at every step; keep running it before every merge. (from 2026-09-26-174904-2f71faae.md)
 - 2026-09-26: A one-off unreproducible test slowdown should be treated as noise, not chased further. (from 2026-09-26-174904-2f71faae.md)
+- 2026-09-27: The automatic session summarizer's first real run produced mostly duplicate content (12 of 13 progress lines, 7 of 13 proposals already recorded) (from 2026-09-27-170037-2f71faae.md)
+- 2026-09-27: A tightened duplicate-matching rule can become too loose and hide a real decision as already recorded; changes to this logic need testing against real cases before shipping, not just after a review catches it (from 2026-09-27-170037-2f71faae.md)
+- 2026-09-27: Deleting a whole folder in the Obsidian vault (instead of one note) removes shortcuts to every linked project file; only delete single notes (from 2026-09-27-170044-d2856c37.md)
+- 2026-09-27: A Render deploy-failed email for a docs-only commit is a false alarm since the live app code hasn't changed; verify changed files before treating it as urgent (from 2026-09-27-170044-d2856c37.md)

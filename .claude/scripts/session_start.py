@@ -44,8 +44,10 @@ def main():
         emit_context("SessionStart", "\n\n".join(out))
         return
 
-    for script, args in (("memory_index.py", ["build", "--quiet"]), ("obsidian_map.py", []),
-                         ("handoffs.py", ["index"])):
+    jobs = [("memory_index.py", ["build", "--quiet"]), ("handoffs.py", ["index"])]
+    if os.environ.get("PROFITLENS_OBSIDIAN") == "1":  # off by default (ADR 0028)
+        jobs.append(("obsidian_map.py", []))
+    for script, args in jobs:
         try:
             subprocess.Popen([sys.executable, str(ROOT / ".claude" / "scripts" / script), *args],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)

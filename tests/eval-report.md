@@ -1,6 +1,6 @@
 # Eval report
 
-Run on 2026-09-27 16:43 (offline only). Result: **PASS**
+Run on 2026-09-27 17:44 (offline only). Result: **PASS**
 
 | Check | Result | Last line |
 |---|---|---|
@@ -12,4 +12,3 @@ Run on 2026-09-27 16:43 (offline only). Result: **PASS**
 | tests.check_workflow | PASS | ALL CHECKS PASSED |
 | tests.check_harness | PASS | ALL CHECKS PASSED |
 | tests.check_spec | PASS | ALL CHECKS PASSED |
-| tests.check_graph | PASS | ALL CHECKS PASSED |

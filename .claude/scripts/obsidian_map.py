@@ -4,7 +4,7 @@ is linked and nothing shows as unconnected in Obsidian's graph.
 
 The vault folder holds live links (symlinks) into this project; see
 memory/semantic/project-facts.md. Does nothing if the vault folder is missing.
-Run by session_start.py; safe to run by hand.
+Off by default (ADR 0028): session_start.py runs it only when PROFITLENS_OBSIDIAN=1. Safe to run by hand.
 """
 import os
 from pathlib import Path

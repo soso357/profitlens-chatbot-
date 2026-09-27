@@ -1,6 +1,6 @@
 ---
 title: Set a recurring cadence for reviewing open proposals
-status: proposed
+status: rejected
 kind: rule
 source: 2026-09-26-174858-298f6ef5.md
 created: 2026-09-26
@@ -13,4 +13,4 @@ created: 2026-09-26
 Add a periodic checkpoint (e.g. at each phase gate) that surfaces open proposals for a quick approve/reject/defer pass, so they don't pile up again.
 
 ## Decision
-(pending Ioseb)
+Ioseb, 2026-09-27 (trim workflow overhead, ADR 0028): rejected. The open list is now capped at 8 by triage instead of adding another routine.

@@ -13,4 +13,4 @@ Step 4's spec checker found rate limit, daily spend cap, kill switch and 4 other
 Write tests covering the 7 rules and link them in docs/spec.md's acceptance table
 
 ## Decision
-(pending Ioseb)
+(pending Ioseb) Ioseb, 2026-09-27 (trim workflow overhead, ADR 0028): Kept open as a Phase 5 launch blocker: spec rules must be proved in code before launch.
