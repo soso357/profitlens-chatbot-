@@ -1,6 +1,6 @@
 # Foundation v2: design for review
 
-Status: APPROVED 2026-09-26 (Ioseb: all recommended options, ADR 0023). Built step by step, see section 9.
+Status: DONE 2026-09-27. Steps 1 to 6 built and merged (pull requests #3 to #8). Step 7 (section 7, multi model orchestration) is design only (ADR 0023 C6) until Ioseb switches it on; then it gets its own plan note.
 Date: 2026-09-26. Branch: maintain-foundation-v2.
 Scope: upgrade this ProfitLens repo only (Ioseb, 2026-09-26). Not a reusable template.
 
