@@ -1,5 +1,5 @@
 """The chat service. Run locally with: .venv/bin/uvicorn app.main:app --reload
-Implements: R8, B1, B12, G4, G5, G7
+Implements: R8, R9, B1, B12, G4, G5, G7
 """
 import re
 import threading
@@ -53,6 +53,19 @@ def check_alert_channels() -> None:
     def run() -> None:
         telegram.check()
         email_alerts.check()
+    threading.Thread(target=run, daemon=True).start()
+
+
+@app.on_event("startup")
+def delete_old_transcripts() -> None:
+    """R9, ADR 0027: delete conversation log lines older than 30 days now, then every 24 hours."""
+    def run() -> None:
+        while True:
+            try:
+                chat_log.delete_old()
+            except Exception as e:  # never stop the daily loop; try again tomorrow
+                print(f"transcript cleanup failed: {e!r}", flush=True)
+            time.sleep(24 * 3600)
     threading.Thread(target=run, daemon=True).start()
 
 

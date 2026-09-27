@@ -12,12 +12,13 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: kill switch (30 day deletion deferred), weekly digest, privacy text, paid plan with disk | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: kill switch, weekly digest, privacy text, paid plan with disk | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
 ## Done (newest first)
 
+- 2026-09-27: 30 day transcript deletion built (R9, ADR 0027); spec 1.1 approved.
 - 2026-09-27: Spec 1.0 approved by Ioseb. README for the founders merged (pull request #10).
 - 2026-09-27: TELEGRAM_CHAT_ID on Render set to the supergroup; test chat messages reach Telegram (Ioseb confirmed).
 - 2026-09-27: Foundation v2 complete. Step 6: context graph (pull request #8). Step 7 stays a design until Ioseb switches it on.
@@ -45,7 +46,7 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 - How long do founders keep lead and handoff emails in Gmail? They include the chat, outside R9's 30 day deletion (ADR 0027). (founders)
 - Should the chatbot repeat the visitor's email back to catch typos like "gmial.com"? (Ioseb)
 - Should the three offered call times be spread over different days? (Ioseb)
-- "1 to 3 locations" or "2 to 5 locations", and the "no AI guesswork" wording. (founders, FOUNDER TO CONFIRM in content/)
+- Four FOUNDER TO CONFIRM items in content/: reply time promise, fine dining fit, manager chatting for the owner, unclear answers. (founders)
 - What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)
 
 ## Waiting on people
