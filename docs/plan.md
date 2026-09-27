@@ -12,6 +12,14 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Foundation v2 step 6: context graph (2026-09-27, foundation-v2 section 3, option A in ADR 0023 C4; WAITING FOR APPROVAL)
+1. Typed links in file headers (a few labelled lines at the top): ADRs get `decides: R3, B1` and `supersedes: 0012`; test files get `proves: R2, G1` in their docstring; app files get `implements: G1, G3`; skills get `uses: docs/spec.md`. Filled in once by Claude for the existing files.
+2. graph.py builds the links into the existing search index (SQLite) and answers questions: `graph.py what R2` (why it exists, which code enforces it, which tests prove it, which incidents touched it), `graph.py orphans` (a requirement with no code or test, a decision with no requirement, a link to nothing).
+3. Obsidian: the START HERE map shows these links, so the graph has real connections (rule to decision to code to test), not just a star.
+4. The resume and recall skills use `graph.py what` before changing anything that has links.
+5. Checks: tests/check_graph.py in the evals (links point to real files and ids; orphans listed; the real project has no broken links).
+6. Docs: memory/README.md, workflow.md. Then code review, pull request.
+
 ### Foundation v2 step 5: automatic checks on GitHub (2026-09-26, foundation-v2 section 8, tools approved in ADR 0023 C5; approved by Ioseb 2026-09-26)
 1. requirements-dev.txt (development only, never installed on Render): ruff (finds errors and messy code), pyright (checks that values are the kind of thing the code expects), pip-audit (known security holes in libraries).
 2. ruff and pyright settings in pyproject.toml, starting mild (real errors only) so they pass today; fix what they find.
