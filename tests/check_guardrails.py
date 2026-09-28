@@ -93,6 +93,8 @@ for reply, expect_gone in [
     ("Great. Would you like the $99 or the $149 option?", True),
     ("The $99 option covers food cost. The $149 adds the menu review. Which one sounds right for you?", True),
     ("Are you leaning toward the full report?", True),
+    ("Great. Is it the $99.00 or the $149.00 option you want?", True),
+    ("Would you prefer a founder to email you about the report?", False),
     ("The $99 option covers food cost. Anything else you would like to know?", False),
     ("Which state is your restaurant in?", False),
     ("What is the name of your restaurant?", False),

@@ -128,18 +128,20 @@ def remove_sales_push(reply: str, visitor_message: str) -> str:
 
 NEUTRAL_QUESTION = "Anything else you would like to know?"
 # G8: never ask the visitor to pick an option or a price ("the $99 or the $149?", "Which option are you interested in?")
+_PRICE = r"\$\s?\d[\d,]*(?:\.\d+)?"
 _OPTION_QUESTION = re.compile(
     r"\bwhich\b[^.?!]{0,40}\b(option|one|report|package|plan|service|analysis|tier)s?\b[^.?!]*\?"
-    r"|\$\s?\d[^.?!]{0,40}\bor\b[^.?!]{0,20}\$\s?\d[^.?!]*\?"
-    r"|\b(interested in|go with|leaning toward|prefer|choose|pick)\b[^.?!]{0,40}\b(option|report|analysis|\$\s?\d)[^.?!]*\?",
+    rf"|{_PRICE}[^.?!]{{0,40}}\bor\b[^.?!]{{0,20}}{_PRICE}[^.?!]*\?"
+    rf"|\b(interested in|go with|leaning toward|prefer|choose|pick)\b[^.?!]{{0,40}}\b(option|report|analysis|{_PRICE})[^.?!]*\?",
     re.I)
+_FOUNDER_OFFER = re.compile(r"\b(founder|email)\b", re.I)  # "prefer a founder to email you about the report?" is a handoff (B7)
 
 
 def remove_option_question(reply: str) -> str:
     """G8: drop a question asking the visitor to choose an option or price, and end with a
     neutral question instead unless one is left."""
     parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
-    kept = [p for p in parts if not _OPTION_QUESTION.search(p)]
+    kept = [p for p in parts if not _OPTION_QUESTION.search(p) or _FOUNDER_OFFER.search(p)]
     if len(kept) == len(parts):
         return reply
     if not kept or not kept[-1].endswith("?"):
