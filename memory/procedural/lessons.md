@@ -19,3 +19,5 @@ When Claude makes the same mistake twice, it goes here: date, what happened, the
 - 2026-09-27: A tightened duplicate-matching rule can become too loose and hide a real decision as already recorded; changes to this logic need testing against real cases before shipping, not just after a review catches it (from 2026-09-27-170037-2f71faae.md)
 - 2026-09-27: Deleting a whole folder in the Obsidian vault (instead of one note) removes shortcuts to every linked project file; only delete single notes (from 2026-09-27-170044-d2856c37.md)
 - 2026-09-27: A Render deploy-failed email for a docs-only commit is a false alarm since the live app code hasn't changed; verify changed files before treating it as urgent (from 2026-09-27-170044-d2856c37.md)
+- 2026-09-27: Branch counts should be double-checked before reporting to the user; Claude initially miscounted 14 vs the correct 13, caught before deletion (from 2026-09-27-175421-dccb5168.md)
+- 2026-09-27: zsh may not split a list of branch names as expected in a single command; passing names individually is more reliable (from 2026-09-27-175421-dccb5168.md)
