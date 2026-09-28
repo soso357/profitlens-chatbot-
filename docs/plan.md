@@ -12,6 +12,15 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Phase 5 four details, no fit questions (2026-09-28)
+Spec version 1.2, covers B4, B6, G8 (B5 retired). Asked and approved by Ioseb 2026-09-28.
+1. content/qualifying-questions.md: keep only first name, restaurant name, state, email; remove the five fit questions and the scoring section (founders' file, changed at Ioseb's request, listed in the pull request).
+2. app/content.py prompt: ask only the four details, then the offer_times block; remove every fit instruction and the "fit" field from both blocks; add "never ask which option or price they want".
+3. app/chat_booking.py: times are offered once the four details are there (no fit check); founder alert drops the "Fit:" line. leads.csv keeps its "fit" column, left empty, so the existing file still reads.
+4. app/guardrails.py (G8): a reply sentence asking the visitor to choose an option or price ("the $99 or the $149?", "which option are you interested in?") is removed; if nothing is left, a neutral "Anything else you would like to know?" is sent.
+5. Tests: check_guardrails.py gets G8 cases (blocked and allowed); check_booking.py drops the "not a fit gets no times" case and adds "a bar owner with four details gets times"; tests/conversations.md #10 becomes a chain owner who books, #16 no longer volunteers fit answers, new #18 asks about both options and must not get "which one?". Spec section 8 rows for B4, G8 updated.
+6. Evals offline and live, at least ten conversations (R13), then /code-review and a pull request.
+
 ### Phase 5 30 day transcript deletion (2026-09-27)
 Spec version 1.1, covers R9. Design: ADR 0027. Approved by Ioseb 2026-09-27.
 1. app/chat_log.py: `delete_old(days=30)` rewrites logs/conversations.jsonl keeping only lines newer than 30 days, under the same lock as writing so no new message is lost; unreadable lines are dropped. Leads and spend files are not touched.
