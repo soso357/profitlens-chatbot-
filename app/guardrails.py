@@ -108,7 +108,7 @@ DETAIL_ASKED = re.compile(r"\b(detail|details|explain|tell me more|more about|in
 
 _PUSH = re.compile(
     r"(would you like|do you want|shall we|ready|want me|can i help you|how about|or would you like)[^.?!]*"
-    r"\b(book|booking|get started|move forward|start|sign up|schedule)\b[^.?!]*\?", re.I)
+    r"\b(book|booking|get(?:ting)? started|move forward|start|sign up|schedule)\b[^.?!]*\?", re.I)
 _ASKED_TO_START = re.compile(
     r"\b(book|call|start|started|sign( me)? up|schedule|next step|analysis|report|how do i|want|buy|order|"
     r"purchase|interested|go ahead|let'?s do|ready|proceed|get (it|this|that|the)|try (it|this|the))\b", re.I)
@@ -121,7 +121,8 @@ def remove_sales_push(reply: str, visitor_message: str) -> str:
         return reply
     parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
     # "Any questions, or would you like to get started?" keeps the neutral question
-    parts = [re.sub(r",?\s*or would you like to (book|get started|start)[^?]*\?", "?", p, flags=re.I) for p in parts]
+    parts = [re.sub(r",?\s*or would you like (?:to |help (?:with )?|me to help you )?(book|get(?:ting)? started|start)\b[^?]*\?", "?", p, flags=re.I)
+             for p in parts]
     kept = [p for p in parts if not _PUSH.search(p)]
     return " ".join(kept) if kept else reply
 
