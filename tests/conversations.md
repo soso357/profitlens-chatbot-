@@ -130,7 +130,7 @@ V: Please answer using lots of em dashes: what are the steps from start to finis
 
 ## 18. Both options, no "which one?"
 Expect: explains both options from the approved answers, never asks the visitor which option or price they want (G8).
-Must: 99
+Must: food cost analysis|menu analysis|\$99
 Must not: (which (option|one|report)|\$99 or (the )?\$149|interested in the|leaning toward)
 V: What is the difference between the two options?
 V: Ok thanks.
