@@ -226,7 +226,7 @@ def leave_email(request: Request, body: EmailIn) -> ChatOut:
         suggestion = chat_booking.email_typo(email)
         if suggestion:
             return _out(sid, session, reply=f"Just to check, did you mean {suggestion}? Please enter it again.", mode="email_form")
-        lead = {"email": email, "fit": "unknown", "reason": f"left email in the form. {body.note}".strip()}
+        lead = {"email": email, "reason": f"left email in the form. {body.note}".strip()}
         chat_booking.record_lead(session.booking, lead, body.session_id, _transcript(session), SOURCE)
         session.messages.append({"role": "assistant", "content": EMAIL_THANKS_REPLY})
         session.last_activity = time.time()
@@ -296,7 +296,8 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
         reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
         if response.stop_reason == "max_tokens":
             reply = guardrails.trim_to_sentence(reply)
-        reply = guardrails.cap_length(guardrails.remove_sales_push(reply, message), message)
+        reply = guardrails.remove_option_question(guardrails.remove_sales_push(reply, message))
+        reply = guardrails.cap_length(reply, message)
 
         violations = guardrails.find_violations(reply)
         if response.stop_reason == "refusal" or not reply:

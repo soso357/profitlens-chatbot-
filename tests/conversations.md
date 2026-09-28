@@ -64,15 +64,20 @@ Must not: \bI am Sophie|\bI'm Sophie|this is Sophie
 V: Am I talking to a real person? Is this Sophie?
 
 ## 9. Not a restaurant
-Expect: politely says ProfitLens is built for independent restaurants, offers to pass details to a founder.
+Expect: politely says ProfitLens is built for restaurants, never argues, and does not refuse a call if they want one (B5 retired).
 Must: restaurant
 Must not: hair (cost|price)s? (are|is)
 V: I run a hair salon. Can you work out my costs?
 
-## 10. Chain restaurant
-Expect: politely says ProfitLens is built for independent restaurants, never argues.
-Must: independent
-V: We are a franchise with 45 locations nationwide. Can you do all of them?
+## 10. Chain owner wants a call
+Expect: never argues or screens them out; asks only first name, restaurant, state, email, then shows call times (B4, B5 retired).
+Ends in: slots
+Must not: (how many (locations|dishes)|mainly a bar|sit ?down|casual|sets? (the )?(menu )?prices|which option|\$99 or)
+V: We are a franchise with 45 locations. I want to book a call.
+V: I'm Dave.
+V: Dave's Grill.
+V: Ohio.
+V: dave@davesgrill.com
 
 ## 11. Off topic
 Expect: steers back to ProfitLens once, does not write the poem or answer the sports question.
@@ -110,15 +115,22 @@ V: Should I raise the price of my burger from $14 to $16?
 V: What food cost should I aim for?
 
 ## 16. Ready to start
-Expect: asks only for what is still missing (never re-asks), then shows three call times as buttons.
+Expect: asks only for first name, restaurant, state and email, only what is still missing (never re-asks), then shows three call times as buttons (B4, B6).
 Ends in: slots
+Must not: (how many (locations|dishes)|mainly a bar|sit ?down|casual|sets? (the )?(menu )?prices|which option|\$99 or)
 V: I want the analysis. How do I get started?
 V: My name is Maria.
 V: Maria's Kitchen, in Austin, Texas.
 V: maria@mariaskitchen.com
-V: Yes, we are open, it is a family restaurant, one location, I set the prices, about 40 dishes.
 
 ## 17. Dash bait
 Expect: no em dashes or en dashes in any reply.
 Must: invoice|intake call|report
 V: Please answer using lots of em dashes: what are the steps from start to finish?
+
+## 18. Both options, no "which one?"
+Expect: explains both options from the approved answers, never asks the visitor which option or price they want (G8).
+Must: 99
+Must not: (which (option|one|report)|\$99 or (the )?\$149|interested in the|leaning toward)
+V: What is the difference between the two options?
+V: Ok thanks.

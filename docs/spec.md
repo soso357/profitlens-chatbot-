@@ -1,8 +1,8 @@
 # Spec: ProfitLens website chat agent
 
 Version: 1.2
-Status: Approved
-Approved by: Ioseb
+Status: Draft
+Approved by: (changed after approval, waiting for Ioseb)
 Date: 2026-09-28
 Fingerprint: e375ec5bf4c4f8ac
 
@@ -105,7 +105,7 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B1 | tests/check_guardrails.py |
 | B2 | tests/conversations.md#1; tests/conversations.md#2 |
 | B3 | tests/conversations.md#3 |
-| B4 | tests/conversations.md#16 |
+| B4 | tests/check_booking.py; tests/conversations.md#10; tests/conversations.md#16 |
 | B5 | manual: nothing to check, RETIRED 2026-09-28 |
 | B6 | tests/check_booking.py |
 | B7 | tests/check_booking.py; tests/conversations.md#13; tests/conversations.md#15 |
@@ -121,4 +121,4 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | G5 | none yet |
 | G6 | none yet (kill switch not built, Phase 5) |
 | G7 | none yet |
-| G8 | none yet |
+| G8 | tests/check_guardrails.py; tests/conversations.md#18 |

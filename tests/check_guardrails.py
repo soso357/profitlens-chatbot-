@@ -87,6 +87,22 @@ for reply, msg, expect_gone in [
     failures += not ok
     print(f"  [{'OK' if ok else 'WRONG'}] {reply!r} -> {out!r}")
 
+print("\nNo option or price question (G8):")
+for reply, expect_gone in [
+    ("Which option are you interested in, the $99 or the $149?", True),
+    ("Great. Would you like the $99 or the $149 option?", True),
+    ("The $99 option covers food cost. The $149 adds the menu review. Which one sounds right for you?", True),
+    ("Are you leaning toward the full report?", True),
+    ("The $99 option covers food cost. Anything else you would like to know?", False),
+    ("Which state is your restaurant in?", False),
+    ("What is the name of your restaurant?", False),
+    ("What is the best email to reach you?", False),
+]:
+    out = g.remove_option_question(reply)
+    ok = (out != reply and "$149?" not in out and "which one" not in out.lower() and out.endswith("?")) if expect_gone else out == reply
+    failures += not ok
+    print(f"  [{'OK' if ok else 'WRONG'}] {reply!r} -> {out!r}")
+
 print("\nCard numbers in visitor messages:")
 for msg, expect in [("my card is 4242 4242 4242 4242 exp 12/28", True), ("call me on 555 123 4567", False),
                     ("we have 45 dishes and 3 locations", False)]:

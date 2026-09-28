@@ -1,5 +1,5 @@
 """Checks in code that run on every reply, so the rules do not depend on the AI obeying.
-Implements: R2, R3, R4, R6, R14, B1, G1, G2, G3
+Implements: R2, R3, R4, R6, R14, B1, G1, G2, G3, G8
 """
 import re
 
@@ -124,6 +124,27 @@ def remove_sales_push(reply: str, visitor_message: str) -> str:
     parts = [re.sub(r",?\s*or would you like to (book|get started|start)[^?]*\?", "?", p, flags=re.I) for p in parts]
     kept = [p for p in parts if not _PUSH.search(p)]
     return " ".join(kept) if kept else reply
+
+
+NEUTRAL_QUESTION = "Anything else you would like to know?"
+# G8: never ask the visitor to pick an option or a price ("the $99 or the $149?", "Which option are you interested in?")
+_OPTION_QUESTION = re.compile(
+    r"\bwhich\b[^.?!]{0,40}\b(option|one|report|package|plan|service|analysis|tier)s?\b[^.?!]*\?"
+    r"|\$\s?\d[^.?!]{0,40}\bor\b[^.?!]{0,20}\$\s?\d[^.?!]*\?"
+    r"|\b(interested in|go with|leaning toward|prefer|choose|pick)\b[^.?!]{0,40}\b(option|report|analysis|\$\s?\d)[^.?!]*\?",
+    re.I)
+
+
+def remove_option_question(reply: str) -> str:
+    """G8: drop a question asking the visitor to choose an option or price, and end with a
+    neutral question instead unless one is left."""
+    parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
+    kept = [p for p in parts if not _OPTION_QUESTION.search(p)]
+    if len(kept) == len(parts):
+        return reply
+    if not kept or not kept[-1].endswith("?"):
+        kept.append(NEUTRAL_QUESTION)
+    return " ".join(kept)
 
 
 def cap_length(reply: str, visitor_message: str, max_words: int = 80, max_sentences: int = 4) -> str:
