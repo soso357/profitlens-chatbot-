@@ -1,5 +1,6 @@
-"""Saves every lead, fit or not, to leads.csv on the server (Phase 2, spec section 5).
-Implements: B5, B7
+"""Saves every lead to leads.csv on the server (Phase 2, spec section 5).
+The "fit" column stays (left empty) so older files still read; fit is no longer asked (B5 retired 2026-09-28).
+Implements: B4, B7
 """
 import csv
 import threading

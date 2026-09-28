@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.1
+Version: 1.3
 Status: Approved
 Approved by: Ioseb
-Date: 2026-09-27
-Fingerprint: 19509d4f68f1755a
+Date: 2026-09-28
+Fingerprint: c4188a58fd87c171
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -39,9 +39,9 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B1 | First reply of any session | Contains the AI disclosure (R3). In the widget the server sends it as the first message when the chat opens (POST /start) | code check G2 |
 | B2 | Question answered in the approved file | Answer in 2 to 4 sentences, same meaning as the file | content/approved-answers.md |
 | B3 | Question not in the approved file | Say it is not something the agent can answer, offer founder email, ask for email | content/handoff-rules.md |
-| B4 | Visitor wants the analysis or a call, or questions are done | Ask qualifying questions one at a time | content/qualifying-questions.md |
-| B5 | Restaurant does not fit (chain, bar, not open...) | Say ProfitLens is built for independent restaurants, offer to pass details to a founder anyway, never argue | content/qualifying-questions.md |
-| B6 | Fit restaurant, wants a call | Ask state or city, map to US time zone (default Eastern), offer at most 3 free slots, book on choice | Phase 3 |
+| B4 | Visitor wants the analysis or a call, or questions are done | Ask only for first name, restaurant name, state and email, one at a time, then offer times (B6). No questions about the restaurant's type, size, menu or which option they want (Ioseb, 2026-09-28) | content/qualifying-questions.md |
+| B5 | RETIRED 2026-09-28 (Ioseb: no fit screening in the chat; every visitor who gives the four details can book, founders judge fit on the call) | | |
+| B6 | Visitor has given first name, restaurant name, state and email | Map the state to a US time zone (default Eastern), offer at most 3 free slots, book on choice | Phase 3 |
 | B7 | Any handoff rule triggers | Collect email if unknown, send "Chat handoff: founder needed" email | content/handoff-rules.md |
 | B8 | Asked if it is human | Says plainly it is an AI assistant | R3 |
 | B9 | Rude or abusive | One calm reply, offer email handoff, stop engaging, notify founders | content/handoff-rules.md |
@@ -60,13 +60,14 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | G5 | Daily spend cap in code switches to email form | Simulated spend over cap flips the mode |
 | G6 | Kill switch environment variable, no redeploy needed | Setting it flips the mode on the next request |
 | G7 | CORS allows only useprofitlens.com and the Render test URL | Request from another origin is refused |
+| G8 | Block replies that ask the visitor to pick an option or price (for example "the $99 or the $149?"); replace with a neutral reply | Scripted reply asking "$99 or $149?" never reaches the visitor |
 
 ## 5. Data
 
 | Data | Where | Kept for |
 |---|---|---|
 | Conversation transcript | logs (Render disk in Phase 5) | 30 days, then deleted automatically |
-| Lead (name, restaurant, city, state, email, answers, fit result, transcript reference) | leads.csv | until founders delete |
+| Lead (first name, restaurant, state, email, transcript reference) | leads.csv | until founders delete |
 | Booking | Google Calendar event | founders manage |
 | Conversation copy in Telegram (every message, live, ADR 0019) | founders' Telegram group | founders delete by hand after 30 days |
 
@@ -104,8 +105,8 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B1 | tests/check_guardrails.py |
 | B2 | tests/conversations.md#1; tests/conversations.md#2 |
 | B3 | tests/conversations.md#3 |
-| B4 | tests/conversations.md#16 |
-| B5 | tests/conversations.md#9; tests/conversations.md#10 |
+| B4 | tests/check_booking.py; tests/conversations.md#10; tests/conversations.md#16 |
+| B5 | manual: nothing to check, RETIRED 2026-09-28 |
 | B6 | tests/check_booking.py |
 | B7 | tests/check_booking.py; tests/conversations.md#13; tests/conversations.md#15 |
 | B8 | tests/conversations.md#8 |
@@ -120,3 +121,4 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | G5 | none yet |
 | G6 | none yet (kill switch not built, Phase 5) |
 | G7 | none yet |
+| G8 | tests/check_guardrails.py; tests/conversations.md#18 |

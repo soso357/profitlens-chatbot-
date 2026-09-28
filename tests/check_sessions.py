@@ -54,7 +54,7 @@ check("a copy from another session is ignored", "My name is Nino" not in SEEN[-1
 s = main.Session()
 s.messages = [{"role": "assistant", "content": "hi"}]
 s.booking.details = {"name": "Nino", "restaurant": "Nino's", "location": "Austin, TX",
-                     "email": "nino@example.com", "timezone": "America/Chicago", "fit": "fit"}
+                     "email": "nino@example.com", "timezone": "America/Chicago"}
 s.booking.offered = [datetime(2026, 10, 1, 15, 0, tzinfo=timezone.utc)]
 tok = session_store.dump("bookingtest01", s)
 s2 = main.Session()

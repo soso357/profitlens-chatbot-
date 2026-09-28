@@ -35,7 +35,7 @@ booking.is_valid_start = lambda s: True
 booking.book = fake_book
 
 GOOD = ('Great, here are the times.\n<offer_times>{"name": "Maria", "restaurant": "Casa Maria", '
-        '"location": "Austin, TX", "email": "maria@example.com", "timezone": "America/Chicago", "fit": "fit"}</offer_times>')
+        '"location": "Austin, TX", "email": "maria@example.com", "timezone": "America/Chicago"}</offer_times>')
 results = []
 
 
@@ -50,8 +50,11 @@ check("hidden block removed from visible text", "<offer_times>" not in text and 
 check("details read", d is not None and d["restaurant"] == "Casa Maria" and d["timezone"] == "America/Chicago")
 check("no block means no booking", cb.extract("Hello there.")[1] is None)
 check("bad email means no booking", cb.extract(GOOD.replace("maria@example.com", "not an email"), TYPED)[1] is None)
-check("not a fit means no booking (B5)", cb.extract(GOOD.replace('"fit": "fit"', '"fit": "not fit"'), TYPED)[1] is None)
-check("unclear fit still books", cb.extract(GOOD.replace('"fit": "fit"', '"fit": "unclear"'), TYPED)[1] is not None)
+BAR = GOOD.replace("Casa Maria", "Bob's Bar").replace("maria@example.com", "bob@example.com")
+check("a bar owner with the four details gets times (B4, B5 retired)", cb.extract(BAR, TYPED)[1] is not None)
+check("an old style fit field is ignored, still books",
+      cb.extract(GOOD.replace('"timezone"', '"fit": "not fit", "timezone"'), TYPED)[1] is not None)
+check("missing restaurant means no booking (B4)", cb.extract(GOOD.replace('"Casa Maria"', '""'), TYPED)[1] is None)
 check("unknown time zone falls back to Eastern",
       cb.extract(GOOD.replace("America/Chicago", "Mars/Base"), TYPED)[1]["timezone"] == "America/New_York")
 check("broken block is ignored and hidden", cb.extract("Hi <offer_times>{oops</offer_times>") == ("Hi", None, None))
@@ -93,9 +96,9 @@ def rows():
 check("booking saved a 'booked' lead, calendar down saved a handoff lead",
       [r["outcome"] for r in rows()] == ["booked", "founder needed (calendar down)"])
 
-# Phase 2: not a fit and handoff leads
+# Phase 2: handoff leads
 LEAD = ('Thanks, a founder will email you.\n<lead>{"name": "Bob", "restaurant": "Bob Bar", "location": "Miami, FL", '
-        '"email": "bob@example.com", "fit": "not fit", "reason": "mainly a bar"}</lead>')
+        '"email": "bob@example.com", "reason": "asks about a discount"}</lead>')
 text, det, lead = cb.extract(LEAD, TYPED)
 check("lead block hidden from visitor", text == "Thanks, a founder will email you." and det is None and lead is not None)
 check("lead without a valid email is ignored", cb.extract(LEAD.replace("bob@example.com", "bob"), TYPED)[2] is None)
@@ -103,18 +106,18 @@ check("invented email (visitor never typed it) is refused", cb.extract(LEAD, "ma
 check("invented email refused for booking too", cb.extract(GOOD, "bob@example.com")[1] is None)
 s4 = cb.BookingState()
 SENT.clear()
-cb.record_lead(s4, lead, "s4", transcript="Visitor: we are a bar")
-check("not a fit lead saved", rows()[-1]["outcome"] == "not a fit" and rows()[-1]["email"] == "bob@example.com")
-check("not a fit alert has the conversation", any("not a fit" in t and "we are a bar" in t for k, t in SENT if k == "telegram"))
+cb.record_lead(s4, lead, "s4", transcript="Visitor: any discount?")
+check("handoff lead saved", rows()[-1]["outcome"] == "founder needed" and rows()[-1]["email"] == "bob@example.com")
+check("handoff alert has the conversation, no fit line", any("any discount?" in t and "Fit:" not in t for k, t in SENT if k == "telegram"))
 cb.record_lead(s4, lead, "s4")
 check("same conversation alerts only once", len([r for r in rows() if r["session_id"] == "s4"]) == 1)
-_, _, h = cb.extract(LEAD.replace('"not fit"', '"unknown"'), TYPED)
+_, _, h = cb.extract(LEAD, TYPED)
 s5 = cb.BookingState()
 SENT.clear()
 cb.record_lead(s5, h, "s5")
 check("handoff subject is 'Chat handoff: founder needed' (B7)", any(k == "email" and t.startswith("Chat handoff: founder needed") for k, t in SENT))
 
-# fit visitor saw times, never picked, conversation went quiet (old digest mode, ADR 0015)
+# visitor saw times, never picked, conversation went quiet (old digest mode, ADR 0015)
 cb.config.TELEGRAM_LIVE = False
 s6 = cb.BookingState()
 cb.offer(s6, d, "s6")

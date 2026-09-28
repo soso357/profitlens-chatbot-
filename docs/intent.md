@@ -13,7 +13,7 @@ ProfitLens (useprofitlens.com) is a done-for-you restaurant food cost analysis s
 A chat widget on the website that:
 
 1. Answers visitor questions about the service using an approved answers file written by the founders, and nothing else.
-2. Asks a short set of qualifying questions about the restaurant.
+2. Asks for the visitor's first name, restaurant name, state and email (no fit screening, Ioseb 2026-09-28).
 3. Books the 15 to 20 minute intake call directly in a founder's Google Calendar and notifies the founders.
 4. For anything it cannot answer from the approved file, collects the visitor's email and hands off to a founder.
 
@@ -61,3 +61,4 @@ Inventing a policy, price, timeline or guarantee is the worst possible defect, b
 Maintain step of the loop (ADR 0020): at every phase gate Ioseb is asked whether anything here changed. Each change gets a dated line; a change here starts a new loop (spec, plan, build).
 
 - 2026-09-22: First version, approved by Ioseb.
+- 2026-09-28: Job 2 changed from qualifying questions to four contact details, no fit screening (Ioseb).

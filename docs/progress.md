@@ -18,6 +18,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 ## Done (newest first)
 
+- 2026-09-28: Chat asks only first name, restaurant, state, email, then shows times; fit questions removed (B5 retired), G8 blocks "which option?" questions; spec 1.3 (pull request pending merge).
 - 2026-09-27: Workflow overhead trimmed (ADR 0028): 6 open proposals, Obsidian map and graph check off by default, worktree for phase-5-launch.
 - 2026-09-27: Stale duplicate Obsidian map note resolved and vault shortcuts rebuilt with no data loss (from 2026-09-27-170044-d2856c37.md)
 - 2026-09-27: GitHub branch ruleset (require status checks to pass) confirmed active (from 2026-09-27-170037-2f71faae.md)
