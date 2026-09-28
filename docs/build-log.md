@@ -91,3 +91,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-27: Workflow overhead trimmed (Ioseb's brief, ADR 0028): open proposals 15 to 6, Obsidian map rebuild and graph check off by default, one worktree per open task (phase-5-launch).
 - 2026-09-28: Ioseb asked to keep only first name, restaurant, state, email then times; chose 'book anyway' for volunteered non fits; approved spec 1.2 (B4, B6 changed, B5 retired, G8 added) and intent job 2.
 - 2026-09-28: Phase 5 plan note 'four details, no fit questions' approved by Ioseb (spec 1.2, B4, B6, G8).
+- 2026-09-28: Built four details then times (B4, B6), fit questions removed, G8 option question guardrail with review fixes; 18 of 18 live chats pass; Ioseb approved spec 1.3 (section 8 links).
