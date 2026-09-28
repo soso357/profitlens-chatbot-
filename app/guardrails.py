@@ -121,7 +121,7 @@ def remove_sales_push(reply: str, visitor_message: str) -> str:
         return reply
     parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
     # "Any questions, or would you like to get started?" keeps the neutral question
-    parts = [re.sub(r",?\s*or would you like\b[^?]*\b(book|get(?:ting)? started|start)\b[^?]*\?", "?", p, flags=re.I)
+    parts = [re.sub(r",?\s*or would you like (?:to |help (?:with )?|me to help you )?(book|get(?:ting)? started|start)\b[^?]*\?", "?", p, flags=re.I)
              for p in parts]
     kept = [p for p in parts if not _PUSH.search(p)]
     return " ".join(kept) if kept else reply

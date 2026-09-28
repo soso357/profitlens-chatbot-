@@ -78,6 +78,7 @@ for reply, msg, expect_gone in [
     ("A founder can look at it. Would you like to book the intake call?", "is 40 percent bad?", True),
     ("Any questions about the service, or would you like to get started?", "who won the super bowl", True),
     ("Anything else you would like to know about ProfitLens, or would you like help getting started?", "Ok thanks.", True),
+    ("Any questions, or would you like to know more before you start?", "Ok thanks.", False),
     ("Great, what is your first name?", "I want to book a call", False),
     ("It includes an Excel workbook. Would you like to get started?", "i want to use 99% service", False),
     ("Happy to help. Would you like to book the intake call?", "sign me up", False),
