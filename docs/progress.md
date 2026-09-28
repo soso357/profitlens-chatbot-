@@ -18,7 +18,9 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 ## Done (newest first)
 
-- 2026-09-28: Chat asks only first name, restaurant, state, email, then shows times; fit questions removed (B5 retired), G8 blocks "which option?" questions; spec 1.3 (pull request pending merge).
+- 2026-09-28: Notes tidied: session summary, proposals 0036 to 0040 closed, stray docs/image.png deleted (Ioseb).
+- 2026-09-28: Chat asks only first name, restaurant, state, email, then shows times; fit questions removed (B5 retired), G8 blocks "which option?" questions; spec 1.3, ADR 0029 (PR #14, merged).
+- 2026-09-28: Sales push check catches "or would you like help getting started?" (proposal 0040, PR #15, merged).
 - 2026-09-27: Workflow overhead trimmed (ADR 0028): 6 open proposals, Obsidian map and graph check off by default, worktree for phase-5-launch.
 - 2026-09-27: Stale duplicate Obsidian map note resolved and vault shortcuts rebuilt with no data loss (from 2026-09-27-170044-d2856c37.md)
 - 2026-09-27: GitHub branch ruleset (require status checks to pass) confirmed active (from 2026-09-27-170037-2f71faae.md)
@@ -52,15 +54,15 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 - How long do founders keep lead and handoff emails in Gmail? They include the chat, outside R9's 30 day deletion (ADR 0027). (founders)
 - Should the chatbot repeat the visitor's email back to catch typos like "gmial.com"? (Ioseb)
 - Should the three offered call times be spread over different days? (Ioseb)
-- Four FOUNDER TO CONFIRM items in content/: reply time promise, fine dining fit, manager chatting for the owner, unclear answers. (founders)
+- One FOUNDER TO CONFIRM item in content/: how quickly founders promise to reply (handoff-rules.md). The three fit items went away with the fit questions (ADR 0029). (founders)
 - What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)
-- Should docs/image.png be deleted since it isn't tracked on GitHub? (Ioseb) (from 2026-09-27-170044-d2856c37.md)
 - Should the privacy text for the website be written now? (Ioseb) (from 2026-09-27-170044-d2856c37.md)
 
 ## Waiting on people
 
 - Ioseb: tell the founders the repository is now public (ADR 0026).
 - Founders: approval of the hidden test page https://useprofitlens.com/chat-test.
+- Ioseb: tell the founders the fit questions are gone; every visitor can book, they screen on the call (ADR 0029).
 
 ## Known problems
 
