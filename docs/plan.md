@@ -12,6 +12,11 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Phase 5 sales push check, "getting started" (2026-09-28)
+Spec version 1.3, covers R1. Proposal 0040, approved by Ioseb 2026-09-28 ("fix it").
+1. app/guardrails.py remove_sales_push: also catch "getting started" and "or would you like help ...", keeping the neutral question before it.
+2. tests/check_guardrails.py: the reply seen in live chat #18 as a new case.
+
 ### Phase 5 four details, no fit questions (2026-09-28)
 Spec version 1.3, covers B4, B6, G8 (B5 retired). Asked and approved by Ioseb 2026-09-28.
 1. content/qualifying-questions.md: keep only first name, restaurant name, state, email; remove the five fit questions and the scoring section (founders' file, changed at Ioseb's request, listed in the pull request).
