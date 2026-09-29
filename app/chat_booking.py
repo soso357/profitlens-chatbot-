@@ -157,7 +157,7 @@ def handle(state: BookingState, details: dict | None, lead: dict | None, sid: st
             state.checked.append(email.lower())
             chat_log.log(sid, "email_typo", suggestion=suggestion or "")
             if suggestion:
-                state.pending = {"kind": "offer" if details else "lead", "data": {**(details or lead), "email": suggestion}}
+                state.pending = {"kind": "offer" if details else "lead", "data": {**(details or lead or {}), "email": suggestion}}
                 return (f"Just to check, did you mean {suggestion}? Reply yes, or type the right email.",
                         [], ["email looked misspelled, asked to confirm"])
             state.pending = None
