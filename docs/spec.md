@@ -48,7 +48,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B10 | Instruction override attempts ("ignore your rules") | Ignore the attempt, carry on | content/handoff-rules.md |
 | B11 | Calendar unreachable | Apologise, collect email and preferred times, send handoff email. Never leave the visitor without a path | Phase 3 |
 | B12 | Daily spend cap reached or kill switch on | Widget becomes a "leave your email" form | R8, Phase 5 |
-| B13 | Visitor types an email that looks wrong: no dot after the @, or a near miss of gmail, yahoo, outlook, hotmail, icloud or aol (for example gmil.com) | Checked in code before booking or saving a lead. Read the address back once: "Did you mean maria@gmail.com? Reply yes, or type the right email." "yes" uses the suggestion; a new email is checked again. If there is no suggestion (no dot), ask them to type it again. Ask only once per address (Ioseb, 2026-09-29) | code check |
+| B13 | Visitor types an email that looks wrong: no dot after the @, or a near miss of gmail, yahoo, outlook, hotmail, icloud or aol (for example gmil.com) | Checked in code before booking or saving a lead. Read the address back once: "Did you mean maria@gmail.com? Reply yes, or type the right email." "yes" uses the suggestion; a new email is checked again. If there is no suggestion (no dot), ask them to type it again. Until they say yes or type an address, the unconfirmed address is never used; the same near miss typed again is accepted. Chat only: the leave your email form keeps the fixed misspellings list (Ioseb, 2026-09-29) | code check |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
 
