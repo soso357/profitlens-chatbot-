@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.3
+Version: 1.4
 Status: Approved
 Approved by: Ioseb
-Date: 2026-09-28
-Fingerprint: c4188a58fd87c171
+Date: 2026-09-29
+Fingerprint: 1b9b98dd07500bef
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -48,6 +48,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B10 | Instruction override attempts ("ignore your rules") | Ignore the attempt, carry on | content/handoff-rules.md |
 | B11 | Calendar unreachable | Apologise, collect email and preferred times, send handoff email. Never leave the visitor without a path | Phase 3 |
 | B12 | Daily spend cap reached or kill switch on | Widget becomes a "leave your email" form | R8, Phase 5 |
+| B13 | Visitor types an email that looks wrong: no dot after the @, or a near miss of gmail, yahoo, outlook, hotmail, icloud or aol (for example gmil.com) | Checked in code before booking or saving a lead. Read the address back once: "Did you mean maria@gmail.com? Reply yes, or type the right email." "yes" uses the suggestion; a new email is checked again. If there is no suggestion (no dot), ask them to type it again. Ask only once per address (Ioseb, 2026-09-29) | code check |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
 
@@ -114,6 +115,7 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B10 | tests/conversations.md#12 |
 | B11 | tests/check_booking.py |
 | B12 | none yet (kill switch not built, Phase 5) |
+| B13 | none yet |
 | G1 | tests/check_guardrails.py; tests/conversations.md#4 |
 | G2 | tests/check_guardrails.py |
 | G3 | tests/check_guardrails.py |

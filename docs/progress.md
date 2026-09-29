@@ -52,7 +52,6 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 
 - Who pays for the Render Starter plan plus disk? (Ioseb, founders)
 - How long do founders keep lead and handoff emails in Gmail? They include the chat, outside R9's 30 day deletion (ADR 0027). (founders)
-- Should the chatbot repeat the visitor's email back to catch typos like "gmial.com"? (Ioseb)
 - Should the three offered call times be spread over different days? (Ioseb)
 - One FOUNDER TO CONFIRM item in content/: how quickly founders promise to reply (handoff-rules.md). The three fit items went away with the fit questions (ADR 0029). (founders)
 - What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)

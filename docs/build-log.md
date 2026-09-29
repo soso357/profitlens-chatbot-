@@ -95,3 +95,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-28: ADR 0029 recorded: four contact details, no fit screening, book anyway (Ioseb).
 - 2026-09-28: Sales push check now catches "getting started" (proposal 0040, approved by Ioseb).
 - 2026-09-28: Recorded decisions from the 2026-09-27 cleanup (PR #13, ADR 0028): 13 fully merged branches deleted, Obsidian map and graph check off by default, one worktree per open task, /code-review skipped for that workflow-only PR; proposals 0036 to 0039 closed.
+- 2026-09-29: Ioseb asked for an email typo check (gmil.com got through); chose automatic near miss detection and confirm with yes or retype; approved spec 1.4 (B13) and the plan note.
