@@ -18,6 +18,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 ## Done (newest first)
 
+- 2026-09-29: Email typo check (B13): near misses like gmil.com are read back, visitor confirms with yes or retypes; spec 1.5.
 - 2026-09-28: Notes tidied: session summary, proposals 0036 to 0040 closed, stray docs/image.png deleted (Ioseb).
 - 2026-09-28: Chat asks only first name, restaurant, state, email, then shows times; fit questions removed (B5 retired), G8 blocks "which option?" questions; spec 1.3, ADR 0029 (PR #14, merged).
 - 2026-09-28: Sales push check catches "or would you like help getting started?" (proposal 0040, PR #15, merged).
@@ -52,7 +53,6 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 
 - Who pays for the Render Starter plan plus disk? (Ioseb, founders)
 - How long do founders keep lead and handoff emails in Gmail? They include the chat, outside R9's 30 day deletion (ADR 0027). (founders)
-- Should the chatbot repeat the visitor's email back to catch typos like "gmial.com"? (Ioseb)
 - Should the three offered call times be spread over different days? (Ioseb)
 - One FOUNDER TO CONFIRM item in content/: how quickly founders promise to reply (handoff-rules.md). The three fit items went away with the fit questions (ADR 0029). (founders)
 - What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)

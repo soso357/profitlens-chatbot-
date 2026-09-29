@@ -9,7 +9,7 @@ alerts. It ends a reply with a hidden block and this module does the rest:
         visitor needs a founder: save the lead, alert the founders
 
 Both blocks are removed before the visitor sees the reply.
-Implements: B4, B6, B7, B11
+Implements: B4, B6, B7, B11, B13
 """
 import json
 import re
@@ -23,9 +23,15 @@ from app import booking, chat_log, config, email_alerts, leads, telegram
 OFFER = re.compile(r"<offer_times>(.*?)</offer_times>", re.S)
 LEAD = re.compile(r"<lead>(.*?)</lead>", re.S)
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+EMAIL_LOOSE = re.compile(r"^[^@\s]+@[^@\s]+$")  # lets "maria@gmailcom" reach the typo check (B13)
+YES = re.compile(r"^\W*((oh|ah|um|sorry|oops)\W+)*(yes+|yeah|yea|ya|yep|yup|y|correct|right|that'?s (it|right|correct)|sure|"
+                 r"ok(ay)?|absolutely|definitely|exactly|please do|yes please)\b", re.I)
 DEFAULT_TZ = "America/New_York"
 MORE = "more"
 
+# B13: big providers a typed domain is compared with, and real domains that look like typos of them.
+PROVIDERS = ("gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com")
+REAL_NAMES = {"ymail", "mail", "email", "live", "me", "msn", "gmx", "aim", "rocketmail", "mac"}
 # Common misspellings of big email providers. A typo means the invite never arrives.
 EMAIL_TYPOS = {
     "gmial.com": "gmail.com", "gmal.com": "gmail.com", "gmai.com": "gmail.com", "gamil.com": "gmail.com",
@@ -55,6 +61,8 @@ class BookingState:
     booked: bool = False
     lead_saved: bool = False             # a lead row exists for this conversation
     handoff_sent: bool = False
+    pending: dict | None = None          # B13: {"kind": "offer" or "lead", "data": {...}} waiting for "yes"
+    checked: list[str] = field(default_factory=list)  # B13: addresses already read back once
 
 
 def _json_block(pattern: re.Pattern, raw: str) -> dict | None:
@@ -78,7 +86,7 @@ def extract(raw_reply: str, visitor_text: str = "") -> tuple[str, dict | None, d
     details = _json_block(OFFER, raw_reply)
     if details is not None:
         details = {k: str(details.get(k, "")).strip()[:150] for k in ("name", "restaurant", "location", "email", "timezone")}
-        if (not all(details[k] for k in ("name", "restaurant", "location")) or not EMAIL.match(details["email"])
+        if (not all(details[k] for k in ("name", "restaurant", "location")) or not EMAIL_LOOSE.match(details["email"])
                 or details["email"].lower() not in typed):  # no fit check: every visitor can book (B4, B5 retired)
             details = None
         elif details["timezone"] not in booking.US_TIMEZONES:
@@ -87,34 +95,110 @@ def extract(raw_reply: str, visitor_text: str = "") -> tuple[str, dict | None, d
     lead = _json_block(LEAD, raw_reply)
     if lead is not None:
         lead = {k: str(lead.get(k, "")).strip()[:300] for k in ("name", "restaurant", "location", "email", "reason")}
-        if not EMAIL.match(lead["email"]) or lead["email"].lower() not in typed:
+        if not EMAIL_LOOSE.match(lead["email"]) or lead["email"].lower() not in typed:
             lead = None
     return text, details, lead
 
 
+def _distance(a: str, b: str) -> int:
+    """Letters to add, remove, change or swap to turn a into b (gmil to gmail is 1, gamil to gmail is 1)."""
+    prev2, prev = None, list(range(len(b) + 1))
+    for i in range(1, len(a) + 1):
+        cur = [i] + [0] * len(b)
+        for j in range(1, len(b) + 1):
+            cur[j] = min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] != b[j - 1]))
+            if prev2 and i > 1 and j > 1 and a[i - 1] == b[j - 2] and a[i - 2] == b[j - 1]:
+                cur[j] = min(cur[j], prev2[j - 2] + 1)
+        prev2, prev = prev, cur
+    return prev[-1]
+
+
+def email_check(email: str) -> tuple[bool, str | None]:
+    """B13: (looks wrong, suggested address or None). Wrong means no dot after the @, a known misspelling,
+    or a name part 1 letter off a big provider (2 for the longer names), so gmil.com is caught while
+    yahoo.ca, joe.com and ymail.com are left alone. Chat only: the chat asks once and then accepts."""
+    user, _, domain = email.strip().rpartition("@")
+    d = domain.lower()
+    if not user or "." not in d.strip("."):
+        return True, None
+    if d in EMAIL_TYPOS:
+        return True, f"{user}@{EMAIL_TYPOS[d]}"
+    name = d.split(".")[0]
+    names = [p.split(".")[0] for p in PROVIDERS]
+    if name in names or name in REAL_NAMES:
+        return False, None
+    best = min(names, key=lambda n: _distance(name, n))
+    if _distance(name, best) <= (1 if len(best) < 5 else 2):
+        return True, f"{user}@{best}.com"
+    return False, None
+
+
 def email_typo(email: str) -> str | None:
-    """The likely intended address if the domain is a common misspelling, else None."""
-    user, _, domain = email.rpartition("@")
-    fixed = EMAIL_TYPOS.get(domain.lower())
-    return f"{user}@{fixed}" if fixed else None
+    """The leave your email form: only the known misspellings list, since the form cannot ask once and then accept."""
+    fixed = EMAIL_TYPOS.get(email.rpartition("@")[2].lower())
+    return f"{email.rpartition('@')[0]}@{fixed}" if fixed else None
 
 
 def handle(state: BookingState, details: dict | None, lead: dict | None, sid: str,
            transcript: str = "", source: str = "") -> tuple[str, list[dict], list[str]]:
     """Act on the hidden blocks of one reply. Returns (text to add to the reply, slots, notes).
-    If the email looks misspelled, nothing is booked or saved; the visitor is asked to check it."""
+    If the email looks wrong (B13), nothing is booked or saved; the address is read back once."""
     email = (details or lead or {}).get("email", "")
-    suggestion = email_typo(email) if email else None
-    if suggestion:
-        chat_log.log(sid, "email_typo", suggestion=suggestion)
-        return (f"Just to check, did you mean {suggestion}? Please type your email again so the invite reaches you.",
-                [], ["email looked misspelled, asked again"])
+    if lead and not details and state.handoff_sent:
+        email = ""  # a founder was already alerted; nothing new would be saved
+    if email and state.pending and email.lower() in state.checked:
+        # still waiting for "yes" or a retyped address: never book the unconfirmed one
+        return (f"Just to check, did you mean {state.pending['data']['email']}? Reply yes, or type the right email.",
+                [], ["still waiting for the email to be confirmed"])
+    if email:
+        wrong, suggestion = email_check(email)
+        # a near miss is asked about once (it may be real); an address with no dot is never accepted
+        if wrong and (suggestion is None or email.lower() not in state.checked):
+            state.checked.append(email.lower())
+            chat_log.log(sid, "email_typo", suggestion=suggestion or "")
+            if suggestion:
+                state.pending = {"kind": "offer" if details else "lead", "data": {**(details or lead or {}), "email": suggestion}}
+                return (f"Just to check, did you mean {suggestion}? Reply yes, or type the right email.",
+                        [], ["email looked misspelled, asked to confirm"])
+            state.pending = None
+            return ("That email address does not look complete. Could you type it again?",
+                    [], ["email incomplete, asked again"])
     if details and not state.details:
         extra, slots = offer(state, details, sid, transcript, source)
         return extra, slots, []
     if lead and record_lead(state, lead, sid, transcript, source):
         return "", [], ["lead saved, founders alerted"]
     return "", [], []
+
+
+def confirm(state: BookingState, message: str, sid: str, transcript: str = "",
+            source: str = "") -> tuple[str, list[dict]] | None:
+    """B13: the visitor answered a "did you mean ...?" question. A short "yes" uses the suggested address
+    without asking the model. A message with an address in it clears the question (the model sends that
+    address and it is checked again; the same one typed again is accepted). Anything else keeps waiting."""
+    pending = state.pending
+    if not pending:
+        return None
+    if "@" in message:
+        state.pending = None
+        return None
+    original = next((e for e in reversed(state.checked)), "")
+    typo_name = original.rpartition("@")[2].split(".")[0]
+    plain_yes = (YES.match(message) and len(message.split()) <= 4
+                 and not (typo_name and typo_name in message.lower()))  # "yes, gmil.com is correct" is not a plain yes
+    if not plain_yes:
+        return None
+    state.pending = None
+    data = pending["data"]
+    chat_log.log(sid, "email_confirmed", email=data["email"])
+    if pending["kind"] == "offer":
+        if state.details:
+            return None
+        extra, slots = offer(state, data, sid, transcript, source)
+        return f"Thanks, I will use {data['email']}. {extra}", slots
+    if record_lead(state, data, sid, transcript, source):
+        return f"Thanks, I will use {data['email']}. A founder will email you there.", []
+    return None
 
 
 def transcript_text(pairs) -> str:

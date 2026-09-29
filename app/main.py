@@ -280,6 +280,13 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             chat_log.log(sid, "agent", text=reply)
             _mirror(sid, session, message, reply)
             return _out(sid, session, reply=reply, slots=slots)
+        confirmed = chat_booking.confirm(session.booking, message, sid, _transcript(session), SOURCE)
+        if confirmed:  # "yes" to "did you mean ...@gmail.com?" (B13)
+            reply, slots = confirmed
+            session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
+            chat_log.log(sid, "agent", text=reply)
+            _mirror(sid, session, message, reply + "".join(f"\n  [time] {x['label']}" for x in slots))
+            return _out(sid, session, reply=reply, slots=slots)
         first_reply = not any(m["role"] == "assistant" for m in session.messages)
         history = session.messages + [{"role": "user", "content": message}]
 

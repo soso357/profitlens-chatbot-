@@ -134,3 +134,14 @@ Must: food cost analysis|menu analysis|\$99
 Must not: (which (option|one|report)|\$99 or (the )?\$149|interested in the|leaning toward)
 V: What is the difference between the two options?
 V: Ok thanks.
+
+## 19. Email typo, then yes
+Expect: reads back "did you mean maria@gmail.com?", then "yes" shows three call times for maria@gmail.com (B13).
+Must: did you mean maria@gmail\.com
+Ends in: slots
+V: I want to book a call.
+V: Maria.
+V: Maria's Kitchen.
+V: Texas.
+V: maria@gmil.com
+V: yes

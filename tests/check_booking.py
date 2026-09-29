@@ -164,6 +164,58 @@ check("typo: no times, visitor asked to retype", "maria@gmail.com" in extra and 
 extra, slots, _ = cb.handle(s8, d, None, "s8")
 check("after retyping, times are offered", len(slots) == 3)
 
+# B13: near misses read back once, "yes" uses the suggestion, no dot asks again
+for addr, want in [("maria@gmil.com", "maria@gmail.com"), ("maria@gamil.com", "maria@gmail.com"),
+                   ("maria@yhoo.com", "maria@yahoo.com"), ("maria@outlok.com", "maria@outlook.com"),
+                   ("maria@hotmil.com", "maria@hotmail.com")]:
+    check(f"B13 {addr} suggests {want}", cb.email_check(addr) == (True, want))
+for addr in ("maria@ymail.com", "maria@mail.com", "maria@live.com", "joe@joe.com", "maria@mariaskitchen.com",
+             "x@gmail.co.uk", "x@aol.com", "x@yahoo.ca", "x@outlook.cl", "x@hotmail.fr"):
+    check(f"B13 {addr} is left alone", cb.email_check(addr) == (False, None))
+check("B13 no dot after @ looks wrong, no suggestion", cb.email_check("maria@gmailcom") == (True, None))
+TYPED13 = TYPED + " maria@gmil.com maria@gmailcom"
+_, d13, _ = cb.extract(GOOD.replace("maria@example.com", "maria@gmil.com"), TYPED13)
+s13 = cb.BookingState()
+extra, slots, _ = cb.handle(s13, d13, None, "s13")
+check("B13 gmil.com: read back, no times yet", "did you mean maria@gmail.com? Reply yes" in extra and not slots
+      and s13.pending and s13.details is None)
+reply, slots = cb.confirm(s13, "Yes", "s13")
+check("B13 yes: times offered with gmail.com", len(slots) == 3 and s13.details["email"] == "maria@gmail.com"
+      and "maria@gmail.com" in reply and s13.pending is None)
+s14 = cb.BookingState()
+cb.handle(s14, d13, None, "s14")
+check("B13 'yes, gmil.com is correct' is not a plain yes", cb.confirm(s14, "yes, gmil.com is correct", "s14") is None
+      and s14.pending is not None)
+extra, slots, _ = cb.handle(s14, d13, None, "s14")
+check("B13 while waiting, the unconfirmed address is never booked", not slots and "did you mean maria@gmail.com" in extra)
+check("B13 retyping an address clears the question", cb.confirm(s14, "it is maria@gmil.com", "s14") is None
+      and s14.pending is None)
+extra, slots, _ = cb.handle(s14, d13, None, "s14")
+check("B13 same near miss typed again is accepted (asked once)", len(slots) == 3 and s14.details["email"] == "maria@gmil.com")
+for said in ("Oh yes, sorry", "Yea", "yess", "absolutely"):
+    s17 = cb.BookingState()
+    cb.handle(s17, d13, None, "s17")
+    got = cb.confirm(s17, said, "s17")
+    check(f"B13 '{said}' counts as yes", got is not None and s17.details["email"] == "maria@gmail.com")
+check("B13 form keeps the old list only (yahoo.ca, hotmeal.com pass)", cb.email_typo("x@yahoo.ca") is None
+      and cb.email_typo("x@hotmeal.com") is None and cb.email_typo("x@gmial.com") == "x@gmail.com")
+_, dnd, _ = cb.extract(GOOD.replace("maria@example.com", "maria@gmailcom"), TYPED13)
+s15 = cb.BookingState()
+check("B13 no dot reaches the check", dnd is not None)
+extra, slots, _ = cb.handle(s15, dnd, None, "s15")
+extra2, slots2, _ = cb.handle(s15, dnd, None, "s15")
+check("B13 no dot: asked to type again, every time, never booked", "does not look complete" in extra
+      and "does not look complete" in extra2 and not slots and not slots2 and s15.details is None)
+_, _, l16 = cb.extract(LEAD.replace("bob@example.com", "bob@gmil.com"), TYPED + " bob@gmil.com")
+s16 = cb.BookingState()
+cb.handle(s16, None, l16, "s16")
+SENT.clear()
+reply, _ = cb.confirm(s16, "yep", "s16", transcript="Visitor: any discount?")
+check("B13 handoff lead: yes saves it with gmail.com", rows()[-1]["email"] == "bob@gmail.com" and "founder" in reply)
+_, _, l18 = cb.extract(LEAD.replace("bob@example.com", "bob@gmil.com"), TYPED + " bob@gmil.com")
+extra, _, _ = cb.handle(s16, None, l18, "s16")
+check("B13 after a handoff was sent, no new read back or false promise", extra == "" and s16.pending is None)
+
 # times spread over different days
 from zoneinfo import ZoneInfo
 day1 = [BASE + timedelta(minutes=30 * i) for i in range(6)]
