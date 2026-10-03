@@ -3,7 +3,6 @@ visitor conversation against a safe local copy of the service, with a pass or fa
 
 Run: .venv/bin/python -m tests.evals            (all, uses a little API credit)
      .venv/bin/python -m tests.evals --offline  (no API calls, free)
-     add --graph to also run the context graph check (off by default, ADR 0028)
 
 The local copy sends no Telegram or email alerts and keeps logs, leads and the spend
 counter in a temporary folder. It reads the calendar (free times) but books nothing.
@@ -24,7 +23,6 @@ PY = sys.executable
 OFFLINE = ["tests.check_guardrails", "tests.check_booking", "tests.check_sessions", "tests.check_retention", "tests.check_alerts",
            "tests.check_workflow", "tests.check_harness",
            "tests.check_spec"]
-OPTIONAL = ["tests.check_graph"]  # off by default (ADR 0028): add --graph to run it
 
 
 def run(module, env=None):
@@ -67,7 +65,7 @@ def wait_up(url, server, seconds=30):
 
 def main():
     offline = "--offline" in sys.argv
-    rows = [(m, *run(m)) for m in OFFLINE + (OPTIONAL if "--graph" in sys.argv else [])]
+    rows = [(m, *run(m)) for m in OFFLINE]
     if not offline:
         port = free_port()  # a fresh port each run, so an old server can never answer instead
         env = safe_env(port)

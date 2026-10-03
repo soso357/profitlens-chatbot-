@@ -29,7 +29,6 @@ WORKING = MEMORY / "working"
 STATE = WORKING / "state"
 SNAPSHOTS = WORKING / "snapshots"
 HANDOFFS = WORKING / "handoffs"          # one handoff per task (ADR 0022)
-SESSIONS = MEMORY / "episodic" / "sessions"
 PROPOSALS = MEMORY / "proposals"
 SEMANTIC = MEMORY / "semantic"
 
@@ -43,7 +42,7 @@ VERIFY_DAYS = 60        # semantic memory not verified for this long is flagged
 DEFERRED_DAYS = 30      # deferred proposals come back after this long
 DONE_HANDOFF_DAYS = 14  # handoffs marked done are deleted after this long
 
-# Set in the environment of the background summarizer so no hook re-enters.
+# Set in the environment of a background Claude call so no hook re-enters.
 GUARD_ENV = "PL_WORKFLOW_SUMMARIZER"
 
 SECRET_PATTERNS = [
@@ -101,32 +100,6 @@ def frontmatter(path):
                     meta[k.strip()] = v.strip().strip('"')
             text = text[end + 4:].lstrip("\n")
     return meta, text
-
-
-def summary_failures():
-    """Sessions whose summary failed and has not been redone: {session_id: {time, error, transcript}}.
-    One file per session (<id>.summary-failed.json), so parallel runs never overwrite each other."""
-    out = {}
-    for f in STATE.glob("*.summary-failed.json"):
-        try:
-            out[f.name[:-len(".summary-failed.json")]] = json.loads(f.read_text())
-        except Exception:
-            pass
-    return out
-
-
-def set_summary_failure(session_id, info=None):
-    """Record (info given) or clear (info None) a failed summary for one session."""
-    f = session_state_path(session_id).with_suffix(".summary-failed.json")
-    if info:
-        STATE.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps(info))
-    else:
-        f.unlink(missing_ok=True)
-
-
-def all_proposal_titles():
-    return [frontmatter(p)[0].get("title", p.stem) for p in sorted(PROPOSALS.glob("[0-9]*.md"))]
 
 
 def open_proposals():
@@ -254,19 +227,3 @@ def cleanup_done_handoffs():
             gone.append(slug)
     return gone
 
-
-def words(text):
-    text = re.sub(r"\(from [^)]*\)", "", (text or "").lower())
-    text = re.sub(r"^- \d{4}-\d{2}-\d{2}[^:]*:", "", text.strip())  # a list line's own date is not content
-    return {w for w in re.findall(r"[a-z0-9]+", text) if len(w) > 3 or any(c.isdigit() for c in w)}
-
-
-def similar(a, b, threshold=0.6):
-    """True when the shorter text's longer words mostly appear in the other (same item, reworded).
-    Different numbers mean different items ("step 1 merged" is not "step 2 merged")."""
-    wa, wb = words(a), words(b)
-    if not wa or not wb:
-        return False
-    if {w for w in wa if any(c.isdigit() for c in w)} != {w for w in wb if any(c.isdigit() for c in w)}:
-        return False
-    return len(wa & wb) / min(len(wa), len(wb)) >= threshold

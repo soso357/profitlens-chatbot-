@@ -2,10 +2,10 @@
 """SessionStart hook (ADR 0009, 0022).
 
 startup / resume / clear: load nothing (Ioseb's choice, ADR 0022). One line says how to
-continue; a failed session summary is still reported. Rebuilds the memory index.
+continue. Tidies the handoff index.
 compact: count the compaction, reinject this session's own task handoff (or its
 snapshot), and ask for a new terminal.
-The full brief (open tasks, phase status, last summary, proposals) is shown by the
+The full brief (open tasks, phase status, proposals) is shown by the
 resume skill through handoffs.py brief.
 """
 import os
@@ -15,7 +15,6 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from common import (GUARD_ENV, MAX_COMPACTIONS, ROOT, SNAPSHOTS, emit_context, handoff_for_session,  # noqa: E402
                     list_handoffs, load_state, read_hook_input, save_state, session_state_path)
-from handoffs import failures_text  # noqa: E402
 
 
 def main():
@@ -44,23 +43,15 @@ def main():
         emit_context("SessionStart", "\n\n".join(out))
         return
 
-    jobs = [("memory_index.py", ["build", "--quiet"]), ("handoffs.py", ["index"])]
-    if os.environ.get("PROFITLENS_OBSIDIAN") == "1":  # off by default (ADR 0028)
-        jobs.append(("obsidian_map.py", []))
-    for script, args in jobs:
-        try:
-            subprocess.Popen([sys.executable, str(ROOT / ".claude" / "scripts" / script), *args],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
-        except Exception:
-            pass
+    try:
+        subprocess.Popen([sys.executable, str(ROOT / ".claude" / "scripts" / "handoffs.py"), "index"],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    except Exception:
+        pass
 
     n = len(list_handoffs())
-    out = [f"ProfitLens: nothing loaded yet (ADR 0022). {n} open task{'s' if n != 1 else ''}. "
-           "Do not start on any of them by yourself. When Ioseb says resume, use the resume skill."]
-    fails = failures_text()
-    if fails:
-        out.append(fails)
-    emit_context("SessionStart", "\n\n".join(out))
+    emit_context("SessionStart", f"ProfitLens: nothing loaded yet (ADR 0022). {n} open task{'s' if n != 1 else ''}. "
+                 "Do not start on any of them by yourself. When Ioseb says resume, use the resume skill.")
 
 
 if __name__ == "__main__":

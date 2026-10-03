@@ -1,6 +1,6 @@
 # ADR 0028: Trim workflow overhead before the launch
 
-- Status: Accepted
+- Status: Accepted, partly superseded by 0030
 - Date: 2026-09-27
 - Decided by: Ioseb (his written brief: trim overhead, keep the real gates)
 
