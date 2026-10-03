@@ -1,6 +1,6 @@
 # ADR 0023: Foundation v2 choices C1 to C7
 
-- Status: Accepted
+- Status: Accepted, partly superseded by 0030
 - Date: 2026-09-26
 - Decided by: Ioseb ("all recommended")
 

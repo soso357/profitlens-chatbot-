@@ -46,7 +46,6 @@ Ioseb leads marketing, runs this build for the founders (Sophie, Leli, Tamuna), 
 .venv/bin/python -m tests.evals --offline          # same without API calls
 git config core.hooksPath .githooks                # once per clone: commit label and no-push-to-master hooks
 python3 .claude/scripts/lint_content.py --all      # dashes and percentages in chatbot text
-python3 .claude/scripts/memory_index.py search <words>
 ```
 
 ## Sessions and memory (automatic, see docs/workflow.md)
@@ -55,7 +54,7 @@ python3 .claude/scripts/memory_index.py search <words>
 - One session, one task, one type (Plan, Build, Fix, Content). Each task has its own handoff in memory/working/handoffs/ (skill: handoff). A parallel task gets its own worktree (skill: parallel-task).
 - 60% context: update the task handoff. 70%: finish the step, hand off, commit, ask Ioseb for a new terminal (soft stop). Compaction at 85% is only a safety net.
 - Fix sessions write an incident note with a required test (memory/incidents/).
-- End: a background job writes the session summary and improvement proposals to memory/.
+- End: update the task handoff and docs/progress.md by hand (skill: handoff). No automatic summaries (ADR 0030).
 
 ## Compact instructions
 

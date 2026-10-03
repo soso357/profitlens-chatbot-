@@ -14,10 +14,11 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
 | 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: privacy text, weekly digest, paid plan with disk; kill switch skipped by Ioseb 2026-09-27 | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
-| F Foundation v2 (docs/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
+| F Foundation v2 (docs/archive/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
 ## Done (newest first)
 
+- 2026-10-03: Unused workflow tooling removed (summarizer, search index, context graph, closed proposals); chatbot untouched (ADR 0030).
 - 2026-09-29: Email typo check (B13): near misses like gmil.com are read back, visitor confirms with yes or retypes; spec 1.5.
 - 2026-09-28: Notes tidied: session summary, proposals 0036 to 0040 closed, stray docs/image.png deleted (Ioseb).
 - 2026-09-28: Chat asks only first name, restaurant, state, email, then shows times; fit questions removed (B5 retired), G8 blocks "which option?" questions; spec 1.3, ADR 0029 (PR #14, merged).
@@ -57,12 +58,16 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 - One FOUNDER TO CONFIRM item in content/: how quickly founders promise to reply (handoff-rules.md). The three fit items went away with the fit questions (ADR 0029). (founders)
 - What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)
 - Should the privacy text for the website be written now? (Ioseb) (from 2026-09-27-170044-d2856c37.md)
+- Proposal 0041: run pyright in the offline evals. Approve, reject or later? (Ioseb) (from 2026-09-29-103011-0ec43a04.md)
+- Can the finished email-typo-check worktree be deleted? (Ioseb) (from 2026-09-29-103011-0ec43a04.md)
 
 ## Waiting on people
 
 - Ioseb: tell the founders the repository is now public (ADR 0026).
 - Founders: approval of the hidden test page https://useprofitlens.com/chat-test.
 - Ioseb: tell the founders the fit questions are gone; every visitor can book, they screen on the call (ADR 0029).
+- Ioseb: Try the email typo check for free with tests.preview_chat and try useprofitlens.com/chat-test (from 2026-09-29-103011-0ec43a04.md)
+- Ioseb: Approve a paid run of the 19 live chats when ready, since chat 19 and the G8 and sales push fixes have no live AI run yet (from 2026-09-29-103011-0ec43a04.md)
 
 ## Known problems
 

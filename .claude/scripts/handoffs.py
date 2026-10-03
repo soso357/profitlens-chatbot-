@@ -4,18 +4,15 @@
   handoffs.py path <task>   absolute path of a task's handoff (always in the main folder,
                             also when called from a worktree)
   handoffs.py list          open tasks, newest first
-  handoffs.py brief         everything the resume skill shows: open tasks, phase status,
-                            last session's next steps, proposals, failed summaries
+  handoffs.py brief         everything the resume skill shows: open tasks, phase status, proposals
   handoffs.py index         delete handoffs done more than 14 days ago, rebuild _index.md
 """
-import json
 import os
-import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from common import (HANDOFFS, ROOT, SESSIONS, STATE, cleanup_done_handoffs, deferred_due, frontmatter,  # noqa: E402
-                    list_handoffs, open_proposals, stale_semantic, summary_failures, task_slug, write_handoff_index)
+from common import (HANDOFFS, ROOT, cleanup_done_handoffs, deferred_due, list_handoffs, open_proposals,  # noqa: E402
+                    stale_semantic, task_slug, write_handoff_index)
 
 
 def phase_status():
@@ -30,31 +27,6 @@ def phase_status():
     return ""
 
 
-def last_summary():
-    files = sorted(SESSIONS.glob("*.md"), key=lambda f: (frontmatter(f)[0].get("ended", ""), f.name))
-    if not files:
-        return ""
-    meta, body = frontmatter(files[-1])
-    unreviewed = sum(frontmatter(f)[0].get("reviewed", "no") == "no" for f in files)
-    m = re.search(r"## Next steps\n(.*?)(\n## |\Z)", body, re.S)
-    nxt = m.group(1).strip() if m else ""
-    flag = " (unreviewed: skim it and correct anything wrong)" if meta.get("reviewed", "no") == "no" else ""
-    older = (f"\n{unreviewed - 1} older summaries are also unreviewed: ask Ioseb whether to check them now."
-             if unreviewed > 1 else "")
-    return (f"Last session summary: {files[-1].name}{flag}\n{meta.get('title', '')}\nNext steps it recorded:\n"
-            f"{nxt[:1200]}" + older)
-
-
-def failures_text():
-    fails = summary_failures()
-    if not fails:
-        return ""
-    lines = [f"- session {sid[:8]} at {v.get('time', '?')}: {v.get('error', '')[:160]}\n  redo: python3 "
-             f".claude/scripts/summarize_session.py {v.get('transcript', '?')} {sid} retry" for sid, v in fails.items()]
-    return ("SESSION SUMMARY FAILED (tell Ioseb in one sentence and offer to redo it; "
-            "'Not logged in' means he must run claude and /login first):\n" + "\n".join(lines))
-
-
 def tasks_text():
     tasks = list_handoffs()
     if not tasks:
@@ -66,14 +38,6 @@ def tasks_text():
 
 def staleness_text():
     out = []
-    for f in sorted((STATE / "distribute-failed").glob("*.json")):
-        try:
-            last = json.loads(f.read_text())
-        except Exception:
-            continue
-        out.append(f"Sorting summary {last.get('summary')} into the project files failed ({last.get('error')}). "
-                   f"Tell Ioseb in one sentence, then redo it: python3 .claude/scripts/distribute.py "
-                   f"memory/episodic/sessions/{last.get('summary')}")
     stale = stale_semantic()
     if stale:
         out.append("Memory to re-check with Ioseb, then set last_verified to today: "
@@ -86,7 +50,7 @@ def staleness_text():
 
 
 def brief():
-    parts = [tasks_text(), phase_status(), last_summary(), failures_text(), staleness_text()]
+    parts = [tasks_text(), phase_status(), staleness_text()]
     props = open_proposals()
     if props:
         lines = [f"- {name[:4]} [{status}] {title[:90]}" for name, status, title in props]

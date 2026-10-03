@@ -6,7 +6,7 @@ description: Record an improvement idea (new skill, rule, hook, spec change, tes
 # Propose a capability
 
 ## New proposal
-1. Check it is not already there: `python3 .claude/scripts/memory_index.py proposals proposed approved rejected deferred built`.
+1. Check it is not already there: `grep -h "^title:\|^status:" memory/proposals/0*.md` (rejected and built ones are in git history: `git log --diff-filter=D --name-only -- memory/proposals`).
 2. Create memory/proposals/NNNN-short-slug.md (next free number):
 
 ```

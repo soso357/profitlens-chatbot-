@@ -1,6 +1,6 @@
 # ADR 0009: Memory layers as files plus a rebuildable SQLite index
 
-- Status: Accepted
+- Status: Accepted, partly superseded by 0030
 - Date: 2026-09-22
 - Decided by: Ioseb (chose option: Markdown plus SQLite index)
 

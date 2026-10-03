@@ -1,6 +1,6 @@
 # ADR 0010: Fully automatic session summaries
 
-- Status: Accepted
+- Status: Superseded by 0030
 - Date: 2026-09-22
 - Decided by: Ioseb (chose option: fully automatic)
 

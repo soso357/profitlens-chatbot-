@@ -17,4 +17,4 @@ Used by Claude when reviewing changes (/code-review, security-guidance) before o
 Naming, comments, small duplication, style.
 
 ## Skip
-.venv/, memory/episodic/ (generated), docs/research/.
+.venv/, docs/archive/, docs/research/.

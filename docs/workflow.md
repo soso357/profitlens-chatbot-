@@ -10,7 +10,7 @@ Principle from the playbook: every stage commits a file the next stage reads, an
  (why)          (what,       (how, file by file,        (tests/,          ("approved"    (Render,
                  R/B/G ids)   approved before code)      conversations)    from Ioseb)    founders)
       ^                                                                                     |
-      |__________ proposals, incidents, transcript reviews, session summaries ______________|
+      |__________ proposals, incidents, transcript reviews _______________________________|
 ```
 
 | Stage | Claude does | Ioseb does | Artifact |
@@ -32,12 +32,11 @@ Source of truth for each thing is exactly one file (playbook rule): requirements
 
 1. Start `claude` in the project folder (or in a task's worktree). Nothing is loaded (ADR 0022). Say **resume**: Claude lists the open tasks, you pick one, Claude reads its handoff and docs/progress.md, checks what other terminals committed since, and says in three lines where it is (skill: resume).
 2. One session, one task, one type: Plan, Build, Fix (live incident) or Content and review. If the type changes, Claude writes the handoff and suggests a new terminal. For a second task at the same time, Claude sets up a worktree (skill: parallel-task).
-3. If the last summary is marked unreviewed, Claude skims it and fixes anything wrong.
-4. Work. Every choice between approaches: two or three options, plain pros and cons, wait. Then an ADR (skill: new-adr).
-5. At 60% context the statusline turns yellow and Claude updates the task handoff. At 70% it turns red "new terminal": Claude finishes the step, hands off, commits and asks you to open a new terminal and say resume.
-6. Fix sessions end with an incident note in memory/incidents/ and a new test.
-7. When you close the session, a background job writes the session summary to memory/episodic/sessions/ and sorts it (distribute.py): work done, open questions and people we wait on go into docs/progress.md; lessons into lessons.md; decisions not in the build log and any plan, spec, ADR or rule change become proposals for Ioseb. Every automatic line names its source summary. Nothing to do by hand; on the next resume Claude tidies progress.md.
-8. Commit on the branch when a step works, with a stage label. At the phase gate: evals, review, pull request, Ioseb merges.
+3. Work. Every choice between approaches: two or three options, plain pros and cons, wait. Then an ADR (skill: new-adr).
+4. At 60% context the statusline turns yellow and Claude updates the task handoff. At 70% it turns red "new terminal": Claude finishes the step, hands off, commits and asks you to open a new terminal and say resume.
+5. Fix sessions end with an incident note in memory/incidents/ and a new test.
+6. Before you close the session, Claude updates the task handoff and docs/progress.md (skill: handoff). There are no automatic session summaries (ADR 0030).
+7. Commit on the branch when a step works, with a stage label. At the phase gate: evals, review, pull request, Ioseb merges.
 
 ## 3. Context handoff and compaction
 
@@ -55,7 +54,7 @@ Why a new session instead of compaction (ADR 0022): each compaction is a summary
 
 Which task a session owns: the hook handoff_track.py records it when Claude writes a handoff; otherwise the open handoff on the same branch. Handoffs, snapshots and state always live in the main project folder, also for terminals in a worktree.
 
-When sources disagree: founder ADRs 0001 to 0006, spec.md, other ADRs, plan.md, progress.md, lessons, session summaries, handoffs. The higher one wins; Claude flags the lower one.
+When sources disagree: founder ADRs 0001 to 0006, spec.md, other ADRs, plan.md, progress.md, lessons, handoffs. The higher one wins; Claude flags the lower one.
 
 Two kinds of ending:
 - **New terminal**: keeps this terminal's history; say resume and pick the task.
@@ -66,9 +65,8 @@ Two kinds of ending:
 Goal: Claude notices useful things Ioseb did not ask for, proposes them, and builds them only after approval.
 
 Where ideas come from:
-1. The session summarizer lists up to three proposals per session (automatic).
-2. Claude during work (skill: propose-capability), triggered by: the same manual task done twice; a visitor situation the spec does not cover; a guardrail or test that is missing; a mistake made twice (lessons.md); a founder or Ioseb correction.
-3. Incidents after launch: every bad transcript becomes a test case and, if needed, a proposal.
+1. Claude during work (skill: propose-capability), triggered by: the same manual task done twice; a visitor situation the spec does not cover; a guardrail or test that is missing; a mistake made twice (lessons.md); a founder or Ioseb correction.
+2. Incidents after launch: every bad transcript becomes a test case and, if needed, a proposal.
 
 Lifecycle: `proposed -> approved -> built` (or rejected / deferred with a reason). Files in memory/proposals/.
 
@@ -90,13 +88,12 @@ Rules:
 | PostToolUse (Write/Edit) | lint_content.py | blocks dashes and percentages in chatbot text |
 | PostToolUse (Write/Edit) | spec_check.py hook | an edit to an Approved spec sets it back to Draft (ADR 0025) |
 | PostToolUse (Write/Edit) | handoff_track.py | remembers which task this session owns; rebuilds the task index |
-| SessionEnd | session_end.py -> summarize_session.py -> distribute.py | automatic session summary and proposals; one run per session at a time; a resumed session is summarized only from where the last summary ended; a failure shows in the statusline and the next session brief until redone |
 | git commit-msg | .githooks/commit-msg | refuses a commit without a stage label |
 | git pre-push | .githooks/pre-push | refuses a push to master (pull requests only) |
 | permissions allow, ask, deny | settings.json | allow: tests, evals, git status/diff/log/add/commit, project scripts. Ask Ioseb: push, pull requests, installs, deleting files, network, content/, CLAUDE.md, settings, git hooks. Deny: merge, push to master, force push, hard reset, skipping git hooks, .env and credential files (ADR 0024) |
 | plugin security-guidance | (Anthropic) | security warnings on edits, background review of commits |
 
-All project scripts are standard library Python in .claude/scripts/. The summarizer log is memory/working/state/summarizer.log.
+All project scripts are standard library Python in .claude/scripts/.
 
 ## 6. Measures (from the playbook, scaled down)
 

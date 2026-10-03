@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Project statusline (ADR 0012).
 
-Shows: model | folder (branch) | task | context bar and % | compaction | open proposals | failed summaries.
+Shows: model | folder (branch) | task | context bar and % | compaction | open proposals.
 Colours (ADR 0022): green, yellow "handoff" from 60%, red "new terminal" from 70%.
 Also records the context % per session so the context_guard hook can act on it,
 because hooks do not receive the context percentage themselves.
@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, __import__("os").path.dirname(__file__))
 from common import (HANDOFF_PCT, MAX_COMPACTIONS, STOP_PCT, current_branch, load_state, open_proposals,  # noqa: E402
-                    save_state, summary_failures)
+                    save_state)
 
 DIM, RED, YEL, GRN, CYA, BOLD, RST = "\033[2m", "\033[31m", "\033[33m", "\033[32m", "\033[36m", "\033[1m", "\033[0m"
 
@@ -59,12 +59,6 @@ def main():
         props = [p for p in open_proposals() if p[1] == "proposed"]
         if props:
             parts.append(f"{CYA}{len(props)} proposal{'s' if len(props) > 1 else ''} to review{RST}")
-    except Exception:
-        pass
-
-    try:
-        if summary_failures():
-            parts.append(f"{RED}session summary failed (ask Claude to redo it){RST}")
     except Exception:
         pass
 
