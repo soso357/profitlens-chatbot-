@@ -98,3 +98,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-09-29: Ioseb asked for an email typo check (gmil.com got through); chose automatic near miss detection and confirm with yes or retype; approved spec 1.4 (B13) and the plan note.
 - 2026-09-29: B13 email typo check built (automatic near miss, yes or retype, form keeps fixed list); /code-review found 4 issues, all fixed; Ioseb approved spec 1.5 and chose offline evals only (no API cost).
 - 2026-10-03: Structure review against Anthropic guidance; Ioseb chose to delete unused workflow tooling: session summarizer, search index, context graph, closed proposals, stale transcript; foundation-v2 archived. Chatbot untouched (ADR 0030).
+- 2026-10-03: Deleted the stale generated Obsidian notes (START HERE map, 33 requirements notes); no dead links left in the vault (ADR 0030).
