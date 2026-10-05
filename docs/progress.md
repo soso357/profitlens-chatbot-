@@ -12,7 +12,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: privacy text, weekly digest, paid plan with disk; kill switch skipped by Ioseb 2026-09-27 | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: privacy text drafted 2026-10-05 (founders to fill 2 items and publish), weekly digest, paid plan with disk; kill switch skipped by Ioseb 2026-09-27 | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/archive/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
@@ -57,7 +57,6 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 - Should the three offered call times be spread over different days? (Ioseb)
 - One FOUNDER TO CONFIRM item in content/: how quickly founders promise to reply (handoff-rules.md). The three fit items went away with the fit questions (ADR 0029). (founders)
 - What should Jelena do when a visitor writes in Spanish or another non-English language? (founders) (from 2026-09-26-174858-298f6ef5.md)
-- Should the privacy text for the website be written now? (Ioseb) (from 2026-09-27-170044-d2856c37.md)
 - Proposal 0041: run pyright in the offline evals. Approve, reject or later? (Ioseb) (from 2026-09-29-103011-0ec43a04.md)
 - Can the finished email-typo-check worktree be deleted? (Ioseb) (from 2026-09-29-103011-0ec43a04.md)
 
