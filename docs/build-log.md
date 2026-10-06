@@ -102,3 +102,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-10-05: Privacy policy text for the website written (docs/privacy-policy-addition.md, R9); Ioseb chose policy text only, no notice in the chat window. Two retention items left for founders.
 - 2026-10-06: Render moved to the Starter plan (0.5 CPU, 512 MB) with a 1 GB disk at /var/data; Render settings DATA_DIR=/var/data/data and LOG_DIR=/var/data/logs, so leads, chat logs and the spend counter survive restarts. Set up by Ioseb; /health ok, Telegram and email ok. Side effect: each deploy now has about a minute offline.
 - 2026-10-06: Founders approved the widget (R11, Ioseb confirmed) and it is live on the useprofitlens.com homepage (checked: page loads widget.js). Privacy policy text completed by the founders and published on the website (R9).
+- 2026-10-06: Weekly digest email skipped; founders already get every chat message in Telegram (Ioseb, ADR 0031).

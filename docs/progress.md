@@ -12,12 +12,13 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on the useprofitlens.com homepage (founders approved, R11), Render Starter plan with 1 GB disk, privacy text published; next: weekly digest, restart test, phase gate; kill switch skipped by Ioseb 2026-09-27 | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on the useprofitlens.com homepage (founders approved, R11), Render Starter plan with 1 GB disk, privacy text published; weekly digest skipped (ADR 0031); next: restart test, phase gate; kill switch skipped by Ioseb 2026-09-27 | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/archive/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
 ## Done (newest first)
 
+- 2026-10-06: Weekly digest email skipped (ADR 0031).
 - 2026-10-06: Founders approved the widget; live on the homepage. Privacy policy text published (R9).
 - 2026-10-06: Render Starter plan and 1 GB disk set up; leads, logs and spend counter now survive restarts (DATA_DIR, LOG_DIR on /var/data).
 - 2026-10-03: Unused workflow tooling removed (summarizer, search index, context graph, closed proposals); chatbot untouched (ADR 0030).
