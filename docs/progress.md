@@ -12,12 +12,13 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (free plan) at profitlens-chat.onrender.com; next: privacy text drafted 2026-10-05 (founders to fill 2 items and publish), weekly digest, paid plan with disk; kill switch skipped by Ioseb 2026-09-27 | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (Starter plan, 1 GB disk) at profitlens-chat.onrender.com; next: privacy text drafted 2026-10-05 (founders to fill 2 items and publish), weekly digest; kill switch skipped by Ioseb 2026-09-27 | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/archive/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
 ## Done (newest first)
 
+- 2026-10-06: Render Starter plan and 1 GB disk set up; leads, logs and spend counter now survive restarts (DATA_DIR, LOG_DIR on /var/data).
 - 2026-10-03: Unused workflow tooling removed (summarizer, search index, context graph, closed proposals); chatbot untouched (ADR 0030).
 - 2026-09-29: Email typo check (B13): near misses like gmil.com are read back, visitor confirms with yes or retypes; spec 1.5.
 - 2026-09-28: Notes tidied: session summary, proposals 0036 to 0040 closed, stray docs/image.png deleted (Ioseb).
@@ -52,7 +53,6 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 
 ## Open questions
 
-- Who pays for the Render Starter plan plus disk? (Ioseb, founders)
 - How long do founders keep lead and handoff emails in Gmail? They include the chat, outside R9's 30 day deletion (ADR 0027). (founders)
 - Should the three offered call times be spread over different days? (Ioseb)
 - One FOUNDER TO CONFIRM item in content/: how quickly founders promise to reply (handoff-rules.md). The three fit items went away with the fit questions (ADR 0029). (founders)
@@ -70,4 +70,4 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 
 ## Known problems
 
-- Render free plan: leads, logs and the spend counter are lost on every restart until the paid plan with a disk is set up.
+- None known.
