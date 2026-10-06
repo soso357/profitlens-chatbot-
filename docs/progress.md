@@ -12,12 +12,13 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 | 2 Qualification and lead capture | DONE | approved 2026-09-23 by Ioseb |
 | 3 Booking in Google Calendar | DONE | approved 2026-09-23 by Ioseb |
 | 4 Website widget | DONE (tested locally via Claude Code; recheck with the API key during Phase 1) | approved 2026-09-23 by Ioseb |
-| 5 Deploy, harden, hand over | IN PROGRESS: live on Render (Starter plan, 1 GB disk) at profitlens-chat.onrender.com; next: privacy text drafted 2026-10-05 (founders to fill 2 items and publish), weekly digest; kill switch skipped by Ioseb 2026-09-27 | not approved |
+| 5 Deploy, harden, hand over | IN PROGRESS: live on the useprofitlens.com homepage (founders approved, R11), Render Starter plan with 1 GB disk, privacy text published; next: weekly digest, restart test, phase gate; kill switch skipped by Ioseb 2026-09-27 | not approved |
 | W Development workflow (memory, hooks, ADRs) | DONE 2026-09-22 | waiting for Ioseb |
 | F Foundation v2 (docs/archive/foundation-v2.md) | DONE 2026-09-27: steps 1 to 6 merged (pull requests #3 to #8); step 7 (multi model orchestration) is design only (ADR 0023 C6), switched on later by Ioseb | approved by merging each step |
 
 ## Done (newest first)
 
+- 2026-10-06: Founders approved the widget; live on the homepage. Privacy policy text published (R9).
 - 2026-10-06: Render Starter plan and 1 GB disk set up; leads, logs and spend counter now survive restarts (DATA_DIR, LOG_DIR on /var/data).
 - 2026-10-03: Unused workflow tooling removed (summarizer, search index, context graph, closed proposals); chatbot untouched (ADR 0030).
 - 2026-09-29: Email typo check (B13): near misses like gmil.com are read back, visitor confirms with yes or retypes; spec 1.5.
@@ -63,7 +64,6 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 ## Waiting on people
 
 - Ioseb: tell the founders the repository is now public (ADR 0026).
-- Founders: approval of the hidden test page https://useprofitlens.com/chat-test.
 - Ioseb: tell the founders the fit questions are gone; every visitor can book, they screen on the call (ADR 0029).
 - Ioseb: Try the email typo check for free with tests.preview_chat and try useprofitlens.com/chat-test (from 2026-09-29-103011-0ec43a04.md)
 - Ioseb: Approve a paid run of the 19 live chats when ready, since chat 19 and the G8 and sales push fixes have no live AI run yet (from 2026-09-29-103011-0ec43a04.md)
