@@ -13,18 +13,18 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 (Per phase implementation plans go here, newest phase first.)
 
 ### Phase 5 email typo check (2026-09-29)
-Spec version 1.5, covers B13. Approved by Ioseb 2026-09-29 (automatic near miss detection, confirm with yes or retype).
+Spec version 1.6, covers B13. Approved by Ioseb 2026-09-29 (automatic near miss detection, confirm with yes or retype).
 1. app/chat_booking.py email_typo: no dot after @ flags with no suggestion; a domain 1 or 2 edits from gmail, yahoo, outlook, hotmail, icloud or aol gets a suggestion (plus the existing list); real domains ymail, mail, live, me, msn, gmx, aim never flagged. Small edit distance function, no new library.
 2. BookingState keeps the pending details and suggestion. The visitor's "yes" offers times (or saves the lead) with the corrected email, without the model; a new typed email goes through the model and the check again. Asked once per address.
 3. Tests: check_booking.py cases (gmil.com, yes, no dot, ymail.com, restaurant domain); tests/conversations.md #19 (gmil.com then yes, ends in slots).
 
 ### Phase 5 sales push check, "getting started" (2026-09-28)
-Spec version 1.5, covers R1. Proposal 0040, approved by Ioseb 2026-09-28 ("fix it").
+Spec version 1.6, covers R1. Proposal 0040, approved by Ioseb 2026-09-28 ("fix it").
 1. app/guardrails.py remove_sales_push: also catch "getting started" and "or would you like help ...", keeping the neutral question before it.
 2. tests/check_guardrails.py: the reply seen in live chat #18 as a new case.
 
 ### Phase 5 four details, no fit questions (2026-09-28)
-Spec version 1.5, covers B4, B6, G8 (B5 retired). Asked and approved by Ioseb 2026-09-28.
+Spec version 1.6, covers B4, B6, G8 (B5 retired). Asked and approved by Ioseb 2026-09-28.
 1. content/qualifying-questions.md: keep only first name, restaurant name, state, email; remove the five fit questions and the scoring section (founders' file, changed at Ioseb's request, listed in the pull request).
 2. app/content.py prompt: ask only the four details, then the offer_times block; remove every fit instruction and the "fit" field from both blocks; add "never ask which option or price they want".
 3. app/chat_booking.py: times are offered once the four details are there (no fit check); founder alert drops the "Fit:" line. leads.csv keeps its "fit" column, left empty, so the existing file still reads.
@@ -33,7 +33,7 @@ Spec version 1.5, covers B4, B6, G8 (B5 retired). Asked and approved by Ioseb 20
 6. Evals offline and live, at least ten conversations (R13), then /code-review and a pull request.
 
 ### Phase 5 30 day transcript deletion (2026-09-27)
-Spec version 1.5, covers R9. Design: ADR 0027. Approved by Ioseb 2026-09-27.
+Spec version 1.6, covers R9. Design: ADR 0027. Approved by Ioseb 2026-09-27.
 1. app/chat_log.py: `delete_old(days=30)` rewrites logs/conversations.jsonl keeping only lines newer than 30 days, under the same lock as writing so no new message is lost; unreadable lines are dropped. Leads and spend files are not touched.
 2. app/main.py: at startup a background thread runs it at once, then every 24 hours.
 3. tests/check_retention.py, added to the evals: lines 31, 29 and 0 days old keep only the last two; a missing or empty log is fine; a message written right after cleanup is kept.
@@ -198,6 +198,6 @@ Demonstrate: the widget working end to end on the local service, on desktop and 
 4. Add a one-line health check the founders can open in a browser to see the service is up and today's spend.
 5. Write README.md for the founders: how to edit the approved answers (and redeploy), how to change calendar hours, how to read leads.csv, how to use the kill switch, what the monthly costs are. Under two pages, plain English, no dashes.
 6. Write docs/privacy-policy-addition.md: the paragraph the founders must add to the website privacy policy about the chat (AI assistant, what is stored, 30-day deletion, email use).
-7. For the first month live, founders read every transcript weekly. Add a weekly email digest of transcripts to make that easy.
+7. For the first month live, founders read every transcript weekly. Add a weekly email digest of transcripts to make that easy. SKIPPED: founders read every message in Telegram (ADR 0031).
 
 Demonstrate: the service is live on Render, a founder completes a test conversation and booking from the hidden test page following only the README, and the kill switch works. The build is complete when the founders approve the widget for the live homepage.

@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.5
+Version: 1.6
 Status: Approved
 Approved by: Ioseb
-Date: 2026-09-29
-Fingerprint: b927365ca34a3e3f
+Date: 2026-10-06
+Fingerprint: 7cf90ba3394edfb1
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -74,7 +74,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 
 ## 6. Integrations
 
-Anthropic API (conversation), Google Calendar (free slots, events with Meet link; Google sends the visitor's invite), Gmail API from the booking account (founder notifications, weekly digest; the record of every alert), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
+Anthropic API (conversation), Google Calendar (free slots, events with Meet link; Google sends the visitor's invite), Gmail API from the booking account (founder notifications; the record of every alert; no weekly digest, ADR 0031), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
 
 ## 7. Open questions
 
