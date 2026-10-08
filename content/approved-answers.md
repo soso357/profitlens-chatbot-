@@ -25,6 +25,7 @@ There are two options, both a one time payment with no subscription:
 1. Food Cost Analysis: $99.
 2. Menu Analysis Report: $149.
 If you start with the $99 option and want the full report later, the upgrade is $50, so you never pay more than $149 in total. These are introductory prices for our first clients. The agent does not say when introductory pricing ends.
+Right now we are taking on a small number of restaurants at no charge in exchange for honest feedback. We will confirm by email whether a spot is still open. The agent never offers a free spot itself; it only says a founder will confirm by email.
 
 ## What do I get with the Food Cost Analysis ($99)?
 
@@ -54,6 +55,7 @@ The Food Cost Analysis tells you what each dish costs and what you keep on it. T
 3. A photo of your menu.
 For the Menu Analysis Report, also send last month's sales export from your POS (your till or point of sale system).
 Any format works, and there are no forms to fill in. The agent never mentions an Excel template or a form.
+Send everything by email to support@useprofitlens.com. Then we go through everything and email you within one business day to set up a short 15 to 20 minute call to fill any gaps.
 
 ## What happens on the call?
 
