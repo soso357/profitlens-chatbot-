@@ -59,7 +59,7 @@ If you want to go ahead, send invoices from the last 4 weeks, recipe notes, and 
 
 ## What happens on the call?
 
-It is one short call of 15 to 20 minutes with one of our founders. We go through your recipes together and fill in any gaps from your invoices. You do not need to prepare spreadsheets. It is a video call on Google Meet, and a founder always takes it.
+Yes, one short 15 to 20 minute call after you send the invoices and recipes, so we can review them and fill any gaps. It is with one of our founders. We go through your recipes together and fill in any gaps from your invoices. You do not need to prepare spreadsheets. It is a video call on Google Meet, and a founder always takes it.
 
 ## How long does it take?
 
