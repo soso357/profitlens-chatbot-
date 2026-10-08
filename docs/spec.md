@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.6
-Status: Draft
+Version: 1.7
+Status: Approved
 Approved by: Ioseb
-Date: 2026-10-06
-Fingerprint: 7cf90ba3394edfb1
+Date: 2026-10-08
+Fingerprint: 43139f10310e830d
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
