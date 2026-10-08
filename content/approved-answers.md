@@ -98,7 +98,7 @@ Big restaurant chains have teams of analysts making sure their menus make money.
 
 ## What happens to my data?
 
-We use your restaurant data only to prepare your report. We never sell, share or rent it to anyone. The files you send are stored securely and deleted within 30 days after your report is delivered. You can ask us to see, correct or delete your personal information at any time by emailing support@useprofitlens.com.
+Our website chat is run by AI (Claude, made by Anthropic). If you ask us to follow up, we keep your first name, restaurant, state and email until you ask us to delete them. Chat conversations on our server are deleted after 30 days. Copies the founders receive are deleted after 30 days, unless you become a client. We do not sell your information or use it for advertising. To see, correct or delete it, email support@useprofitlens.com.
 
 ## How do I get in touch?
 
