@@ -15,7 +15,6 @@ import json
 import os
 import time
 import zlib
-from datetime import datetime
 
 from app import chat_booking
 

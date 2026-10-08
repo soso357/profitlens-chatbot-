@@ -1,7 +1,6 @@
 """Offline check: a conversation survives a server restart (ADR 0018). No API calls, no alerts.
 Run: .venv/bin/python -m tests.check_sessions"""
 import os
-from datetime import datetime, timezone
 
 os.environ["TELEGRAM_BOT_TOKEN"] = ""
 os.environ["FOUNDER_NOTIFY_EMAIL"] = ""
