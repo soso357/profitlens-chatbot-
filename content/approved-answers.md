@@ -55,7 +55,7 @@ The Food Cost Analysis tells you what each dish costs and what you keep on it. T
 3. A photo of your menu.
 For the Menu Analysis Report, also send last month's sales export from your POS (your till or point of sale system).
 Any format works, and there are no forms to fill in. The agent never mentions an Excel template or a form.
-If you want to go ahead, send invoices from the last 4 weeks, recipe notes, and a menu photo or PDF to support@useprofitlens.com. We will email you within 1 business day to arrange a 15 to 20 minute call.
+If you want to go ahead, send invoices from the last 4 weeks, recipe notes, and a menu photo or PDF to support@useprofitlens.com. Once we have your files, we email you within 1 business day to set up a short 15 to 20 minute call to fill any gaps. The agent does not open with the call and does not repeat it.
 
 ## What happens on the call?
 
