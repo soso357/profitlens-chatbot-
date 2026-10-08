@@ -9,10 +9,8 @@ are not exercised here.
 Chat in a Terminal window:   .venv/bin/python -m tests.preview_chat
 Ask a list of questions:     .venv/bin/python -m tests.preview_chat "question one" "question two"
 
-Booking is REAL: when times are shown, typing 1, 2 or 3 books a call in the calendar,
-Google emails the invite to the email you gave, and founders get Telegram and email
-alerts marked "PREVIEW TEST". Type "more" for other times.
-Leads are saved to data/leads.csv. When you type quit, the whole conversation is
+Leads are real: a lead is saved to data/leads.csv and founders get Telegram and email
+alerts marked "PREVIEW TEST" (ADR 0032: no call booking). When you type quit, the whole conversation is
 sent to the founders' Telegram group (in the live service: after 30 quiet minutes).
 """
 import sys
@@ -29,32 +27,26 @@ SOURCE = "PREVIEW TEST"
 
 
 def reply_to(history, message, state):
-    """Same order of checks as app/main.py chat(). Returns (message, reply, notes, slots)."""
+    """Same order of checks as app/main.py chat(). Returns (message, reply, notes)."""
     first = not history
-    choice = message.strip().rstrip(".").lower()
-    if state.offered and choice in ("1", "2", "3", chat_booking.MORE):
-        transcript = chat_booking.transcript_text(history)
-        reply, slots = chat_booking.pick(state, choice, "preview", transcript, source=SOURCE)
-        return message, reply, [], slots
     if guardrails.contains_card_number(message):
         message = guardrails.redact_card_numbers(message)
         reply = guardrails.PAYMENT_WARNING
-        return message, (guardrails.ensure_disclosure(reply) if first else reply), ["card number removed"], []
+        return message, (guardrails.ensure_disclosure(reply) if first else reply), ["card number removed"]
     raw = ask_model(history + [("user", message)])
     typed = " ".join(t for r, t in history if r == "user") + " " + message
-    text, details, lead = chat_booking.extract(raw, typed)
+    text, lead = chat_booking.extract(raw, typed)
     reply = guardrails.cap_length(guardrails.remove_sales_push(guardrails.strip_markdown(guardrails.remove_dashes(text)), message), message)
     notes = guardrails.find_violations(reply)
     if notes:
         notes = ["guardrail blocked the model's reply: " + "; ".join(notes)]
-        reply, details, lead = guardrails.HANDOFF_REPLY, None, None
+        reply, lead = guardrails.HANDOFF_REPLY, None
     if first:
         reply = guardrails.ensure_disclosure(reply)
     so_far = chat_booking.transcript_text(history + [("user", message), ("assistant", reply)])
-    extra, slots, more_notes = chat_booking.handle(state, details, lead, "preview", so_far, source=SOURCE)
+    extra = chat_booking.handle(state, lead, "preview", so_far, source=SOURCE)
     reply = f"{reply} {extra}".strip()
-    notes = notes + more_notes
-    return message, reply, notes, slots
+    return message, reply, notes
 
 
 def main():
@@ -81,7 +73,7 @@ def main():
             print(f"You: {message}")
         print("   (thinking, about 10 seconds...)", flush=True)
         try:
-            message, reply, notes, slots = reply_to(history, message, state)
+            message, reply, notes = reply_to(history, message, state)
         except FileNotFoundError:
             print("   ERROR: the 'claude' command was not found in this Terminal. Run this tool from the same kind of window where you use Claude Code.\n")
             continue
@@ -91,15 +83,11 @@ def main():
         if notes:
             print(f"   [{'; '.join(notes)}]")
         print(f"Bot: {reply}")
-        for i, sl in enumerate(slots, 1):
-            print(f"   [{i}] {sl['label']}")
-        if slots:
-            print("   Type 1, 2 or 3 to book (real booking), or 'more' for other times.")
         print()
         history += [("user", message), ("assistant", reply)]
     if history:
         full = chat_booking.transcript_text(history)
-        chat_booking.finish(state, "preview", full, full, source=SOURCE)
+        chat_booking.finish("preview", full, SOURCE)
         print("Conversation sent to the founders' Telegram group.")
 
 

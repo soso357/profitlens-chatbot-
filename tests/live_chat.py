@@ -1,8 +1,8 @@
 """Chat with live Jelena on Render from a Terminal window, exactly as a website visitor would.
-Uses the real service (real API cost, real Telegram and email alerts, real bookings).
+Uses the real service (real API cost, real Telegram and email alerts).
 
 Run:  cd ~/Desktop/PROFITLENS-CHATBOT && .venv/bin/python -m tests.live_chat
-Type 1, 2 or 3 to pick a shown call time (real booking), "more" for other times, "quit" to stop.
+Type "quit" to stop.
 """
 import json
 import ssl
@@ -26,9 +26,9 @@ def post(path, body):
 def main():
     sid = "terminal" + time.strftime("%H%M%S")
     print(f"Live chat with Jelena ({SERVICE}). First reply can take up to a minute if the server was asleep.")
-    print("Type 1, 2 or 3 to book a shown time (real booking), 'more' for other times, 'quit' to stop.\n")
+    print("Type 'quit' to stop.\n")
     d = post("/start", {"session_id": sid})
-    state, slots = d.get("state", ""), []
+    state = d.get("state", "")
     print(f"Jelena: {d['reply']}\n")
     while True:
         try:
@@ -41,19 +41,12 @@ def main():
             continue
         print("   (waiting for Jelena...)", flush=True)
         try:
-            if slots and msg.lower() in ("1", "2", "3") and int(msg) <= len(slots):
-                d = post("/book", {"session_id": sid, "choice": slots[int(msg) - 1]["start"], "state": state})
-            elif slots and msg.lower() == "more":
-                d = post("/book", {"session_id": sid, "choice": "more", "state": state})
-            else:
-                d = post("/chat", {"session_id": sid, "message": msg, "state": state})
+            d = post("/chat", {"session_id": sid, "message": msg, "state": state})
         except (urllib.error.URLError, TimeoutError) as e:
             print(f"   ERROR: {e}. Try again in a moment.\n")
             continue
-        state, slots = d.get("state", state), d.get("slots", [])
+        state = d.get("state", state)
         print(f"Jelena: {d['reply']}")
-        for i, s in enumerate(slots, 1):
-            print(f"   [{i}] {s['label']}")
         if d.get("mode") not in ("chat", None):
             print(f"   (the website would now show: {d['mode']})")
         print()

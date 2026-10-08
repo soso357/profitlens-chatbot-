@@ -12,6 +12,17 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Remove call-time booking from the chat (task remove-booking, 2026-10-08) [Spec version 1.6 covers B4, B6, B11, B13; spec 1.7 draft rewrites B4, B6, B11 and needs Ioseb's approval]
+Founders approved Option A on 2026-10-08 (ADR 0032, supersedes ADR 0003). Ioseb approved this plan in chat.
+1. Chat collects name, restaurant, state, email (B4), then ends with the existing lead block; no offer_times block, no timezone, no time buttons. The founder alert and leads.csv row are unchanged (outcome "founder needed").
+2. Remove: app/booking.py, app/test_booking.py, app/static/test-booking.html, app/static/test-chat.html, the /book route, the slot code in app/main.py and app/chat_booking.py, the slot buttons in app/static/widget.js, BOOKING_* and CALL_MINUTES in app/config.py (GOOGLE_CALENDAR_ID stays: it is the From address of founder emails).
+3. Session store: drop the booking details, offered and booked fields; old saved sessions still load (missing keys ignored).
+4. B13 email check stays for the lead path only. The "pending" state no longer has an offer kind.
+5. Content: system prompt booking section replaced; content/qualifying-questions.md time-button line rewritten. content/approved-answers.md line about "show you some times" is NOT changed here: founders to word it.
+6. Docs: spec 1.7 draft (B4, B6, B11, B13 wording; acceptance rows; R10 stack), README calendar rows removed, intent.md point 3, build-log line.
+7. Tests: tests/check_booking.py rewritten to lead and email-check cases; check_sessions.py booking part; preview_chat.py and live_chat.py no time buttons; tests/conversations.md expected endings for call-time cases become lead or chat.
+Demonstrate: evals offline green; at least ten visitor conversations (including rude, off topic, trick, a typo email) run with preview_chat; no time buttons appear anywhere.
+
 ### Phase 5 email typo check (2026-09-29)
 Spec version 1.6, covers B13. Approved by Ioseb 2026-09-29 (automatic near miss detection, confirm with yes or retype).
 1. app/chat_booking.py email_typo: no dot after @ flags with no suggestion; a domain 1 or 2 edits from gmail, yahoo, outlook, hotmail, icloud or aol gets a suggestion (plus the existing list); real domains ymail, mail, live, me, msn, gmx, aim never flagged. Small edit distance function, no new library.

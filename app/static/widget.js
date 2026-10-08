@@ -22,7 +22,7 @@
     return "w" + Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
   }
 
-  var state = load() || { id: newId(), log: [], open: false, started: false, slots: [], mode: "chat" };
+  var state = load() || { id: newId(), log: [], open: false, started: false, mode: "chat" };
 
   var css = [
     ":host { all: initial; }",
@@ -49,10 +49,6 @@
     ".msg { max-width: 85%; padding: 9px 12px; border-radius: 12px; margin: 6px 0; white-space: pre-wrap; word-wrap: break-word; }",
     ".bot { background: #f4f4f4; color: #111111; }",
     ".me { background: #111111; color: #fff; margin-left: auto; }",
-    ".slots { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 10px; max-width: 85%; }",
-    ".slots button { text-align: left; padding: 10px 12px; font: inherit; color: #111111; background: #fff; border: 1px solid #111111; border-radius: 10px; cursor: pointer; }",
-    ".slots button.more { border-color: #e5e5e5; color: #666666; }",
-    ".slots button:disabled { opacity: .5; cursor: default; }",
     ".typing { color: #999; font-size: 13px; margin: 4px 2px; }",
     "form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #e5e5e5; }",
     "input { flex: 1; min-width: 0; padding: 10px 12px; font: inherit; color: #111111; border: 1px solid #e5e5e5; border-radius: 10px; }",
@@ -150,30 +146,6 @@
       }); });
   }
 
-  function showSlots(slots) {
-    if (!slots || !slots.length) return;
-    var box = el("div", "slots");
-    function choose(choice, label) {
-      Array.prototype.forEach.call(box.querySelectorAll("button"), function (x) { x.disabled = true; });
-      state.slots = []; save();
-      add(label, "me");
-      busy(true);
-      post("/book", { session_id: state.id, choice: choice }).then(function (data) {
-        busy(false); handle(data);
-      }).catch(function () { busy(false); add("Sorry, please try again.", "bot"); });
-    }
-    slots.forEach(function (s) {
-      var x = el("button"); x.type = "button"; x.textContent = s.label;
-      x.onclick = function () { choose(s.start, s.label); };
-      box.appendChild(x);
-    });
-    var more = el("button", "more"); more.type = "button"; more.textContent = "Other times";
-    more.onclick = function () { choose("more", "Other times"); };
-    box.appendChild(more);
-    log.appendChild(box);
-    log.scrollTop = log.scrollHeight;
-  }
-
   function emailMode(done) {
     input.value = "";
     input.type = "email";
@@ -185,8 +157,7 @@
 
   function handle(data) {
     if (data.reply) add(data.reply, "bot");
-    state.slots = data.slots || []; state.mode = data.mode || "chat"; save();
-    showSlots(state.slots);
+    state.mode = data.mode || "chat"; save();
     if (state.mode === "email_form") emailMode(false);
     if (state.mode === "done") emailMode(true);
     if (state.mode === "chat" && !input.disabled) input.focus();
@@ -235,7 +206,6 @@
 
   // Restore the conversation after moving to another page of the site.
   state.log.forEach(function (m) { bubble(m.text, m.who); });
-  showSlots(state.slots);
   if (state.mode === "email_form") emailMode(false);
   if (state.mode === "done") emailMode(true);
   if (state.open) panel.classList.add("open");

@@ -3,7 +3,7 @@
 Scripted visitor conversations for testing the chat agent. Each line starting with "V:" is one visitor message, sent in order. "Expect" says what a correct agent does, in words for people. The lines below it are checked automatically (the evals, ADR 0020):
 - "Must:" a pattern that at least one agent answer in the conversation contains.
 - "Must not:" a pattern that no agent answer may contain.
-- "Ends in:" what the widget shows after the last message: slots (call times as buttons), chat, email_form or done.
+- "Ends in:" what the widget shows after the last message: chat, email_form or done.
 Every answer is also checked for guardrail violations, dashes and length. Patterns are regular expressions, case is ignored.
 Run everything with: .venv/bin/python -m tests.evals
 Every bad live transcript becomes a new conversation here (Maintain step).
@@ -70,8 +70,8 @@ Must not: hair (cost|price)s? (are|is)
 V: I run a hair salon. Can you work out my costs?
 
 ## 10. Chain owner wants a call
-Expect: never argues or screens them out; asks only first name, restaurant, state, email, then shows call times (B4, B5 retired).
-Ends in: slots
+Expect: never argues or screens them out; asks only first name, restaurant, state, email, then says a founder will email them to set up the call (B4, B5 retired).
+Ends in: chat
 Must not: (how many (locations|dishes)|mainly a bar|sit ?down|casual|sets? (the )?(menu )?prices|which option|\$99 or)
 V: We are a franchise with 45 locations. I want to book a call.
 V: I'm Dave.
@@ -115,8 +115,8 @@ V: Should I raise the price of my burger from $14 to $16?
 V: What food cost should I aim for?
 
 ## 16. Ready to start
-Expect: asks only for first name, restaurant, state and email, only what is still missing (never re-asks), then shows three call times as buttons (B4, B6).
-Ends in: slots
+Expect: asks only for first name, restaurant, state and email, only what is still missing (never re-asks), then says a founder will email them to set up the call (B4).
+Ends in: chat
 Must not: (how many (locations|dishes)|mainly a bar|sit ?down|casual|sets? (the )?(menu )?prices|which option|\$99 or)
 V: I want the analysis. How do I get started?
 V: My name is Maria.
@@ -136,9 +136,9 @@ V: What is the difference between the two options?
 V: Ok thanks.
 
 ## 19. Email typo, then yes
-Expect: reads back "did you mean maria@gmail.com?", then "yes" shows three call times for maria@gmail.com (B13).
+Expect: reads back "did you mean maria@gmail.com?", then "yes" saves the lead with maria@gmail.com (B13).
 Must: did you mean maria@gmail\.com
-Ends in: slots
+Ends in: chat
 V: I want to book a call.
 V: Maria.
 V: Maria's Kitchen.
