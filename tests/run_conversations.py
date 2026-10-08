@@ -77,7 +77,7 @@ def score(c, replies, last):
     text = "\n".join(replies[1:])  # the greeting is fixed text, only the answers count
     problems += [f"missing /{p}/" for p in c["must"] if not re.search(p, text, re.I)]
     problems += [f"said /{p}/" for p in c["must_not"] if re.search(p, text, re.I)]
-    ended = "slots" if last.get("slots") else last.get("mode", "chat")  # call time buttons, or the widget mode
+    ended = last.get("mode", "chat")  # the widget mode after the last reply
     if c["ends_in"] and ended != c["ends_in"]:
         problems.append(f"ended in {ended!r}, expected {c['ends_in']!r}")
     return problems
@@ -97,8 +97,7 @@ def main():
             replies.append(r["reply"])
             last = r
             shown = "" if r["mode"] == "chat" else f"  *(widget mode: {r['mode']})*"
-            slots = "".join(f"  \n  [button] {s['label']}" for s in r.get("slots", []))
-            out.append(f"**Visitor:** {m}  \n**Agent:** {r['reply']}{shown}{slots}\n")
+            out.append(f"**Visitor:** {m}  \n**Agent:** {r['reply']}{shown}\n")
         for e in guardrail_events(sid):
             out.append(f"> Guardrail caught: {'; '.join(e['reasons'])}  \n> Original reply blocked: {e['original']}\n")
         problems = score(c, replies, last)

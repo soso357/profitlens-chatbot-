@@ -14,7 +14,7 @@ A chat widget on the website that:
 
 1. Answers visitor questions about the service using an approved answers file written by the founders, and nothing else.
 2. Asks for the visitor's first name, restaurant name, state and email (no fit screening, Ioseb 2026-09-28).
-3. Books the 15 to 20 minute intake call directly in a founder's Google Calendar and notifies the founders.
+3. Collects the details for the 15 to 20 minute intake call and hands it to a founder, who emails the visitor to set it up (ADR 0032).
 4. For anything it cannot answer from the approved file, collects the visitor's email and hands off to a founder.
 
 ## What we explicitly do not want
@@ -39,8 +39,8 @@ Inventing a policy, price, timeline or guarantee is the worst possible defect, b
    |   runs the chat     founder-written       in code    |
    +------------------------------------------------------+
           |                    |                    |
-   Google Calendar        Leads file        Founder by email
-   books the call      weekly digest     notified or takes over
+   Founder invite         Leads file        Founder by email
+   sets up a call      weekly digest     notified or takes over
 ```
 
 ## How we will know it worked

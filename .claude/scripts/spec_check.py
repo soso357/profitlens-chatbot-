@@ -98,6 +98,12 @@ def phase_notes(plan_text):
     return [(parts[i], parts[i + 1]) for i in range(1, len(parts) - 1, 2)]
 
 
+def predates_spec(heading, h):
+    """A note dated before the current spec's Date (ADR 0025 follow-up, 2026-10-08) may cite an older approved version."""
+    d = re.search(r"\((\d{4}-\d{2}-\d{2})\)", heading)
+    return bool(d and h.get("date") and d.group(1) < h["date"])
+
+
 def structure_problems(spec_text=None, plan_text=None):
     spec_text = spec_text if spec_text is not None else SPEC.read_text()
     plan_text = plan_text if plan_text is not None else (PLAN.read_text() if PLAN.exists() else "")
@@ -124,6 +130,8 @@ def structure_problems(spec_text=None, plan_text=None):
         m = re.search(r"Spec version ([\d.]+), covers (.*)", body)
         if not m:
             problems.append(f"phase note '{heading[4:60]}' does not start with 'Spec version X, covers ...'")
+        elif predates_spec(heading, h):
+            continue  # history: written before the current spec version, so it cites the version then approved
         elif h.get("status") != "Approved" or changed_after_approval(spec_text) or m.group(1) != h.get("version"):
             problems.append(f"phase note '{heading[4:60]}' cites spec {m.group(1)}, but the approved spec is "
                             f"{h.get('version') if h.get('status') == 'Approved' else 'none (spec is Draft)'}")

@@ -91,6 +91,8 @@ check("new note without a citation is found", any("does not start" in p for p in
     spec(), plan("### Phase 6 digest (2026-09-28)\n1. x"))))
 check("new note citing an old version is found", any("cites spec 0.9" in p for p in sc.structure_problems(
     spec(), plan(new.replace("1.0", "0.9")))))
+check("note dated before the spec citing an older version is history, fine", sc.structure_problems(
+    spec(), plan("### Phase 5 old digest (2026-09-01)\nSpec version 0.9, covers R1, B1\n1. x")) == [])
 check("new note while the spec is Draft is found", any("Draft" in p for p in sc.structure_problems(
     spec(status="Draft"), plan(new))))
 check("new note covering a FOUNDER TO CONFIRM id is found", any("R2 is blocked" in p for p in

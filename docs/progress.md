@@ -18,6 +18,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 ## Done (newest first)
 
+- 2026-10-08: Founders approved removing call-time booking from the chat; the chat hands the intake call to a founder by email (ADR 0032, supersedes 0003). Code and tests done, spec 1.7 waits for Ioseb.
 - 2026-10-06: Weekly digest email skipped (ADR 0031).
 - 2026-10-06: Founders approved the widget; live on the homepage. Privacy policy text published (R9).
 - 2026-10-06: Render Starter plan and 1 GB disk set up; leads, logs and spend counter now survive restarts (DATA_DIR, LOG_DIR on /var/data).
@@ -52,6 +53,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" to pick one).
 - phase-5-launch (Build, build-p5-launch): take the widget from the hidden test page to the homepage.
+- remove-booking (Build, phase-5-remove-booking): remove call-time booking from the chat (ADR 0032); code done, waiting for spec 1.7 approval.
 
 ## Open questions
 
@@ -64,6 +66,7 @@ Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" t
 
 ## Waiting on people
 
+- Ioseb: approve spec 1.7 (call booking retired, ADR 0032) so the evals and spec check pass; then run spec_check.py approve.
 - Ioseb: tell the founders the repository is now public (ADR 0026).
 - Ioseb: tell the founders the fit questions are gone; every visitor can book, they screen on the call (ADR 0029).
 - Ioseb: Try the email typo check for free with tests.preview_chat and try useprofitlens.com/chat-test (from 2026-09-29-103011-0ec43a04.md)

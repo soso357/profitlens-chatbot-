@@ -1,7 +1,6 @@
 """Offline check: a conversation survives a server restart (ADR 0018). No API calls, no alerts.
 Run: .venv/bin/python -m tests.check_sessions"""
 import os
-from datetime import datetime, timezone
 
 os.environ["TELEGRAM_BOT_TOKEN"] = ""
 os.environ["FOUNDER_NOTIFY_EMAIL"] = ""
@@ -50,22 +49,18 @@ main._sessions.clear()
 client.post("/chat", json={"session_id": "othersession01", "message": "hello", "state": r["state"]})
 check("a copy from another session is ignored", "My name is Nino" not in SEEN[-1])
 
-# booking state survives too (times on screen, then a restart, then the click)
+# lead state survives too (email read back, then a restart, then "yes")
 s = main.Session()
 s.messages = [{"role": "assistant", "content": "hi"}]
-s.booking.details = {"name": "Nino", "restaurant": "Nino's", "location": "Austin, TX",
-                     "email": "nino@example.com", "timezone": "America/Chicago"}
-s.booking.offered = [datetime(2026, 10, 1, 15, 0, tzinfo=timezone.utc)]
-s.booking.pending = {"kind": "offer", "data": {"email": "nino@gmail.com"}}
+s.booking.pending = {"data": {"email": "nino@gmail.com"}}
 s.booking.checked = ["nino@gmil.com"]
 tok = session_store.dump("bookingtest01", s)
 s2 = main.Session()
 loaded = session_store.load("bookingtest01", tok)
 assert loaded is not None
 session_store.restore(s2, loaded)
-check("offered call times and visitor details survive", s2.booking.offered == s.booking.offered
-      and s2.booking.details["email"] == "nino@example.com" and isinstance(s2.booking, chat_booking.BookingState))
-check("B13 pending email suggestion survives a restart", s2.booking.pending == {"kind": "offer", "data": {"email": "nino@gmail.com"}}
+check("booking state object survives", isinstance(s2.booking, chat_booking.BookingState))
+check("B13 pending email suggestion survives a restart", s2.booking.pending == {"data": {"email": "nino@gmail.com"}}
       and s2.booking.checked == ["nino@gmil.com"])
 check("sealed copy stays small", len(tok) < 2000)
 
