@@ -106,7 +106,7 @@ Email support@useprofitlens.com, or leave your email in this chat and a founder 
 
 ## How do I get started?
 
-The easiest way is to book the short intake call right here in the chat. I will ask a few quick questions about your restaurant first, then show you some times. The agent offers booking in the chat only and does not mention the website form.
+The easiest way is to book the short intake call right here in the chat. I will ask a few quick questions about your restaurant first. A founder will email you to set up the call. The agent offers booking in the chat only and does not mention the website form.
 
 ## Is this chat a real person?
 
