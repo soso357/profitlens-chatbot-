@@ -19,7 +19,7 @@ A chat widget on the website that:
 
 ## What we explicitly do not want
 
-It does not sell, negotiate, quote report results, take payment or give business advice. No payment ever happens through the chatbot (confirmed by Ioseb, 2026-09-22). Human steps stay human: the intake call, rescheduling, pricing questions, complaints, payment, advice.
+It does not sell or push, although it states the founders' free offer first when a visitor asks about cost, the offer or how to start (spec B17). It does not negotiate, quote report results, take payment or give business advice. No payment ever happens through the chatbot (confirmed by Ioseb, 2026-09-22). Human steps stay human: the intake call, rescheduling, pricing questions, complaints, payment, advice.
 
 ## Why this matters (risk)
 
@@ -62,3 +62,4 @@ Maintain step of the loop (ADR 0020): at every phase gate Ioseb is asked whether
 
 - 2026-09-22: First version, approved by Ioseb.
 - 2026-09-28: Job 2 changed from qualifying questions to four contact details, no fit screening (Ioseb).
+- 2026-10-09: The chat states the founders' free offer first (spec B17); it still never pushes or negotiates (Ioseb).

@@ -12,6 +12,16 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Free offer first and cleaner answers (task chat-copy, 2026-10-09)
+Spec version 1.8, covers B14, B15, B16, B17, G9. B17 wording is FOUNDER TO CONFIRM before it is live.
+1. content/approved-answers.md: add one "Is it free?" answer with the offer terms (both services free for every client, in exchange for honest feedback, limited time, no duration or count). Cost answer keeps $99 and $149 and adds that right now it is free for you for a limited time. Process answers follow the existing order (invoices, call, results in 5 business days); no new timelines.
+2. app/content.py: one-sentence greeting ("I'm Jelena, ProfitLens's AI assistant. A founder handles the calls."); prompt rules for B14 to B17; lead with the offer on cost, offer or how-to-start questions; drop "Anything else you would like to know?"; one short sentence after "thanks" or "no"; ask the name once, then move on.
+3. content/qualifying-questions.md: name asked once, never blocks the other details.
+4. app/guardrails.py: G9, a code guard that replaces replies leaking "approved answers", "the visitor" or "per the", asking to book a call, or giving a duration or count for the offer.
+5. docs/intent.md: one line change so "does not sell" allows stating the free offer (Ioseb approves; Change history line).
+6. Tests: G9 and B14 to B16 in tests/check_guardrails.py; scripted conversations for the eight chats Ioseb listed ("hi", what ProfitLens does, cost, "i saw that for me it is free", materials, where to send invoices, "ok, thanks", "no"), then ten live conversations (needs API key or Claude login). Replace "none yet" in spec section 8.
+7. Log in docs/build-log.md; ADR for the free-offer-first decision (skill: new-adr).
+
 ### Remove call-time booking from the chat (task remove-booking, 2026-10-08) [Spec version 1.6 covers B4, B6, B11, B13; spec 1.7 draft rewrites B4, B6, B11 and needs Ioseb's approval]
 Founders approved Option A on 2026-10-08 (ADR 0032, supersedes ADR 0003). Ioseb approved this plan in chat.
 1. Chat collects name, restaurant, state, email (B4), then ends with the existing lead block; no offer_times block, no timezone, no time buttons. The founder alert and leads.csv row are unchanged (outcome "founder needed").

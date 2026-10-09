@@ -1,5 +1,5 @@
 """Checks in code that run on every reply, so the rules do not depend on the AI obeying.
-Implements: R2, R3, R4, R6, R14, B1, G1, G2, G3, G8
+Implements: R2, R3, R4, R6, R14, B1, B15, B17, G1, G2, G3, G8, G9
 """
 import re
 
@@ -127,7 +127,6 @@ def remove_sales_push(reply: str, visitor_message: str) -> str:
     return " ".join(kept) if kept else reply
 
 
-NEUTRAL_QUESTION = "Anything else you would like to know?"
 # G8: never ask the visitor to pick an option or a price ("the $99 or the $149?", "Which option are you interested in?")
 _PRICE = r"\$\s?\d[\d,]*(?:\.\d+)?"
 _OPTION_QUESTION = re.compile(
@@ -139,15 +138,40 @@ _FOUNDER_OFFER = re.compile(r"\b(founder|email)\b", re.I)  # "prefer a founder t
 
 
 def remove_option_question(reply: str) -> str:
-    """G8: drop a question asking the visitor to choose an option or price, and end with a
-    neutral question instead unless one is left."""
+    """G8: drop a question asking the visitor to choose an option or price. If nothing is left,
+    offer a founder."""
     parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
     kept = [p for p in parts if not _OPTION_QUESTION.search(p) or _FOUNDER_OFFER.search(p)]
     if len(kept) == len(parts):
         return reply
-    if not kept or not kept[-1].endswith("?"):
-        kept.append(NEUTRAL_QUESTION)
-    return " ".join(kept)
+    return " ".join(kept) if kept else HANDOFF_REPLY
+
+
+# B15: no filler closing question. G9: no leaks of internal notes, no asking to book, no length of the free offer.
+_FILLER = re.compile(r"\banything else\b[^.?!]*\?\s*$", re.I)
+_LEAK = re.compile(
+    r"approved answers?|\bthe visitor\b|\bper the\b|system prompt|my instructions"
+    r"|\b(?:book|schedule)\b[^.?!]{0,20}\b(?:a|an|the|your)\s+(?:short\s+|intake\s+)?(?:call|meeting)\b", re.I)
+_COUNT = r"(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|twelve|fifteen|twenty|fifty|a few|a handful of)"
+_OFFER_TERMS = re.compile(r"\b(?:free|offer|limited|complimentary)\b", re.I)
+_OFFER_LIMIT = re.compile(
+    rf"\bfirst\s+{_COUNT}\b|\b(?:only|just)\s+{_COUNT}\s+(?:spots?|slots?|clients?|customers?|restaurants?|places?)\b"
+    rf"|\b{_COUNT}\s+(?:spots?|slots?|places?)\s+(?:left|remaining|available)\b"
+    r"|\b(?:until|through|ends?|ending|expires?|by)\s+(?:on\s+)?(?:\d|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|"
+    r"monday|tuesday|wednesday|thursday|friday|saturday|sunday|the end of|next|this)"
+    rf"|\b(?:for|next|another)\s+(?:the\s+next\s+)?{_COUNT}?\s*(?:days?|weeks?|months?)\b", re.I)
+
+
+def clean_reply(reply: str) -> str:
+    """B15 and G9: drop a filler closing question and any sentence that leaks internal notes,
+    asks the visitor to book a call, or gives a duration or count for the free offer.
+    If nothing is left, offer a founder."""
+    parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
+    kept = [p for p in parts
+            if not _LEAK.search(p) and not (_OFFER_TERMS.search(p) and _OFFER_LIMIT.search(p))]
+    if kept and _FILLER.search(kept[-1]) and len(kept) > 1:
+        kept.pop()
+    return " ".join(kept) if kept else HANDOFF_REPLY
 
 
 def cap_length(reply: str, visitor_message: str, max_words: int = 80, max_sentences: int = 4) -> str:

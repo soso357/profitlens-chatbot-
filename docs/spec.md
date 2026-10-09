@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.7
+Version: 1.9
 Status: Approved
 Approved by: Ioseb
-Date: 2026-10-08
-Fingerprint: 43139f10310e830d
+Date: 2026-10-09
+Fingerprint: f09fb72f7bbb7a3d
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -49,6 +49,10 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B11 | RETIRED 2026-10-08 (ADR 0032): no calendar in the chat | | |
 | B12 | Daily spend cap reached or kill switch on | Widget becomes a "leave your email" form | R8, Phase 5 |
 | B13 | Visitor types an email that looks wrong: no dot after the @, or a near miss of gmail, yahoo, outlook, hotmail, icloud or aol (for example gmil.com) | Checked in code before saving a lead. Read the address back once: "Did you mean maria@gmail.com? Reply yes, or type the right email." "yes" uses the suggestion; a new email is checked again. If there is no suggestion (no dot), ask them to type it again. Until they say yes or type an address, the unconfirmed address is never used; the same near miss typed again is accepted. Chat only: the leave your email form keeps the fixed misspellings list (Ioseb, 2026-09-29) | code check |
+| B14 | tests/check_guardrails.py |
+| B15 | End of a reply | Ends with a question only when the visitor must take an action. No "Anything else you would like to know?". After "thanks" or "no", one short sentence with support@useprofitlens.com (Ioseb, 2026-10-09) | system prompt |
+| B16 | Asking for the four details | Ask for the first name once. If the visitor does not give it, move on to the next detail and never ask again. The name does not block the flow (Ioseb, 2026-10-09) | content/qualifying-questions.md |
+| B17 | tests/check_guardrails.py |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
 
@@ -62,6 +66,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | G6 | Kill switch environment variable, no redeploy needed | Setting it flips the mode on the next request |
 | G7 | CORS allows only useprofitlens.com and the Render test URL | Request from another origin is refused |
 | G8 | Block replies that ask the visitor to pick an option or price (for example "the $99 or the $149?"); replace with a neutral reply | Scripted reply asking "$99 or $149?" never reaches the visitor |
+| G9 | Block replies that say "approved answers", "the visitor" or "per the", ask the visitor to book a call, or state how long or how many clients the free offer lasts (any date, count or "first N"); replace with a neutral reply or a founder offer | Scripted replies containing each phrase never reach the visitor |
 
 ## 5. Data
 
@@ -116,6 +121,10 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B11 | manual: nothing to check, RETIRED 2026-10-08 (ADR 0032) |
 | B12 | none yet (kill switch not built, Phase 5) |
 | B13 | tests/check_booking.py; tests/check_sessions.py; tests/conversations.md#19 |
+| B14 | tests/check_guardrails.py |
+| B15 | tests/check_guardrails.py |
+| B16 | none yet |
+| B17 | tests/check_guardrails.py |
 | G1 | tests/check_guardrails.py; tests/conversations.md#4 |
 | G2 | tests/check_guardrails.py |
 | G3 | tests/check_guardrails.py |
@@ -124,3 +133,4 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | G6 | none yet (kill switch not built, Phase 5) |
 | G7 | none yet |
 | G8 | tests/check_guardrails.py; tests/conversations.md#18 |
+| G9 | tests/check_guardrails.py |
