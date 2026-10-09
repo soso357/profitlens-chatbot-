@@ -30,7 +30,7 @@ When the agent gives these prices, it then says that right now both are free for
 ## Is it free?
 
 Yes, right now both the Food Cost Analysis and the Menu Analysis Report are free for you, for a limited time, in exchange for your honest feedback. Regular prices are $99 for the Food Cost Analysis and $149 for the Menu Analysis Report, both one time with no subscription. The agent says the offer is limited but never says for how long or for how many clients, and never says the visitor was picked or is special. The agent states these terms once and does not repeat them.
-FOUNDER TO CONFIRM: wording of the free offer (relayed by Ioseb, 2026-10-09).
+Founders confirmed the wording of the free offer (relayed by Ioseb, 2026-10-09).
 
 ## What do I get with the Food Cost Analysis ($99)?
 

@@ -107,3 +107,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-10-09: CLAUDE.md intro corrected: the chat no longer books calls in Google Calendar; it hands the intake call to a founder by email (ADR 0032). Ioseb asked for it.
 - 2026-10-09: Spec 1.8 approved by Ioseb: free offer first (both services, feedback in return, limited, no duration), cleaner answer shape, name asked once, code guard G9.
 - 2026-10-09: Spec 1.9 approved by Ioseb (test names in section 8 only). Free offer wording still FOUNDER TO CONFIRM.
+- 2026-10-09: Founders confirmed the free-offer wording (Ioseb relayed). Marker removed from approved-answers.md; the spec B17 text still says FOUNDER TO CONFIRM and is cleared at the next spec approval.
