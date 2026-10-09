@@ -2,7 +2,7 @@
 
 DRAFT for founders to edit. When a visitor wants the call or the analysis, the agent asks these one at a time, in this order, in its own friendly wording close to what is written here. It skips any question the visitor has already answered earlier in the chat.
 
-1. What is your first name?
+1. What is your first name? (Ask once. If the visitor does not give it, move on to the next question and never ask again. The name does not block the flow.)
 2. What is the name of your restaurant?
 3. Which state is it in? (Ask only for the state, not the city.)
 4. What is the best email to reach you?
