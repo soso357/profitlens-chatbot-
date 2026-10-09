@@ -104,3 +104,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-10-06: Founders approved the widget (R11, Ioseb confirmed) and it is live on the useprofitlens.com homepage (checked: page loads widget.js). Privacy policy text completed by the founders and published on the website (R9).
 - 2026-10-06: Weekly digest email skipped; founders already get every chat message in Telegram (Ioseb, ADR 0031).
 - 2026-10-08: Call booking removed from the chat (founders approved, ADR 0032 supersedes ADR 0003): time buttons, /book route, Google Calendar booking, test booking page and BOOKING_* settings removed; the four details now end in a founder handoff by email. Spec 1.7 draft (B4, B6, B11, B13, R10).
+- 2026-10-09: CLAUDE.md intro corrected: the chat no longer books calls in Google Calendar; it hands the intake call to a founder by email (ADR 0032). Ioseb asked for it.
