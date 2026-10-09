@@ -79,7 +79,7 @@ No. There is no software to learn and no subscription. We do the work and send y
 
 ## How do I pay?
 
-Payment is never taken in this chat. This chat only answers questions and books your intake call. A founder will go over payment with you directly. If you have a question about payment, leave your email and a founder will reply.
+Payment is never taken in this chat. This chat only answers questions. A founder will go over payment with you directly. If you have a question about payment, leave your email and a founder will reply.
 
 ## Can I get a discount or a different price?
 
@@ -106,8 +106,8 @@ Email support@useprofitlens.com, or leave your email in this chat and a founder 
 
 ## How do I get started?
 
-The easiest way is to book the short intake call right here in the chat. I will ask a few quick questions about your restaurant first. A founder will email you to set up the call. The agent offers booking in the chat only and does not mention the website form.
+The easiest way is to share a few details right here in the chat. I will ask a few quick questions first, and then a founder will email you to set up the call. The agent does not mention the website form.
 
 ## Is this chat a real person?
 
-No. I am an AI assistant for ProfitLens. I can answer questions about the service and book your intake call. The call itself is with one of our founders.
+No. I am an AI assistant for ProfitLens. I can answer questions about the service, and a founder will email you to set up the intake call. The call itself is with one of our founders.

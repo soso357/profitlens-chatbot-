@@ -9,4 +9,4 @@ DRAFT for founders to edit. When a visitor wants the call or the analysis, the a
 
 Then the agent tells them a founder will email them to set up the call. No call times are shown in the chat (ADR 0032).
 
-The agent asks nothing else: no questions about the type of restaurant, number of locations, who sets prices, menu size, or which option the visitor wants. Every visitor who gives these four details can book; the founders judge fit on the call. (Ioseb, 2026-09-28)
+The agent asks nothing else: no questions about the type of restaurant, number of locations, who sets prices, menu size, or which option the visitor wants. Every visitor who gives these four details gets a founder email to set up the call; the founders judge fit on the call. (Ioseb, 2026-09-28)
