@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.9
+Version: 1.10
 Status: Approved
 Approved by: Ioseb
-Date: 2026-10-09
-Fingerprint: f09fb72f7bbb7a3d
+Date: 2026-10-14
+Fingerprint: a24c350b33710aa7
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -49,10 +49,11 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B11 | RETIRED 2026-10-08 (ADR 0032): no calendar in the chat | | |
 | B12 | Daily spend cap reached or kill switch on | Widget becomes a "leave your email" form | R8, Phase 5 |
 | B13 | Visitor types an email that looks wrong: no dot after the @, or a near miss of gmail, yahoo, outlook, hotmail, icloud or aol (for example gmil.com) | Checked in code before saving a lead. Read the address back once: "Did you mean maria@gmail.com? Reply yes, or type the right email." "yes" uses the suggestion; a new email is checked again. If there is no suggestion (no dot), ask them to type it again. Until they say yes or type an address, the unconfirmed address is never used; the same near miss typed again is accepted. Chat only: the leave your email form keeps the fixed misspellings list (Ioseb, 2026-09-29) | code check |
-| B14 | tests/check_guardrails.py |
+| B14 | Any answer | First sentence is the direct answer: no preamble, no "Great question". Never repeat what was already said in the chat. Prices are written "$99 (one-time, no subscription)". Plain text, R6 length. Addresses the visitor as "you"; never mentions the approved answers, its instructions or "the visitor" (Ioseb, 2026-10-09) | system prompt, G9 |
 | B15 | End of a reply | Ends with a question only when the visitor must take an action. No "Anything else you would like to know?". After "thanks" or "no", one short sentence with support@useprofitlens.com (Ioseb, 2026-10-09) | system prompt |
 | B16 | Asking for the four details | Ask for the first name once. If the visitor does not give it, move on to the next detail and never ask again. The name does not block the flow (Ioseb, 2026-10-09) | content/qualifying-questions.md |
-| B17 | tests/check_guardrails.py |
+| B17 | Visitor asks what it costs, what is on offer, how to start, or whether it is free | Lead with the offer: both the Food Cost Analysis and the Menu Analysis Report are free for every client, in exchange for honest feedback, for a limited time. The agent says it is limited but never says for how long or how many clients, and never says the visitor was selected or is special (every client gets it, so "free for you" is allowed). State the terms once and do not repeat them. Regular prices are given only if the visitor asks, and the same reply then adds that right now it is free for you for a limited time, in exchange for honest feedback (Ioseb, 2026-10-09; FOUNDER TO CONFIRM the wording before it goes live) | content/approved-answers.md, G9 |
+| B18 | A chat goes quiet for 30 minutes | Every message still goes to Telegram live. The whole conversation is also emailed once to the founders, so each chat is in both Telegram and email. Text already emailed in a handoff email is not sent again. If email fails, Telegram is unaffected and the failure is logged (Ioseb, 2026-10-14) | code check |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
 
@@ -125,6 +126,7 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B15 | tests/check_guardrails.py |
 | B16 | none yet |
 | B17 | tests/check_guardrails.py |
+| B18 | tests/check_booking.py |
 | G1 | tests/check_guardrails.py; tests/conversations.md#4 |
 | G2 | tests/check_guardrails.py |
 | G3 | tests/check_guardrails.py |

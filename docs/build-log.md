@@ -108,3 +108,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-10-09: Spec 1.8 approved by Ioseb: free offer first (both services, feedback in return, limited, no duration), cleaner answer shape, name asked once, code guard G9.
 - 2026-10-09: Spec 1.9 approved by Ioseb (test names in section 8 only). Free offer wording still FOUNDER TO CONFIRM.
 - 2026-10-09: Founders confirmed the free-offer wording (Ioseb relayed). Marker removed from approved-answers.md; the spec B17 text still says FOUNDER TO CONFIRM and is cleared at the next spec approval.
+- 2026-10-14: Spec 1.10 approved by Ioseb: B18, each chat is emailed once to the founders after 30 quiet minutes (option 1), Telegram unchanged. Also restored the B14 and B17 behaviour rows my replace had overwritten in spec 1.9.
