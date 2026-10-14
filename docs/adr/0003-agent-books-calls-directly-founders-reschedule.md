@@ -1,6 +1,6 @@
 # ADR 0003: Agent books calls directly; founders reschedule
 
-- Status: Accepted
+- Status: Superseded by 0032
 - Date: 2026-09 (founder brief)
 - Decided by: Founders
 

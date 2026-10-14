@@ -1,6 +1,6 @@
 # ProfitLens website chat agent
 
-An AI chat widget for useprofitlens.com (done for you food cost analysis for independent US restaurants). It answers only from founder approved answers, asks qualifying questions, books the intake call in Google Calendar, and hands everything else to a founder by email. It never sells, negotiates, quotes figures, takes payment or gives advice.
+An AI chat widget for useprofitlens.com (done for you food cost analysis for independent US restaurants). It answers only from founder approved answers, asks qualifying questions, and hands the intake call and everything else to a founder by email (the call is no longer booked in the chat, ADR 0032). It never sells, negotiates, quotes figures, takes payment or gives advice.
 
 ## Working with Ioseb
 

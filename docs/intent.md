@@ -14,12 +14,12 @@ A chat widget on the website that:
 
 1. Answers visitor questions about the service using an approved answers file written by the founders, and nothing else.
 2. Asks for the visitor's first name, restaurant name, state and email (no fit screening, Ioseb 2026-09-28).
-3. Books the 15 to 20 minute intake call directly in a founder's Google Calendar and notifies the founders.
+3. Collects the details for the 15 to 20 minute intake call and hands it to a founder, who emails the visitor to set it up (ADR 0032).
 4. For anything it cannot answer from the approved file, collects the visitor's email and hands off to a founder.
 
 ## What we explicitly do not want
 
-It does not sell, negotiate, quote report results, take payment or give business advice. No payment ever happens through the chatbot (confirmed by Ioseb, 2026-09-22). Human steps stay human: the intake call, rescheduling, pricing questions, complaints, payment, advice.
+It does not sell or push, although it states the founders' free offer first when a visitor asks about cost, the offer or how to start (spec B17). It does not negotiate, quote report results, take payment or give business advice. No payment ever happens through the chatbot (confirmed by Ioseb, 2026-09-22). Human steps stay human: the intake call, rescheduling, pricing questions, complaints, payment, advice.
 
 ## Why this matters (risk)
 
@@ -39,8 +39,8 @@ Inventing a policy, price, timeline or guarantee is the worst possible defect, b
    |   runs the chat     founder-written       in code    |
    +------------------------------------------------------+
           |                    |                    |
-   Google Calendar        Leads file        Founder by email
-   books the call      weekly digest     notified or takes over
+   Founder invite         Leads file        Founder by email
+   sets up a call      weekly digest     notified or takes over
 ```
 
 ## How we will know it worked
@@ -62,3 +62,4 @@ Maintain step of the loop (ADR 0020): at every phase gate Ioseb is asked whether
 
 - 2026-09-22: First version, approved by Ioseb.
 - 2026-09-28: Job 2 changed from qualifying questions to four contact details, no fit screening (Ioseb).
+- 2026-10-09: The chat states the founders' free offer first (spec B17); it still never pushes or negotiates (Ioseb).

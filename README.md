@@ -1,6 +1,6 @@
 # Jelena: the ProfitLens website chat
 
-A guide for Sophie, Leli and Tamuna. Jelena answers visitors on useprofitlens.com using only your approved answers, asks the qualifying questions, books intake calls in Google Calendar and hands everything else to you.
+A guide for Sophie, Leli and Tamuna. Jelena answers visitors on useprofitlens.com using only your approved answers, asks the qualifying questions, takes intake call requests and hands everything else to you. A founder emails the visitor to set up each call (ADR 0032).
 
 ## Is she working?
 
@@ -11,8 +11,7 @@ You should see `"status":"ok"`, what she has spent today and the daily limit, an
 ## Where you see chats and leads
 
 1. **Telegram group:** every visitor message and every reply, as it happens.
-2. **Email:** one email for each lead, booking, or question she hands to you. It includes the whole chat.
-3. **Google Calendar:** every booked intake call, with a Meet link. Google sends the invite to the visitor.
+2. **Email:** one email for each lead, intake call request, or question she hands to you. It includes the whole chat.
 
 Please delete Telegram messages older than 30 days once a month (privacy promise).
 
@@ -34,21 +33,9 @@ To change one:
 
 If you are unsure, send the change to Ioseb instead.
 
-## Change the call hours
+## Setting up the call
 
-On Render (https://dashboard.render.com), open **profitlens-chat**, then **Environment**. Change the setting, click **Save**; she restarts in about 2 minutes.
-
-| Setting | Now | Meaning |
-|---|---|---|
-| BOOKING_TIMEZONE | Asia/Tbilisi | Your time zone |
-| BOOKING_DAYS | mon,tue,wed,thu,fri,sat,sun | Days calls can be booked |
-| BOOKING_START | 19:00 | First call time |
-| BOOKING_END | 03:00 | Last call ends (after midnight is fine) |
-| CALL_MINUTES | 20 | Call length |
-| BOOKING_MIN_NOTICE_HOURS | 12 | Earliest booking from now |
-| BOOKING_HORIZON_DAYS | 14 | How far ahead visitors can book |
-
-She never offers a time that is already busy in the calendar.
+She no longer offers call times or books the calendar (ADR 0032). When a visitor gives their name, restaurant, state and email, you get the alert and email them to set up the 15 to 20 minute call yourself.
 
 ## Turn her off in an emergency
 

@@ -69,11 +69,6 @@ def delete_old_transcripts() -> None:
     threading.Thread(target=run, daemon=True).start()
 
 
-if config.TEST_PAGES:
-    from app.test_booking import router as test_booking_router
-    app.include_router(test_booking_router)
-
-
 class Session:
     def __init__(self) -> None:
         self.messages: list[dict] = []
@@ -84,6 +79,7 @@ class Session:
         self.booking = chat_booking.BookingState()
         self.last_activity = time.time()
         self.sent_to_telegram = 0  # how many messages are already in Telegram
+        self.emailed_upto = 0  # how many messages are already in an email to the founders (B18)
 
 
 _sessions: dict[str, Session] = {}
@@ -119,7 +115,6 @@ class ChatIn(BaseModel):
 class ChatOut(BaseModel):
     reply: str
     mode: str = "chat"  # "chat", or "email_form" when the widget should show the leave your email form
-    slots: list[dict] = []  # call times to show as buttons: {"start": iso, "label": text}
     state: str = ""  # sealed copy of the conversation; the widget sends it back next time
 
 
@@ -146,12 +141,6 @@ class EmailIn(BaseModel):
     state: str = STATE_FIELD  # sealed copy of the conversation (ADR 0018)
 
 
-class BookIn(BaseModel):
-    session_id: str = Field(pattern=r"^[A-Za-z0-9_-]{8,64}$")
-    choice: str = Field(min_length=1, max_length=40)  # a slot "start", or "more" for other times
-    state: str = STATE_FIELD  # sealed copy of the conversation (ADR 0018)
-
-
 def _transcript(session: Session, start: int = 0) -> str:
     return chat_booking.transcript_text((m["role"], m["content"]) for m in session.messages[start:])
 
@@ -163,13 +152,14 @@ def _send_quiet_conversations() -> None:
         cutoff = time.time() - config.CONVERSATION_IDLE_MINUTES * 60
         with _sessions_lock:
             due = [(sid, s) for sid, s in _sessions.items()
-                   if s.last_activity < cutoff and len(s.messages) > s.sent_to_telegram]
+                   if s.last_activity < cutoff and len(s.messages) > min(s.sent_to_telegram, s.emailed_upto)]
         for sid, s in due:
             try:
                 with s.lock:
                     new_part = _transcript(s, s.sent_to_telegram)
-                    s.sent_to_telegram = len(s.messages)
-                    chat_booking.finish(s.booking, sid, _transcript(s), new_part, SOURCE)
+                    email_part = _transcript(s, s.emailed_upto)
+                    s.sent_to_telegram = s.emailed_upto = len(s.messages)
+                    chat_booking.finish(sid, new_part, SOURCE, email_part)
             except Exception as e:
                 chat_log.log(sid, "error", error=f"telegram digest: {e}")
 
@@ -227,7 +217,8 @@ def leave_email(request: Request, body: EmailIn) -> ChatOut:
         if suggestion:
             return _out(sid, session, reply=f"Just to check, did you mean {suggestion}? Please enter it again.", mode="email_form")
         lead = {"email": email, "reason": f"left email in the form. {body.note}".strip()}
-        chat_booking.record_lead(session.booking, lead, body.session_id, _transcript(session), SOURCE)
+        if chat_booking.record_lead(session.booking, lead, body.session_id, _transcript(session), SOURCE):
+            session.emailed_upto = len(session.messages)
         session.messages.append({"role": "assistant", "content": EMAIL_THANKS_REPLY})
         session.last_activity = time.time()
         return _out(sid, session, reply=EMAIL_THANKS_REPLY, mode="done")
@@ -274,19 +265,14 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             return _out(sid, session, reply=reply)
 
         chat_log.log(sid, "visitor", text=message)
-        if session.booking.offered and message.strip().rstrip(".") in ("1", "2", "3"):
-            reply, slots = chat_booking.pick(session.booking, message.strip().rstrip("."), sid, _transcript(session), SOURCE)
-            session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
-            chat_log.log(sid, "agent", text=reply)
-            _mirror(sid, session, message, reply)
-            return _out(sid, session, reply=reply, slots=slots)
         confirmed = chat_booking.confirm(session.booking, message, sid, _transcript(session), SOURCE)
         if confirmed:  # "yes" to "did you mean ...@gmail.com?" (B13)
-            reply, slots = confirmed
-            session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": reply}]
-            chat_log.log(sid, "agent", text=reply)
-            _mirror(sid, session, message, reply + "".join(f"\n  [time] {x['label']}" for x in slots))
-            return _out(sid, session, reply=reply, slots=slots)
+            session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": confirmed}]
+            if session.booking.handoff_sent:
+                session.emailed_upto = len(session.messages) - 1  # the handoff email stopped before the reply
+            chat_log.log(sid, "agent", text=confirmed)
+            _mirror(sid, session, message, confirmed)
+            return _out(sid, session, reply=confirmed)
         first_reply = not any(m["role"] == "assistant" for m in session.messages)
         history = session.messages + [{"role": "user", "content": message}]
 
@@ -299,11 +285,11 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
 
         raw = response.text
         typed = " ".join(m["content"] for m in history if m["role"] == "user")
-        text, booking_details, lead = chat_booking.extract(raw, typed)
+        text, lead = chat_booking.extract(raw, typed)
         reply = guardrails.strip_markdown(guardrails.remove_dashes(text))
         if response.stop_reason == "max_tokens":
             reply = guardrails.trim_to_sentence(reply)
-        reply = guardrails.remove_option_question(guardrails.remove_sales_push(reply, message))
+        reply = guardrails.clean_reply(guardrails.remove_option_question(guardrails.remove_sales_push(reply, message)))
         reply = guardrails.cap_length(reply, message)
 
         violations = guardrails.find_violations(reply)
@@ -311,37 +297,22 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             violations.append(f"no usable reply (stop reason {response.stop_reason})")
         if violations:
             chat_log.log(sid, "guardrail_blocked", reasons=violations, original=raw)
-            reply, booking_details, lead = guardrails.HANDOFF_REPLY, None, None
+            reply, lead = guardrails.HANDOFF_REPLY, None
 
         if first_reply:
             reply = guardrails.ensure_disclosure(reply)
 
         session.messages = history + [{"role": "assistant", "content": reply}]
-        extra, slots, _ = chat_booking.handle(session.booking, booking_details, lead, sid, _transcript(session), SOURCE)
+        handoff_before = session.booking.handoff_sent
+        extra = chat_booking.handle(session.booking, lead, sid, _transcript(session), SOURCE)
+        if session.booking.handoff_sent and not handoff_before:
+            session.emailed_upto = len(session.messages)
         if extra:
             reply = f"{reply} {extra}".strip()
             session.messages[-1]["content"] = reply
         chat_log.log(sid, "agent", text=reply, cost_usd=round(response.cost_usd, 5), **(response.usage or {}))
-        times = "".join(f"\n  [time] {x['label']}" for x in slots)
-        _mirror(sid, session, message, reply + times)
-        return _out(sid, session, reply=reply, slots=slots)
-
-
-@app.post("/book", response_model=ChatOut)
-@limiter.limit(config.IP_RATE_LIMIT)
-def book(request: Request, body: BookIn) -> ChatOut:
-    """A time button was clicked (or "Other times")."""
-    sid = body.session_id
-    session = get_session(sid, body.state)
-    with session.lock:
-        session.last_activity = time.time()
-        reply, slots = chat_booking.pick(session.booking, body.choice, body.session_id, _transcript(session), SOURCE)
-        clicked = "Other times, please." if body.choice == chat_booking.MORE else "(I clicked one of the call times.)"
-        session.messages += [{"role": "user", "content": clicked}, {"role": "assistant", "content": reply}]
-        chat_log.log(sid, "agent", text=reply)
-        label = "Other times" if body.choice == chat_booking.MORE else f"(clicked time {body.choice})"
-        _mirror(sid, session, label, reply + "".join(f"\n  [time] {x['label']}" for x in slots))
-        return _out(sid, session, reply=reply, slots=slots)
+        _mirror(sid, session, message, reply)
+        return _out(sid, session, reply=reply)
 
 
 @app.get("/health")

@@ -15,7 +15,6 @@ import json
 import os
 import time
 import zlib
-from datetime import datetime
 
 from app import chat_booking
 
@@ -42,10 +41,8 @@ def dump(session_id: str, session) -> str:
         "messages": session.messages,
         "visitor_messages": session.visitor_messages,
         "sent_to_telegram": session.sent_to_telegram,
+        "emailed_upto": session.emailed_upto,
         "booking": {
-            "details": b.details,
-            "offered": [s.isoformat() for s in b.offered],
-            "booked": b.booked,
             "lead_saved": b.lead_saved,
             "handoff_sent": b.handoff_sent,
             "pending": b.pending,
@@ -82,12 +79,10 @@ def restore(session, state: dict) -> None:
     session.messages = [m for m in state.get("messages", []) if m.get("role") in ("user", "assistant")]
     session.visitor_messages = int(state.get("visitor_messages", 0))
     session.sent_to_telegram = int(state.get("sent_to_telegram", 0))
+    session.emailed_upto = int(state.get("emailed_upto", 0))
     session.created = float(state.get("created", time.time()))
     b = state.get("booking") or {}
     session.booking = chat_booking.BookingState(
-        details=b.get("details"),
-        offered=[datetime.fromisoformat(s) for s in b.get("offered", [])],
-        booked=bool(b.get("booked")),
         lead_saved=bool(b.get("lead_saved")),
         handoff_sent=bool(b.get("handoff_sent")),
         pending=b.get("pending") if isinstance(b.get("pending"), dict) else None,

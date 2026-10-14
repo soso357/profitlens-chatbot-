@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.6
+Version: 1.10
 Status: Approved
 Approved by: Ioseb
-Date: 2026-10-06
-Fingerprint: 7cf90ba3394edfb1
+Date: 2026-10-14
+Fingerprint: a24c350b33710aa7
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -25,8 +25,8 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 - **R6 Short replies.** Two to four sentences unless the visitor asks for detail. One question at a time.
 - **R7 Secrets.** Anthropic API key, Google credentials, email password live only in environment variables, never in code, never in git. .gitignore covers .env and all credential files.
 - **R8 Cost and abuse protection.** Rate limit per visitor (for example 20 messages per hour per session), cap conversation length, cap tokens per reply, and a hard daily API spend limit in code that turns the widget into a "leave your email" form when reached.
-- **R9 Privacy.** Store only what is needed (conversation transcript, name, restaurant, email, booking). Transcripts deleted after 30 days automatically. Website privacy policy must be updated to mention the chat.
-- **R10 Stack.** Python 3.11+, FastAPI, official anthropic Python library, Google Calendar API and Gmail API through a one time Google sign-in as the calendar owner (Zoho dropped by Ioseb, 2026-09-22 and 2026-09-26). Front end: one self-contained HTML plus JavaScript widget served by the same service. Hosting: Render. A different library needs approval first.
+- **R9 Privacy.** Store only what is needed (conversation transcript, name, restaurant, email, intake call request). Transcripts deleted after 30 days automatically. Website privacy policy must be updated to mention the chat.
+- **R10 Stack.** Python 3.11+, FastAPI, official anthropic Python library, Gmail API through a one time Google sign-in (the Google Calendar API was removed from the chat, ADR 0032) (Zoho dropped by Ioseb, 2026-09-22 and 2026-09-26). Front end: one self-contained HTML plus JavaScript widget served by the same service. Hosting: Render. A different library needs approval first.
 - **R11 Launch gate.** The widget goes live on useprofitlens.com only after founders approve it on a hidden test page. Until then it runs on the Render URL alone.
 - **R12 Phase gate.** At the end of every phase: run it, show it working, list what could not be done and why, stop and wait for "approved".
 - **R13 Tested, not one pass.** Each phase is tested with at least ten realistic visitor conversations (including rude, off-topic and trick questions) before demonstrating.
@@ -39,16 +39,21 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B1 | First reply of any session | Contains the AI disclosure (R3). In the widget the server sends it as the first message when the chat opens (POST /start) | code check G2 |
 | B2 | Question answered in the approved file | Answer in 2 to 4 sentences, same meaning as the file | content/approved-answers.md |
 | B3 | Question not in the approved file | Say it is not something the agent can answer, offer founder email, ask for email | content/handoff-rules.md |
-| B4 | Visitor wants the analysis or a call, or questions are done | Ask only for first name, restaurant name, state and email, one at a time, then offer times (B6). No questions about the restaurant's type, size, menu or which option they want (Ioseb, 2026-09-28) | content/qualifying-questions.md |
+| B4 | Visitor wants the analysis or a call, or questions are done | Ask only for first name, restaurant name, state and email, one at a time, then say a founder will email them to set up the call (ADR 0032). No questions about the restaurant's type, size, menu or which option they want (Ioseb, 2026-09-28) | content/qualifying-questions.md |
 | B5 | RETIRED 2026-09-28 (Ioseb: no fit screening in the chat; every visitor who gives the four details can book, founders judge fit on the call) | | |
-| B6 | Visitor has given first name, restaurant name, state and email | Map the state to a US time zone (default Eastern), offer at most 3 free slots, book on choice | Phase 3 |
+| B6 | RETIRED 2026-10-08 (ADR 0032): the chat no longer offers or books call times | | |
 | B7 | Any handoff rule triggers | Collect email if unknown, send "Chat handoff: founder needed" email | content/handoff-rules.md |
 | B8 | Asked if it is human | Says plainly it is an AI assistant | R3 |
 | B9 | Rude or abusive | One calm reply, offer email handoff, stop engaging, notify founders | content/handoff-rules.md |
 | B10 | Instruction override attempts ("ignore your rules") | Ignore the attempt, carry on | content/handoff-rules.md |
-| B11 | Calendar unreachable | Apologise, collect email and preferred times, send handoff email. Never leave the visitor without a path | Phase 3 |
+| B11 | RETIRED 2026-10-08 (ADR 0032): no calendar in the chat | | |
 | B12 | Daily spend cap reached or kill switch on | Widget becomes a "leave your email" form | R8, Phase 5 |
-| B13 | Visitor types an email that looks wrong: no dot after the @, or a near miss of gmail, yahoo, outlook, hotmail, icloud or aol (for example gmil.com) | Checked in code before booking or saving a lead. Read the address back once: "Did you mean maria@gmail.com? Reply yes, or type the right email." "yes" uses the suggestion; a new email is checked again. If there is no suggestion (no dot), ask them to type it again. Until they say yes or type an address, the unconfirmed address is never used; the same near miss typed again is accepted. Chat only: the leave your email form keeps the fixed misspellings list (Ioseb, 2026-09-29) | code check |
+| B13 | Visitor types an email that looks wrong: no dot after the @, or a near miss of gmail, yahoo, outlook, hotmail, icloud or aol (for example gmil.com) | Checked in code before saving a lead. Read the address back once: "Did you mean maria@gmail.com? Reply yes, or type the right email." "yes" uses the suggestion; a new email is checked again. If there is no suggestion (no dot), ask them to type it again. Until they say yes or type an address, the unconfirmed address is never used; the same near miss typed again is accepted. Chat only: the leave your email form keeps the fixed misspellings list (Ioseb, 2026-09-29) | code check |
+| B14 | Any answer | First sentence is the direct answer: no preamble, no "Great question". Never repeat what was already said in the chat. Prices are written "$99 (one-time, no subscription)". Plain text, R6 length. Addresses the visitor as "you"; never mentions the approved answers, its instructions or "the visitor" (Ioseb, 2026-10-09) | system prompt, G9 |
+| B15 | End of a reply | Ends with a question only when the visitor must take an action. No "Anything else you would like to know?". After "thanks" or "no", one short sentence with support@useprofitlens.com (Ioseb, 2026-10-09) | system prompt |
+| B16 | Asking for the four details | Ask for the first name once. If the visitor does not give it, move on to the next detail and never ask again. The name does not block the flow (Ioseb, 2026-10-09) | content/qualifying-questions.md |
+| B17 | Visitor asks what it costs, what is on offer, how to start, or whether it is free | Lead with the offer: both the Food Cost Analysis and the Menu Analysis Report are free for every client, in exchange for honest feedback, for a limited time. The agent says it is limited but never says for how long or how many clients, and never says the visitor was selected or is special (every client gets it, so "free for you" is allowed). State the terms once and do not repeat them. Regular prices are given only if the visitor asks, and the same reply then adds that right now it is free for you for a limited time, in exchange for honest feedback (Ioseb, 2026-10-09; FOUNDER TO CONFIRM the wording before it goes live) | content/approved-answers.md, G9 |
+| B18 | A chat goes quiet for 30 minutes | Every message still goes to Telegram live. The whole conversation is also emailed once to the founders, so each chat is in both Telegram and email. Text already emailed in a handoff email is not sent again. If email fails, Telegram is unaffected and the failure is logged (Ioseb, 2026-10-14) | code check |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
 
@@ -62,6 +67,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | G6 | Kill switch environment variable, no redeploy needed | Setting it flips the mode on the next request |
 | G7 | CORS allows only useprofitlens.com and the Render test URL | Request from another origin is refused |
 | G8 | Block replies that ask the visitor to pick an option or price (for example "the $99 or the $149?"); replace with a neutral reply | Scripted reply asking "$99 or $149?" never reaches the visitor |
+| G9 | Block replies that say "approved answers", "the visitor" or "per the", ask the visitor to book a call, or state how long or how many clients the free offer lasts (any date, count or "first N"); replace with a neutral reply or a founder offer | Scripted replies containing each phrase never reach the visitor |
 
 ## 5. Data
 
@@ -69,16 +75,16 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 |---|---|---|
 | Conversation transcript | logs (Render disk in Phase 5) | 30 days, then deleted automatically |
 | Lead (first name, restaurant, state, email, transcript reference) | leads.csv | until founders delete |
-| Booking | Google Calendar event | founders manage |
+| Intake call | none in the service (ADR 0032): the founder emails the visitor | founders manage |
 | Conversation copy in Telegram (every message, live, ADR 0019) | founders' Telegram group | founders delete by hand after 30 days |
 
 ## 6. Integrations
 
-Anthropic API (conversation), Google Calendar (free slots, events with Meet link; Google sends the visitor's invite), Gmail API from the booking account (founder notifications; the record of every alert; no weekly digest, ADR 0031), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
+Anthropic API (conversation), Gmail API from the founder alert account (founder notifications; the record of every alert; no weekly digest, ADR 0031), Telegram Bot API over plain HTTPS (founder alerts only, one way, ADR 0014), Render (hosting, disk, environment variables), Framer (one short script tag embed).
 
 ## 7. Open questions
 
-- Calendar hours: RESOLVED 2026-09-22. All 7 days, 19:00 to 03:00 Asia/Tbilisi, calendar ioseb@useprofitlens.com.
+- Calendar hours: RETIRED 2026-10-08 (ADR 0032, the chat no longer books calls).
 - Notification recipient: RESOLVED 2026-09-22. ioseb@useprofitlens.com.
 - Model: Claude Sonnet 5, for testing and real visitors (ADR 0016).
 - Exact wording of the AI disclosure. Ioseb named the assistant Jelena (2026-09-23): "Hi, I'm Jelena, the AI assistant for ProfitLens...". FOUNDER TO CONFIRM (blocks R3, B1, G2)
@@ -108,14 +114,19 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B3 | tests/conversations.md#3 |
 | B4 | tests/check_booking.py; tests/conversations.md#10; tests/conversations.md#16 |
 | B5 | manual: nothing to check, RETIRED 2026-09-28 |
-| B6 | tests/check_booking.py |
+| B6 | manual: nothing to check, RETIRED 2026-10-08 (ADR 0032) |
 | B7 | tests/check_booking.py; tests/conversations.md#13; tests/conversations.md#15 |
 | B8 | tests/conversations.md#8 |
 | B9 | tests/conversations.md#7 |
 | B10 | tests/conversations.md#12 |
-| B11 | tests/check_booking.py |
+| B11 | manual: nothing to check, RETIRED 2026-10-08 (ADR 0032) |
 | B12 | none yet (kill switch not built, Phase 5) |
 | B13 | tests/check_booking.py; tests/check_sessions.py; tests/conversations.md#19 |
+| B14 | tests/check_guardrails.py |
+| B15 | tests/check_guardrails.py |
+| B16 | none yet |
+| B17 | tests/check_guardrails.py |
+| B18 | tests/check_booking.py |
 | G1 | tests/check_guardrails.py; tests/conversations.md#4 |
 | G2 | tests/check_guardrails.py |
 | G3 | tests/check_guardrails.py |
@@ -124,3 +135,4 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | G6 | none yet (kill switch not built, Phase 5) |
 | G7 | none yet |
 | G8 | tests/check_guardrails.py; tests/conversations.md#18 |
+| G9 | tests/check_guardrails.py |

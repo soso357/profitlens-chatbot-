@@ -5,7 +5,7 @@ Run: .venv/bin/python -m tests.evals            (all, uses a little API credit)
      .venv/bin/python -m tests.evals --offline  (no API calls, free)
 
 The local copy sends no Telegram or email alerts and keeps logs, leads and the spend
-counter in a temporary folder. It reads the calendar (free times) but books nothing.
+counter in a temporary folder.
 Writes tests/eval-report.md. Exit code 1 if anything failed: run before every pull request.
 """
 import os

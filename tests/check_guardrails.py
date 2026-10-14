@@ -97,15 +97,38 @@ for reply, expect_gone in [
     ("Are you leaning toward the full report?", True),
     ("Great. Is it the $99.00 or the $149.00 option you want?", True),
     ("Would you prefer a founder to email you about the report?", False),
-    ("The $99 option covers food cost. Anything else you would like to know?", False),
     ("Which state is your restaurant in?", False),
     ("What is the name of your restaurant?", False),
     ("What is the best email to reach you?", False),
 ]:
     out = g.remove_option_question(reply)
-    ok = (out != reply and "$149?" not in out and "which one" not in out.lower() and out.endswith("?")) if expect_gone else out == reply
+    ok = (out != reply and "$149?" not in out and "which one" not in out.lower()) if expect_gone else out == reply
     failures += not ok
     print(f"  [{'OK' if ok else 'WRONG'}] {reply!r} -> {out!r}")
+
+print("\nNo filler closer, no leaks, no length of the free offer (B15, B17, G9):")
+for reply, expect_changed in [
+    ("The Food Cost Analysis is $99 (one-time, no subscription). Anything else you would like to know?", True),
+    ("Per the approved answers, the cost is $99. A founder can help.", True),
+    ("The visitor asked about cost. It is $99.", True),
+    ("The easiest way is to book a call with us.", True),
+    ("Please book your intake call here.", True),
+    ("It is free for you for the first 20 clients.", True),
+    ("It is free for you until December 1.", True),
+    ("The offer is free for the next 3 months.", True),
+    ("Only 5 spots left on the free offer.", True),
+    ("Right now both are free for you, for a limited time, in exchange for honest feedback.", False),
+    ("Results arrive within 5 business days of the 15 to 20 minute call. A founder will email you to set up the call.", False),
+    ("Share your email and a founder will reply.", False),
+]:
+    out = g.clean_reply(reply)
+    ok = (out != reply) if expect_changed else out == reply
+    failures += not ok
+    print(f"  [{'OK' if ok else 'WRONG'}] {reply!r} -> {out!r}")
+only = g.clean_reply("Per the approved answers, I cannot say.")
+ok = only == g.HANDOFF_REPLY
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] all sentences leaked -> founder offer: {only!r}")
 
 print("\nCard numbers in visitor messages:")
 for msg, expect in [("my card is 4242 4242 4242 4242 exp 12/28", True), ("call me on 555 123 4567", False),

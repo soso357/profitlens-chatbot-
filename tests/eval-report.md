@@ -1,11 +1,11 @@
 # Eval report
 
-Run on 2026-10-06 16:14 (offline only). Result: **PASS**
+Run on 2026-10-14 13:11 (offline only). Result: **PASS**
 
 | Check | Result | Last line |
 |---|---|---|
 | tests.check_guardrails | PASS | ALL CHECKS PASSED |
-| tests.check_booking | PASS | 73 of 73 passed |
+| tests.check_booking | PASS | 48 of 48 passed |
 | tests.check_sessions | PASS | 8 of 8 passed |
 | tests.check_retention | PASS | 6 of 6 passed |
 | tests.check_alerts | PASS | ALL CHECKS PASSED |

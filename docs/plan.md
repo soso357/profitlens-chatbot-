@@ -12,6 +12,33 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Email every chat to the founders (task chat-email-transcript, 2026-10-14)
+Spec version 1.10, covers B18. Ioseb chose option 1: one email per chat after 30 quiet minutes, Telegram unchanged.
+1. app/chat_booking.py finish(): also emails the conversation (email_alerts.alert_founders); a failure is logged and never stops Telegram.
+2. app/main.py and app/session_store.py: each session remembers how many messages a handoff email already carried (emailed_upto), so the quiet-chat email sends only new text.
+3. tests/check_booking.py: quiet chat is emailed, nothing re-emailed, email failure leaves Telegram working.
+
+### Free offer first and cleaner answers (task chat-copy, 2026-10-09)
+Spec version 1.8, covers B14, B15, B16, B17, G9. B17 wording is FOUNDER TO CONFIRM before it is live.
+1. content/approved-answers.md: add one "Is it free?" answer with the offer terms (both services free for every client, in exchange for honest feedback, limited time, no duration or count). Cost answer keeps $99 and $149 and adds that right now it is free for you for a limited time. Process answers follow the existing order (invoices, call, results in 5 business days); no new timelines.
+2. app/content.py: one-sentence greeting ("I'm Jelena, ProfitLens's AI assistant. A founder handles the calls."); prompt rules for B14 to B17; lead with the offer on cost, offer or how-to-start questions; drop "Anything else you would like to know?"; one short sentence after "thanks" or "no"; ask the name once, then move on.
+3. content/qualifying-questions.md: name asked once, never blocks the other details.
+4. app/guardrails.py: G9, a code guard that replaces replies leaking "approved answers", "the visitor" or "per the", asking to book a call, or giving a duration or count for the offer.
+5. docs/intent.md: one line change so "does not sell" allows stating the free offer (Ioseb approves; Change history line).
+6. Tests: G9 and B14 to B16 in tests/check_guardrails.py; scripted conversations for the eight chats Ioseb listed ("hi", what ProfitLens does, cost, "i saw that for me it is free", materials, where to send invoices, "ok, thanks", "no"), then ten live conversations (needs API key or Claude login). Replace "none yet" in spec section 8.
+7. Log in docs/build-log.md; ADR for the free-offer-first decision (skill: new-adr).
+
+### Remove call-time booking from the chat (task remove-booking, 2026-10-08) [Spec version 1.6 covers B4, B6, B11, B13; spec 1.7 draft rewrites B4, B6, B11 and needs Ioseb's approval]
+Founders approved Option A on 2026-10-08 (ADR 0032, supersedes ADR 0003). Ioseb approved this plan in chat.
+1. Chat collects name, restaurant, state, email (B4), then ends with the existing lead block; no offer_times block, no timezone, no time buttons. The founder alert and leads.csv row are unchanged (outcome "founder needed").
+2. Remove: app/booking.py, app/test_booking.py, app/static/test-booking.html, app/static/test-chat.html, the /book route, the slot code in app/main.py and app/chat_booking.py, the slot buttons in app/static/widget.js, BOOKING_* and CALL_MINUTES in app/config.py (GOOGLE_CALENDAR_ID stays: it is the From address of founder emails).
+3. Session store: drop the booking details, offered and booked fields; old saved sessions still load (missing keys ignored).
+4. B13 email check stays for the lead path only. The "pending" state no longer has an offer kind.
+5. Content: system prompt booking section replaced; content/qualifying-questions.md time-button line rewritten. content/approved-answers.md line about "show you some times" is NOT changed here: founders to word it.
+6. Docs: spec 1.7 draft (B4, B6, B11, B13 wording; acceptance rows; R10 stack), README calendar rows removed, intent.md point 3, build-log line.
+7. Tests: tests/check_booking.py rewritten to lead and email-check cases; check_sessions.py booking part; preview_chat.py and live_chat.py no time buttons; tests/conversations.md expected endings for call-time cases become lead or chat.
+Demonstrate: evals offline green; at least ten visitor conversations (including rude, off topic, trick, a typo email) run with preview_chat; no time buttons appear anywhere.
+
 ### Phase 5 email typo check (2026-09-29)
 Spec version 1.6, covers B13. Approved by Ioseb 2026-09-29 (automatic near miss detection, confirm with yes or retype).
 1. app/chat_booking.py email_typo: no dot after @ flags with no suggestion; a domain 1 or 2 edits from gmail, yahoo, outlook, hotmail, icloud or aol gets a suggestion (plus the existing list); real domains ymail, mail, live, me, msn, gmx, aim never flagged. Small edit distance function, no new library.
