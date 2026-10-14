@@ -299,6 +299,10 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             chat_log.log(sid, "guardrail_blocked", reasons=violations, original=raw)
             reply, lead = guardrails.HANDOFF_REPLY, None
 
+        question = chat_booking.missing_question(session.booking, lead)
+        if question:  # B4: ask for the missing detail instead of alerting the founders
+            reply, lead = question, None
+
         if first_reply:
             reply = guardrails.ensure_disclosure(reply)
 
