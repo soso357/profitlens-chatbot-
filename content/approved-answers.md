@@ -81,7 +81,7 @@ No. There is no software to learn and no subscription. We do the work and send y
 
 ## How do I pay?
 
-Payment is never taken in this chat. This chat only answers questions and books your intake call. A founder will go over payment with you directly. If you have a question about payment, leave your email and a founder will reply.
+Payment is never taken in this chat. This chat only answers questions and passes your details to a founder, who sets up your intake call. A founder will go over payment with you directly. If you have a question about payment, leave your email and a founder will reply.
 
 ## Can I get a discount or a different price?
 
@@ -114,4 +114,4 @@ The chat does not show call times and does not book calls. After the first name,
 
 ## Is this chat a real person?
 
-No. I am an AI assistant for ProfitLens. I can answer questions about the service and book your intake call. The call itself is with one of our founders.
+No. I am an AI assistant for ProfitLens. I can answer questions about the service and pass your details to a founder, who will set up your intake call. The call itself is with one of our founders.
