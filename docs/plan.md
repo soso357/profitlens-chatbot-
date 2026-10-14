@@ -12,6 +12,12 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Email every chat to the founders (task chat-email-transcript, 2026-10-14)
+Spec version 1.10, covers B18. Ioseb chose option 1: one email per chat after 30 quiet minutes, Telegram unchanged.
+1. app/chat_booking.py finish(): also emails the conversation (email_alerts.alert_founders); a failure is logged and never stops Telegram.
+2. app/main.py and app/session_store.py: each session remembers how many messages a handoff email already carried (emailed_upto), so the quiet-chat email sends only new text.
+3. tests/check_booking.py: quiet chat is emailed, nothing re-emailed, email failure leaves Telegram working.
+
 ### Free offer first and cleaner answers (task chat-copy, 2026-10-09)
 Spec version 1.8, covers B14, B15, B16, B17, G9. B17 wording is FOUNDER TO CONFIRM before it is live.
 1. content/approved-answers.md: add one "Is it free?" answer with the offer terms (both services free for every client, in exchange for honest feedback, limited time, no duration or count). Cost answer keeps $99 and $149 and adds that right now it is free for you for a limited time. Process answers follow the existing order (invoices, call, results in 5 business days); no new timelines.

@@ -41,6 +41,7 @@ def dump(session_id: str, session) -> str:
         "messages": session.messages,
         "visitor_messages": session.visitor_messages,
         "sent_to_telegram": session.sent_to_telegram,
+        "emailed_upto": session.emailed_upto,
         "booking": {
             "lead_saved": b.lead_saved,
             "handoff_sent": b.handoff_sent,
@@ -78,6 +79,7 @@ def restore(session, state: dict) -> None:
     session.messages = [m for m in state.get("messages", []) if m.get("role") in ("user", "assistant")]
     session.visitor_messages = int(state.get("visitor_messages", 0))
     session.sent_to_telegram = int(state.get("sent_to_telegram", 0))
+    session.emailed_upto = int(state.get("emailed_upto", 0))
     session.created = float(state.get("created", time.time()))
     b = state.get("booking") or {}
     session.booking = chat_booking.BookingState(

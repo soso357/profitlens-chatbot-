@@ -206,8 +206,17 @@ def live_update(sid: str, visitor: str, reply: str, source: str = "", first: boo
     threading.Thread(target=telegram.send_long, args=(text,), daemon=True).start()
 
 
-def finish(sid: str, new_part: str, source: str = "") -> None:
-    """The conversation went quiet (or the preview ended). Send it to Telegram (ADR 0015)."""
+def finish(sid: str, new_part: str, source: str = "", email_part: str | None = None) -> None:
+    """The conversation went quiet (or the preview ended). Send it to Telegram (ADR 0015) and
+    email it once to the founders (B18). email_part leaves out text a handoff email already
+    carried; by default it is the same text as the Telegram part."""
     if new_part.strip() and not config.TELEGRAM_LIVE:  # with live updates the founders already saw it
         telegram.send_long(f"Chat conversation{_tag(source)} {sid[:8]}\n\n{new_part}")
     chat_log.log(sid, "conversation_sent_to_telegram")
+    text = new_part if email_part is None else email_part
+    if text.strip():
+        try:
+            email_alerts.alert_founders(f"Chat conversation{_tag(source)} {sid[:8]}", text)
+            chat_log.log(sid, "conversation_sent_by_email")
+        except Exception as e:  # Telegram already has it; never break the loop
+            chat_log.log(sid, "error", error=f"conversation email: {e}")

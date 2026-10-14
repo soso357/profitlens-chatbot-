@@ -119,6 +119,16 @@ SENT.clear()
 cb.finish("s7", "Visitor: hi\nBot: hello")
 check("quiet conversation goes to Telegram (ADR 0015)", any(t.startswith("Chat conversation") for k, t in SENT if k == "telegram"))
 
+check("B18 quiet conversation is also emailed", any(k == "email" and s.startswith("Chat conversation") for k, s in SENT))
+SENT.clear()
+cb.finish("s8", "Visitor: hi\nBot: hello", email_part="")
+check("B18 text a handoff email already carried is not emailed again", not any(k == "email" for k, _ in SENT))
+cb.email_alerts.alert_founders = lambda subject, body: (_ for _ in ()).throw(RuntimeError("gmail down"))
+SENT.clear()
+cb.finish("s9", "Visitor: hi\nBot: hello")
+check("B18 email failure does not stop Telegram", any(k == "telegram" for k, _ in SENT))
+cb.email_alerts.alert_founders = lambda subject, body: SENT.append(("email", subject)) or True
+
 cb.config.TELEGRAM_LIVE = True
 LIVE = []
 cb.telegram.send_long = lambda text: LIVE.append(text) or True

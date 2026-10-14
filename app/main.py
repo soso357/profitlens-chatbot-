@@ -79,6 +79,7 @@ class Session:
         self.booking = chat_booking.BookingState()
         self.last_activity = time.time()
         self.sent_to_telegram = 0  # how many messages are already in Telegram
+        self.emailed_upto = 0  # how many messages are already in an email to the founders (B18)
 
 
 _sessions: dict[str, Session] = {}
@@ -151,13 +152,14 @@ def _send_quiet_conversations() -> None:
         cutoff = time.time() - config.CONVERSATION_IDLE_MINUTES * 60
         with _sessions_lock:
             due = [(sid, s) for sid, s in _sessions.items()
-                   if s.last_activity < cutoff and len(s.messages) > s.sent_to_telegram]
+                   if s.last_activity < cutoff and len(s.messages) > min(s.sent_to_telegram, s.emailed_upto)]
         for sid, s in due:
             try:
                 with s.lock:
                     new_part = _transcript(s, s.sent_to_telegram)
-                    s.sent_to_telegram = len(s.messages)
-                    chat_booking.finish(sid, new_part, SOURCE)
+                    email_part = _transcript(s, s.emailed_upto)
+                    s.sent_to_telegram = s.emailed_upto = len(s.messages)
+                    chat_booking.finish(sid, new_part, SOURCE, email_part)
             except Exception as e:
                 chat_log.log(sid, "error", error=f"telegram digest: {e}")
 
@@ -215,7 +217,8 @@ def leave_email(request: Request, body: EmailIn) -> ChatOut:
         if suggestion:
             return _out(sid, session, reply=f"Just to check, did you mean {suggestion}? Please enter it again.", mode="email_form")
         lead = {"email": email, "reason": f"left email in the form. {body.note}".strip()}
-        chat_booking.record_lead(session.booking, lead, body.session_id, _transcript(session), SOURCE)
+        if chat_booking.record_lead(session.booking, lead, body.session_id, _transcript(session), SOURCE):
+            session.emailed_upto = len(session.messages)
         session.messages.append({"role": "assistant", "content": EMAIL_THANKS_REPLY})
         session.last_activity = time.time()
         return _out(sid, session, reply=EMAIL_THANKS_REPLY, mode="done")
@@ -265,6 +268,8 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
         confirmed = chat_booking.confirm(session.booking, message, sid, _transcript(session), SOURCE)
         if confirmed:  # "yes" to "did you mean ...@gmail.com?" (B13)
             session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": confirmed}]
+            if session.booking.handoff_sent:
+                session.emailed_upto = len(session.messages) - 1  # the handoff email stopped before the reply
             chat_log.log(sid, "agent", text=confirmed)
             _mirror(sid, session, message, confirmed)
             return _out(sid, session, reply=confirmed)
@@ -298,7 +303,10 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             reply = guardrails.ensure_disclosure(reply)
 
         session.messages = history + [{"role": "assistant", "content": reply}]
+        handoff_before = session.booking.handoff_sent
         extra = chat_booking.handle(session.booking, lead, sid, _transcript(session), SOURCE)
+        if session.booking.handoff_sent and not handoff_before:
+            session.emailed_upto = len(session.messages)
         if extra:
             reply = f"{reply} {extra}".strip()
             session.messages[-1]["content"] = reply
