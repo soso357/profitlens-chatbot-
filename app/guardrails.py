@@ -153,6 +153,7 @@ _LEAK = re.compile(
     r"approved answers?|\bthe visitor\b|\bper the\b|system prompt|my instructions"
     r"|\b(?:book|schedule)\b[^.?!]{0,20}\b(?:a|an|the|your)\s+(?:short\s+|intake\s+)?(?:call|meeting)\b", re.I)
 _COUNT = r"(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|twelve|fifteen|twenty|fifty|a few|a handful of)"
+_FREE_PROMISE = re.compile(r"\bfree for you\b|\blimited[- ]time\b|\bfor a limited\b|\bfor free\b", re.I)  # G9: only a founder confirms a free spot
 _OFFER_TERMS = re.compile(r"\b(?:free|offer|limited|complimentary)\b", re.I)
 _OFFER_LIMIT = re.compile(
     rf"\bfirst\s+{_COUNT}\b|\b(?:only|just)\s+{_COUNT}\s+(?:spots?|slots?|clients?|customers?|restaurants?|places?)\b"
@@ -168,7 +169,8 @@ def clean_reply(reply: str) -> str:
     If nothing is left, offer a founder."""
     parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
     kept = [p for p in parts
-            if not _LEAK.search(p) and not (_OFFER_TERMS.search(p) and _OFFER_LIMIT.search(p))]
+            if not _LEAK.search(p) and not _FREE_PROMISE.search(p)
+            and not (_OFFER_TERMS.search(p) and _OFFER_LIMIT.search(p))]
     if kept and _FILLER.search(kept[-1]) and len(kept) > 1:
         kept.pop()
     return " ".join(kept) if kept else HANDOFF_REPLY

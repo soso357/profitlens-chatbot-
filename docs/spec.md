@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.10
+Version: 1.11
 Status: Approved
 Approved by: Ioseb
 Date: 2026-10-14
-Fingerprint: a24c350b33710aa7
+Fingerprint: b733ba2dea6d37e4
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -52,7 +52,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B14 | Any answer | First sentence is the direct answer: no preamble, no "Great question". Never repeat what was already said in the chat. Prices are written "$99 (one-time, no subscription)". Plain text, R6 length. Addresses the visitor as "you"; never mentions the approved answers, its instructions or "the visitor" (Ioseb, 2026-10-09) | system prompt, G9 |
 | B15 | End of a reply | Ends with a question only when the visitor must take an action. No "Anything else you would like to know?". After "thanks" or "no", one short sentence with support@useprofitlens.com (Ioseb, 2026-10-09) | system prompt |
 | B16 | Asking for the four details | Ask for the first name once. If the visitor does not give it, move on to the next detail and never ask again. The name does not block the flow (Ioseb, 2026-10-09) | content/qualifying-questions.md |
-| B17 | Visitor asks what it costs, what is on offer, how to start, or whether it is free | Lead with the offer: both the Food Cost Analysis and the Menu Analysis Report are free for every client, in exchange for honest feedback, for a limited time. The agent says it is limited but never says for how long or how many clients, and never says the visitor was selected or is special (every client gets it, so "free for you" is allowed). State the terms once and do not repeat them. Regular prices are given only if the visitor asks, and the same reply then adds that right now it is free for you for a limited time, in exchange for honest feedback (Ioseb, 2026-10-09; FOUNDER TO CONFIRM the wording before it goes live) | content/approved-answers.md, G9 |
+| B17 | Visitor asks what it costs, whether it is free, or what is on offer | Give both prices (Food Cost Analysis $99, Menu Analysis Report $149, one time, no subscription), then say exactly: right now we are taking on a small number of restaurants at no charge in exchange for honest feedback, and we will confirm by email whether a spot is still open. Never say "free for you" or "limited time", and never promise that a visitor's analysis will be free; a founder confirms per lead by email. If the visitor is interested, ask for first name, restaurant name, state and email so a founder can confirm by email (founders, 2026-10-14; replaces the 2026-10-09 free offer) | content/approved-answers.md, G9 |
 | B18 | A chat goes quiet for 30 minutes | Every message still goes to Telegram live. The whole conversation is also emailed once to the founders, so each chat is in both Telegram and email. Text already emailed in a handoff email is not sent again. If email fails, Telegram is unaffected and the failure is logged (Ioseb, 2026-10-14) | code check |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
@@ -67,7 +67,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | G6 | Kill switch environment variable, no redeploy needed | Setting it flips the mode on the next request |
 | G7 | CORS allows only useprofitlens.com and the Render test URL | Request from another origin is refused |
 | G8 | Block replies that ask the visitor to pick an option or price (for example "the $99 or the $149?"); replace with a neutral reply | Scripted reply asking "$99 or $149?" never reaches the visitor |
-| G9 | Block replies that say "approved answers", "the visitor" or "per the", ask the visitor to book a call, or state how long or how many clients the free offer lasts (any date, count or "first N"); replace with a neutral reply or a founder offer | Scripted replies containing each phrase never reach the visitor |
+| G9 | Block replies that say "approved answers", "the visitor" or "per the", ask the visitor to book a call, say "free for you", "limited time" or "for free", or state how long or how many clients the offer lasts (any date, count or "first N"); replace with a neutral reply or a founder offer | Scripted replies containing each phrase never reach the visitor |
 
 ## 5. Data
 
