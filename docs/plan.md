@@ -12,6 +12,13 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Founders' 14 Oct price rules (task free-offer-rules, 2026-10-14)
+Spec version 1.11, covers B17, G9. Founders replaced the 9 Oct free offer: the bot gives the prices, then the "small number of restaurants at no charge, we confirm by email" sentence, and never says "free for you" or "limited time".
+1. docs/spec.md: rewrite B17 and G9.
+2. app/content.py: prompt rule 17 follows the new wording.
+3. app/guardrails.py: clean_reply drops sentences with "free for you", "limited time" or "for free" (G9).
+4. tests/check_guardrails.py: old offer sentence now blocked, new founder sentence allowed.
+
 ### Email every chat to the founders (task chat-email-transcript, 2026-10-14)
 Spec version 1.10, covers B18. Ioseb chose option 1: one email per chat after 30 quiet minutes, Telegram unchanged.
 1. app/chat_booking.py finish(): also emails the conversation (email_alerts.alert_founders); a failure is logged and never stops Telegram.

@@ -117,7 +117,10 @@ for reply, expect_changed in [
     ("It is free for you until December 1.", True),
     ("The offer is free for the next 3 months.", True),
     ("Only 5 spots left on the free offer.", True),
-    ("Right now both are free for you, for a limited time, in exchange for honest feedback.", False),
+    ("Right now both are free for you, for a limited time, in exchange for honest feedback.", True),
+    ("It is a limited time offer.", True),
+    ("You can have the report for free.", True),
+    ("Right now we are taking on a small number of restaurants at no charge in exchange for honest feedback; we will confirm by email whether a spot is still open.", False),
     ("Results arrive within 5 business days of the 15 to 20 minute call. A founder will email you to set up the call.", False),
     ("Share your email and a founder will reply.", False),
 ]:
