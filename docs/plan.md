@@ -18,6 +18,7 @@ Spec version 1.11, covers B17, G9. Founders replaced the 9 Oct free offer: the b
 2. app/content.py: prompt rule 17 follows the new wording.
 3. app/guardrails.py: clean_reply drops sentences with "free for you", "limited time" or "for free" (G9).
 4. tests/check_guardrails.py: old offer sentence now blocked, new founder sentence allowed.
+5. (Founder message, 2026-10-14) Spec version 1.12, B4 and B17: price sentence word for word, prices first, no repeats; the founder alert waits for first name, restaurant and state (app/chat_booking.py missing_question, app/main.py, app/session_store.py, prompt in app/content.py); tests in tests/check_booking.py.
 
 ### Email every chat to the founders (task chat-email-transcript, 2026-10-14)
 Spec version 1.10, covers B18. Ioseb chose option 1: one email per chat after 30 quiet minutes, Telegram unchanged.

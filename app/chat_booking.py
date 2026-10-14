@@ -43,6 +43,7 @@ class BookingState:
     handoff_sent: bool = False
     pending: dict | None = None          # B13: {"data": {...}} waiting for "yes" or a retyped address
     checked: list[str] = field(default_factory=list)  # B13: addresses already read back once
+    asked: int = 0                       # B4: times the alert was held to ask for a missing detail
 
 
 def _json_block(pattern: re.Pattern, raw: str) -> dict | None:
@@ -108,6 +109,27 @@ def email_typo(email: str) -> str | None:
     """The leave your email form: only the known misspellings list, since the form cannot ask once and then accept."""
     fixed = EMAIL_TYPOS.get(email.rpartition("@")[2].lower())
     return f"{email.rpartition('@')[0]}@{fixed}" if fixed else None
+
+
+MISSING_QUESTIONS = (
+    ("name", "Thanks! What is your first name?"),
+    ("restaurant", "What is the name of your restaurant?"),
+    ("location", "Which state is your restaurant in?"),
+)
+MAX_ASKS = 5  # after this many holds the alert goes out with what we have, so a founder is never lost
+
+
+def missing_question(state: BookingState, lead: dict | None) -> str | None:
+    """B4: a founder alert needs first name, restaurant, state and email. If the model sent a lead with
+    one of the first three missing, hold it and return the next question (in code, so the model cannot skip it).
+    After MAX_ASKS holds the lead goes through as it is."""
+    if not lead or state.handoff_sent or state.asked >= MAX_ASKS:
+        return None
+    for key, question in MISSING_QUESTIONS:
+        if not lead.get(key):
+            state.asked += 1
+            return question
+    return None
 
 
 def handle(state: BookingState, lead: dict | None, sid: str, transcript: str = "", source: str = "") -> str:

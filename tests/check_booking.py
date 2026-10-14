@@ -55,6 +55,24 @@ n = len(rows())
 cb.handle(s4, lead, "s4")
 check("same conversation saves only once", len(rows()) == n)
 
+# B4: the alert waits for first name, restaurant and state
+s5 = cb.BookingState()
+email_only = {"name": "", "restaurant": "", "location": "", "email": "bob@example.com", "reason": "pricing"}
+check("email only: asks for the first name first", "first name" in (cb.missing_question(s5, email_only) or ""))
+email_only["name"] = "Bob"
+check("then the restaurant", "restaurant" in (cb.missing_question(s5, email_only) or ""))
+email_only["restaurant"] = "Bob Bar"
+check("then the state", "state" in (cb.missing_question(s5, email_only) or ""))
+email_only["location"] = "FL"
+check("all four given: nothing held", cb.missing_question(s5, email_only) is None)
+s6 = cb.BookingState()
+empty = {"name": "", "restaurant": "", "location": "", "email": "bob@example.com", "reason": "pricing"}
+asks = [cb.missing_question(s6, empty) for _ in range(cb.MAX_ASKS + 2)]
+check("visitor who never answers: held at most MAX_ASKS times, then the alert goes out", asks[:cb.MAX_ASKS].count(None) == 0 and asks[cb.MAX_ASKS] is None)
+check("no lead means nothing to hold", cb.missing_question(cb.BookingState(), None) is None)
+s7 = cb.BookingState(handoff_sent=True)
+check("founders already alerted: nothing held", cb.missing_question(s7, empty) is None)
+
 # email typos (invite would never arrive)
 check("gmial.com is caught", cb.email_typo("tekola@gmial.com") == "tekola@gmail.com")
 check("a correct address passes", cb.email_typo("maria@example.com") is None and cb.email_typo("x@gmail.com") is None)
