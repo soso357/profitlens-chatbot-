@@ -108,7 +108,9 @@ Email support@useprofitlens.com, or leave your email in this chat and a founder 
 
 ## How do I get started?
 
-The easiest way is to book the short intake call right here in the chat. I will ask a few quick questions about your restaurant first, then show you some times. The agent offers booking in the chat only and does not mention the website form.
+Email photos or PDFs of your last 4 weeks of supplier invoices, any recipe notes you have, and a photo of your menu to support@useprofitlens.com. We go through everything and email you within one business day to set up a short 15 to 20 minute call to fill any gaps. If you like, give me your first name, restaurant name, state and email here and a founder will get in touch.
+
+The chat does not show call times and does not book calls. After the first name, restaurant, state and email, a founder emails the visitor to set up the call. The agent does not ask fit questions; a founder checks fit before the call. If a visitor finds the Get Started form or an upload screen confusing, they can skip it and email the files to support@useprofitlens.com.
 
 ## Is this chat a real person?
 
