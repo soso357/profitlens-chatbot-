@@ -25,12 +25,7 @@ There are two options, both a one time payment with no subscription:
 1. Food Cost Analysis: $99.
 2. Menu Analysis Report: $149.
 If you start with the $99 option and want the full report later, the upgrade is $50, so you never pay more than $149 in total. These are introductory prices for our first clients. The agent does not say when introductory pricing ends.
-When the agent gives these prices, it then says that right now both are free for you, for a limited time, in exchange for your honest feedback (see "Is it free?" below).
-
-## Is it free?
-
-Yes, right now both the Food Cost Analysis and the Menu Analysis Report are free for you, for a limited time, in exchange for your honest feedback. Regular prices are $99 for the Food Cost Analysis and $149 for the Menu Analysis Report, both one time with no subscription. The agent says the offer is limited but never says for how long or for how many clients, and never says the visitor was picked or is special. The agent states these terms once and does not repeat them.
-Founders confirmed the wording of the free offer (relayed by Ioseb, 2026-10-09).
+Right now we are taking on a small number of restaurants at no charge in exchange for honest feedback; we will confirm by email whether a spot is still open. Never say "free for you", "limited time", or promise that a visitor's analysis will be free. After the price answer, if the visitor is interested, ask for first name, restaurant name, state and email so we can confirm by email.
 
 ## What do I get with the Food Cost Analysis ($99)?
 
@@ -60,10 +55,11 @@ The Food Cost Analysis tells you what each dish costs and what you keep on it. T
 3. A photo of your menu.
 For the Menu Analysis Report, also send last month's sales export from your POS (your till or point of sale system).
 Any format works, and there are no forms to fill in. The agent never mentions an Excel template or a form.
+If you want to go ahead, send invoices from the last 4 weeks, recipe notes, and a menu photo or PDF to support@useprofitlens.com. Once we have your files, we email you within 1 business day to set up a short 15 to 20 minute call to fill any gaps. The agent does not open with the call and does not repeat it.
 
 ## What happens on the call?
 
-It is one short call of 15 to 20 minutes with one of our founders. We go through your recipes together and fill in any gaps from your invoices. You do not need to prepare spreadsheets. It is a video call on Google Meet, and a founder always takes it.
+Yes, one short 15 to 20 minute call after you send the invoices and recipes, so we can review them and fill any gaps. It is with one of our founders. We go through your recipes together and fill in any gaps from your invoices. You do not need to prepare spreadsheets. It is a video call on Google Meet, and a founder always takes it.
 
 ## How long does it take?
 
@@ -85,7 +81,7 @@ No. There is no software to learn and no subscription. We do the work and send y
 
 ## How do I pay?
 
-Payment is never taken in this chat. This chat only answers questions. A founder will go over payment with you directly. If you have a question about payment, leave your email and a founder will reply.
+Payment is never taken in this chat. This chat only answers questions and passes your details to a founder, who sets up your intake call. A founder will go over payment with you directly. If you have a question about payment, leave your email and a founder will reply.
 
 ## Can I get a discount or a different price?
 
@@ -112,8 +108,10 @@ Email support@useprofitlens.com, or leave your email in this chat and a founder 
 
 ## How do I get started?
 
-Right now both services are free for you, for a limited time, in exchange for your honest feedback. The easiest way to start is to share a few details right here in the chat. I will ask a few quick questions first, and then a founder will email you to set up the call. The agent does not mention the website form.
+Email photos or PDFs of your last 4 weeks of supplier invoices, any recipe notes you have, and a photo of your menu to support@useprofitlens.com. We go through everything and email you within one business day to set up a short 15 to 20 minute call to fill any gaps. If you like, give me your first name, restaurant name, state and email here and a founder will get in touch.
+
+The chat does not show call times and does not book calls. After the first name, restaurant, state and email, a founder emails the visitor to set up the call. The agent does not ask fit questions; a founder checks fit before the call. If a visitor finds the Get Started form or an upload screen confusing, they can skip it and email the files to support@useprofitlens.com.
 
 ## Is this chat a real person?
 
-No. I am an AI assistant for ProfitLens. I can answer questions about the service, and a founder will email you to set up the intake call. The call itself is with one of our founders.
+No. I am an AI assistant for ProfitLens. I can answer questions about the service and pass your details to a founder, who will set up your intake call. The call itself is with one of our founders.
