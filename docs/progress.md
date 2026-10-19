@@ -18,6 +18,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 ## Done (newest first)
 
+- 2026-10-19: Files question gets the email address and one follow-up offer (spec B19, 1.13, PR #29, merged).
 - 2026-10-08: Founders approved removing call-time booking from the chat; the chat hands the intake call to a founder by email (ADR 0032, supersedes 0003). Code and tests done, spec 1.7 waits for Ioseb.
 - 2026-10-06: Weekly digest email skipped (ADR 0031).
 - 2026-10-06: Founders approved the widget; live on the homepage. Privacy policy text published (R9).
@@ -53,7 +54,7 @@ Rules: overwrite what changed, do not append history (except the Done list). One
 
 Open tasks and their handoffs: memory/working/handoffs/_index.md (say "resume" to pick one).
 - phase-5-launch (Build, build-p5-launch): take the widget from the hidden test page to the homepage.
-- files-offer (Build, phase-5-files-offer): files question gets the email address and one follow-up offer (spec B19, 1.13 approved); needs evals and pull request.
+- (none open in this worktree)
 
 ## Open questions
 
