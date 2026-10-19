@@ -114,3 +114,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-10-14: Code and spec follow the founders' 14 Oct price rules (task free-offer-rules): prompt rule 17, guard G9 blocks "free for you" and "limited time", spec B17 and G9 rewritten (Draft 1.11, waits for Ioseb).
 - 2026-10-14: Founders: alert came in with name, restaurant and state "not given". Ioseb chose option 2: code holds the alert until the three are given (max 5 holds), price sentence word for word. Spec 1.12 Draft, waits for Ioseb.
 - 2026-10-19: Founders: files question gets the email address plus one offer of a founder follow-up (task files-offer). Content, spec B19 (1.13 approved by Ioseb) and a test; no new code.
+- 2026-10-19: Test chat showed the files offer cut by the 4 sentence limit on a first reply. Ioseb chose option 1: cap_length never cuts the offer sentence (B19). Spec 1.14 Draft, waits for Ioseb.

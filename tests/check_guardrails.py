@@ -147,5 +147,12 @@ ok = answers.count(OFFER) == 1 and g.clean_reply(OFFER) == OFFER and not g.find_
 failures += not ok
 print(f"  [{'OK' if ok else 'WRONG'}] the sentence is in the file once and passes the guards")
 
+first = g.ensure_disclosure("Send photos or PDFs of your last 4 weeks of supplier invoices, recipe notes and a menu photo to support@useprofitlens.com. "
+                            "We will email you within 1 business day to set up a short call. If you share your first name, restaurant name, state and email, a founder will follow up with you.")
+cut = g.cap_length(g.clean_reply(first), "where do i send invoices?")
+ok = "follow up with you" in cut and "support@useprofitlens.com" in cut
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] the offer survives the length limit on a first reply: {cut!r}")
+
 print(f"\n{'ALL CHECKS PASSED' if not failures else f'{failures} CHECK(S) FAILED'}")
 raise SystemExit(bool(failures))
