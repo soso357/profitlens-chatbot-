@@ -176,6 +176,9 @@ def clean_reply(reply: str) -> str:
     return " ".join(kept) if kept else HANDOFF_REPLY
 
 
+_FILES_OFFER = re.compile(r"share your first name, restaurant name, state and email", re.I)  # B19
+
+
 def cap_length(reply: str, visitor_message: str, max_words: int = 80, max_sentences: int = 4) -> str:
     """Rule R6: keep replies short. If the visitor did not ask for detail and the reply is over
     max_words or max_sentences, keep whole sentences from the start. A closing question (for
@@ -184,8 +187,11 @@ def cap_length(reply: str, visitor_message: str, max_words: int = 80, max_senten
     if DETAIL_ASKED.search(visitor_message) or (len(reply.split()) <= max_words and len(parts) <= max_sentences):
         return reply
     closing = parts.pop() if parts[-1].endswith("?") else ""
-    budget_s = max_sentences - (1 if closing else 0)
-    budget_w = max_words - len(closing.split())
+    offer = next((p for p in parts if _FILES_OFFER.search(p)), "")  # B19: the founders' offer is never cut
+    if offer:
+        parts.remove(offer)
+    budget_s = max_sentences - (1 if closing else 0) - (1 if offer else 0)
+    budget_w = max_words - len(closing.split()) - len(offer.split())
     kept, words = [], 0
     for p in parts:
         n = len(p.split())
@@ -193,7 +199,7 @@ def cap_length(reply: str, visitor_message: str, max_words: int = 80, max_senten
             break
         kept.append(p)
         words += n
-    return " ".join(kept + ([closing] if closing else []))
+    return " ".join(kept + ([offer] if offer else []) + ([closing] if closing else []))
 
 
 def trim_to_sentence(text: str) -> str:

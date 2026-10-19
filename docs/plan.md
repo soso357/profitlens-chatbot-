@@ -12,6 +12,12 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### The files offer is never cut by the length limit (task keep-offer, 2026-10-19)
+Spec version 1.14, covers B19. In a test chat the first reply lost the founders' offer: the greeting used up the 4 sentence limit (R6). Ioseb chose option 1.
+1. app/guardrails.py cap_length: the offer sentence is kept like a closing question; other sentences are dropped instead.
+2. docs/spec.md: B19 says the limit never cuts the offer.
+3. tests/check_guardrails.py: first reply with the greeting still ends with the offer (fails without the fix).
+
 ### Founders' 14 Oct price rules (task free-offer-rules, 2026-10-14)
 Spec version 1.11, covers B17, G9. Founders replaced the 9 Oct free offer: the bot gives the prices, then the "small number of restaurants at no charge, we confirm by email" sentence, and never says "free for you" or "limited time".
 1. docs/spec.md: rewrite B17 and G9.
