@@ -140,5 +140,12 @@ for msg, expect in [("my card is 4242 4242 4242 4242 exp 12/28", True), ("call m
     failures += got != expect
     print(f"  [{'OK' if got == expect else 'WRONG'}] {msg!r} -> card detected: {got}")
 
+print("\nFiles offer in the approved answers (B19):")
+OFFER = "If you share your first name, restaurant name, state and email, a founder will follow up with you."
+answers = (__import__("pathlib").Path(__file__).parent.parent / "content" / "approved-answers.md").read_text()
+ok = answers.count(OFFER) == 1 and g.clean_reply(OFFER) == OFFER and not g.find_violations(OFFER)
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] the sentence is in the file once and passes the guards")
+
 print(f"\n{'ALL CHECKS PASSED' if not failures else f'{failures} CHECK(S) FAILED'}")
 raise SystemExit(bool(failures))

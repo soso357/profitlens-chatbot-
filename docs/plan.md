@@ -20,6 +20,13 @@ Spec version 1.11, covers B17, G9. Founders replaced the 9 Oct free offer: the b
 4. tests/check_guardrails.py: old offer sentence now blocked, new founder sentence allowed.
 5. (Founder message, 2026-10-14) Spec version 1.12, B4 and B17: price sentence word for word, prices first, no repeats; the founder alert waits for first name, restaurant and state (app/chat_booking.py missing_question, app/main.py, app/session_store.py, prompt in app/content.py); tests in tests/check_booking.py.
 
+### Files offer (task files-offer, 2026-10-19)
+Spec version 1.13, covers B19. Founders: when a visitor asks where or how to send files, give the email address and offer once that a founder will follow up if they share first name, restaurant, state and email.
+1. content/approved-answers.md: the offer sentence under "What do I need to send?".
+2. docs/spec.md: row B19 and its acceptance row.
+3. tests/check_guardrails.py: the sentence appears once in the file and passes the guards.
+No new code path.
+
 ### Email every chat to the founders (task chat-email-transcript, 2026-10-14)
 Spec version 1.10, covers B18. Ioseb chose option 1: one email per chat after 30 quiet minutes, Telegram unchanged.
 1. app/chat_booking.py finish(): also emails the conversation (email_alerts.alert_founders); a failure is logged and never stops Telegram.
