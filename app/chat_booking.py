@@ -111,25 +111,22 @@ def email_typo(email: str) -> str | None:
     return f"{email.rpartition('@')[0]}@{fixed}" if fixed else None
 
 
-MISSING_QUESTIONS = (
-    ("name", "Thanks! What is your first name?"),
-    ("restaurant", "What is the name of your restaurant?"),
-    ("location", "Which state is your restaurant in?"),
-)
-MAX_ASKS = 5  # after this many holds the alert goes out with what we have, so a founder is never lost
+MISSING_DETAILS = (("name", "your first name"), ("restaurant", "the name of your restaurant"), ("location", "your state"))
+MAX_ASKS = 1  # asked once; after that the alert goes out with what we have, so a founder is never lost
 
 
 def missing_question(state: BookingState, lead: dict | None) -> str | None:
     """B4: a founder alert needs first name, restaurant, state and email. If the model sent a lead with
-    one of the first three missing, hold it and return the next question (in code, so the model cannot skip it).
-    After MAX_ASKS holds the lead goes through as it is."""
+    some of the first three missing, hold it once and ask for all the missing ones in one message
+    (in code, so the model cannot skip it). After that the lead goes through as it is."""
     if not lead or state.handoff_sent or state.asked >= MAX_ASKS:
         return None
-    for key, question in MISSING_QUESTIONS:
-        if not lead.get(key):
-            state.asked += 1
-            return question
-    return None
+    missing = [label for key, label in MISSING_DETAILS if not lead.get(key)]
+    if not missing:
+        return None
+    state.asked += 1
+    listed = missing[0] if len(missing) == 1 else ", ".join(missing[:-1]) + " and " + missing[-1]
+    return f"Thanks! To pass this to a founder, could you also tell me {listed}?"
 
 
 def handle(state: BookingState, lead: dict | None, sid: str, transcript: str = "", source: str = "") -> str:

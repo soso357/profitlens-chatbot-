@@ -12,6 +12,12 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Ask for missing details once, together (task ask-once, 2026-10-19)
+Spec version 1.15, covers B4. Founders' text: asking five times annoys visitors, saving incomplete leads brings back the 14 Oct problem. Ioseb chose option 3 with a tweak.
+1. app/chat_booking.py missing_question: hold the alert once and ask for all missing first name, restaurant and state in one message; then the lead goes through as it is.
+2. app/content.py: the model ends with the block once it has the email and does not ask for the three itself; if no email, ask for the email first.
+3. docs/spec.md: B4 says so. tests/check_booking.py: combined question, asked once, only the missing ones.
+
 ### The files offer is never cut by the length limit (task keep-offer, 2026-10-19)
 Spec version 1.14, covers B19. In a test chat the first reply lost the founders' offer: the greeting used up the 4 sentence limit (R6). Ioseb chose option 1.
 1. app/guardrails.py cap_length: the offer sentence is kept like a closing question; other sentences are dropped instead.

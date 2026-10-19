@@ -55,23 +55,23 @@ n = len(rows())
 cb.handle(s4, lead, "s4")
 check("same conversation saves only once", len(rows()) == n)
 
-# B4: the alert waits for first name, restaurant and state
+# B4: the alert is held once and all missing details are asked together
 s5 = cb.BookingState()
 email_only = {"name": "", "restaurant": "", "location": "", "email": "bob@example.com", "reason": "pricing"}
-check("email only: asks for the first name first", "first name" in (cb.missing_question(s5, email_only) or ""))
-email_only["name"] = "Bob"
-check("then the restaurant", "restaurant" in (cb.missing_question(s5, email_only) or ""))
-email_only["restaurant"] = "Bob Bar"
-check("then the state", "state" in (cb.missing_question(s5, email_only) or ""))
-email_only["location"] = "FL"
-check("all four given: nothing held", cb.missing_question(s5, email_only) is None)
+q = cb.missing_question(s5, email_only) or ""
+check("email only: one message asks for first name, restaurant and state together", "first name" in q and "restaurant" in q and "state" in q)
+check("the message has no dash and is a single question", "-" not in q and q.count("?") == 1)
+check("asked only once: the next lead goes through", cb.missing_question(s5, email_only) is None)
 s6 = cb.BookingState()
-empty = {"name": "", "restaurant": "", "location": "", "email": "bob@example.com", "reason": "pricing"}
-asks = [cb.missing_question(s6, empty) for _ in range(cb.MAX_ASKS + 2)]
-check("visitor who never answers: held at most MAX_ASKS times, then the alert goes out", asks[:cb.MAX_ASKS].count(None) == 0 and asks[cb.MAX_ASKS] is None)
+part = {"name": "Bob", "restaurant": "", "location": "", "email": "bob@example.com", "reason": "pricing"}
+q = cb.missing_question(s6, part) or ""
+check("only the missing ones are asked", "restaurant" in q and "state" in q and "first name" not in q)
+s8 = cb.BookingState()
+full = {"name": "Bob", "restaurant": "Bob Bar", "location": "FL", "email": "bob@example.com", "reason": "wants the intake call"}
+check("all four given: nothing held", cb.missing_question(s8, full) is None and s8.asked == 0)
 check("no lead means nothing to hold", cb.missing_question(cb.BookingState(), None) is None)
 s7 = cb.BookingState(handoff_sent=True)
-check("founders already alerted: nothing held", cb.missing_question(s7, empty) is None)
+check("founders already alerted: nothing held", cb.missing_question(s7, email_only) is None)
 
 # email typos (invite would never arrive)
 check("gmial.com is caught", cb.email_typo("tekola@gmial.com") == "tekola@gmail.com")

@@ -1,10 +1,10 @@
 # Spec: ProfitLens website chat agent
 
-Version: 1.14
+Version: 1.15
 Status: Approved
 Approved by: Ioseb
 Date: 2026-10-19
-Fingerprint: e44c29aa55cf6290
+Fingerprint: df35561c1c3d7909
 
 Stage 2 artifact. Derived from docs/intent.md. Owner: Ioseb. Claude drafts, Ioseb approves.
 Requirement ids (R1, B3, G2...) are stable: code comments, tests and ADRs cite them. Never renumber; retire an id by marking it "RETIRED" with a date.
@@ -39,7 +39,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B1 | First reply of any session | Contains the AI disclosure (R3). In the widget the server sends it as the first message when the chat opens (POST /start) | code check G2 |
 | B2 | Question answered in the approved file | Answer in 2 to 4 sentences, same meaning as the file | content/approved-answers.md |
 | B3 | Question not in the approved file | Say it is not something the agent can answer, offer founder email, ask for email | content/handoff-rules.md |
-| B4 | Visitor wants the analysis or a call, or questions are done | Ask only for first name, restaurant name, state and email, one at a time, then say a founder will email them to set up the call (ADR 0032). No questions about the restaurant's type, size, menu or which option they want (Ioseb, 2026-09-28). The code holds the founder alert until first name, restaurant and state are given too, asking for the missing one in code (up to 5 holds, then the alert goes out as it is), because an alert came in with three fields "not given" (founders, 2026-10-14) | content/qualifying-questions.md |
+| B4 | Visitor wants the analysis or a call, or questions are done | Ask only for first name, restaurant name, state and email, one at a time, then say a founder will email them to set up the call (ADR 0032). No questions about the restaurant's type, size, menu or which option they want (Ioseb, 2026-09-28). If first name, restaurant or state are missing, the code holds the founder alert once and asks for all the missing ones together in one message; if the visitor still does not give them, the alert goes out with what we have and they are not asked again. Email is the priority: without an email there is no alert, so the bot asks for the email first. Reason: an alert came in with three fields "not given" (founders, 2026-10-14; one ask, not five, Ioseb 2026-10-19) | content/qualifying-questions.md |
 | B5 | RETIRED 2026-09-28 (Ioseb: no fit screening in the chat; every visitor who gives the four details can book, founders judge fit on the call) | | |
 | B6 | RETIRED 2026-10-08 (ADR 0032): the chat no longer offers or books call times | | |
 | B7 | Any handoff rule triggers | Collect email if unknown, send "Chat handoff: founder needed" email | content/handoff-rules.md |
