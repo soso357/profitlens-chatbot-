@@ -116,3 +116,4 @@ Notes below were written into CLAUDE.md on 2026-09-22 and 23 and moved here on 2
 - 2026-10-19: Founders: files question gets the email address plus one offer of a founder follow-up (task files-offer). Content, spec B19 (1.13 approved by Ioseb) and a test; no new code.
 - 2026-10-19: Test chat showed the files offer cut by the 4 sentence limit on a first reply. Ioseb chose option 1: cap_length never cuts the offer sentence (B19). Spec 1.14 Draft, waits for Ioseb.
 - 2026-10-19: Founders text via Ioseb: ask for missing details once, together (option 3 with tweak: all missing in one message, email first, then save what we have). Replaces the 5 holds of spec 1.12. Spec 1.15 Draft, waits for Ioseb.
+- 2026-11-01: certifi raised from 2026.7.22 to 2026.10.18 (security advisory PYSEC-2026-4320 failed the pip-audit check on every pull request). Approved by Ioseb.
