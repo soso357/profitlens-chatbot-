@@ -12,6 +12,11 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Free service for everyone, no short list (task free-for-all, 2026-11-01)
+Spec version 1.16, covers B17. Founders approved (relayed by Ioseb): the bot says the service is free, with no "small number" and no "confirm by email".
+1. content/approved-answers.md and app/content.py rule 17: after the prices, say word for word "Right now our service is free, in exchange for your honest feedback." Still never "free for you", "limited time", or how long or for how many clients.
+2. docs/spec.md B17 and tests/check_guardrails.py (the sentence passes the guards; G9 unchanged).
+
 ### Ask for missing details once, together (task ask-once, 2026-10-19)
 Spec version 1.15, covers B4. Founders' text: asking five times annoys visitors, saving incomplete leads brings back the 14 Oct problem. Ioseb chose option 3 with a tweak.
 1. app/chat_booking.py missing_question: hold the alert once and ask for all missing first name, restaurant and state in one message; then the lead goes through as it is.
