@@ -12,6 +12,12 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Consultants, free requests, several questions (task free-intent, 2026-11-02)
+Spec version 1.18, covers R6, B20, B21, B22, G10. Steps 2 to 4 of the founders' request (step 1 was pull request 34).
+1. content/approved-answers.md and app/content.py (rules 9, 19, 20, 21): consultant answer, free request order, several questions answered in order.
+2. app/guardrails.py: free_intent, wants_long_reply (no length cut), remove_sample_link (G10); app/main.py and tests/preview_chat.py call it.
+3. docs/spec.md rows R6, B20 to B22, G10 and acceptance rows; tests/check_guardrails.py.
+
 ### Urgent price answer (task price-fix, 2026-11-02)
 Spec version 1.17, covers B17. A lead was lost; founders approved the exact text (relayed by Ioseb). Step 1 of 4; steps 2 to 4 follow in a second pull request.
 1. content/approved-answers.md, app/content.py rule 17, docs/spec.md B17: price, cost or free questions get the exact founder text (Food Cost Analysis free right now, normally $99; Menu Analysis Report $149 later; ask for the four details).

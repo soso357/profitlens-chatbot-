@@ -1,7 +1,7 @@
 # Spec: ProfitLens website chat agent
 
 Version: 1.17
-Status: Approved
+Status: Draft
 Approved by: Ioseb
 Date: 2026-11-02
 Fingerprint: 37268ab9e1be279a
@@ -22,7 +22,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 - **R3 AI disclosure.** The first message tells the visitor they are chatting with an AI assistant for ProfitLens and that a founder handles the actual call. No pretending to be human, ever.
 - **R4 No dashes.** No em dash or en dash in anything the agent writes or in any UI text. Use commas, periods or parentheses.
 - **R5 Plain language.** Plain restaurant owner language. No finance jargon, no "contribution margin", no "prime cost". Say "profit per plate", never "margin" (founder, 2026-09-25: the term used in the report).
-- **R6 Short replies.** Two to four sentences unless the visitor asks for detail. One question at a time.
+- **R6 Short replies.** Two to four sentences unless the visitor asks for detail, asks several questions (B22) or makes a free request (B21). One question at a time.
 - **R7 Secrets.** Anthropic API key, Google credentials, email password live only in environment variables, never in code, never in git. .gitignore covers .env and all credential files.
 - **R8 Cost and abuse protection.** Rate limit per visitor (for example 20 messages per hour per session), cap conversation length, cap tokens per reply, and a hard daily API spend limit in code that turns the widget into a "leave your email" form when reached.
 - **R9 Privacy.** Store only what is needed (conversation transcript, name, restaurant, email, intake call request). Transcripts deleted after 30 days automatically. Website privacy policy must be updated to mention the chat.
@@ -55,6 +55,9 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B17 | Visitor asks about price, cost or whether it is free | Say exactly: "Yes, the Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. Nothing is charged afterwards. The Menu Analysis Report is a separate option at $149, only if you want it later. Share your first name, restaurant, state and email and a founder will email you the next steps." Once, never "free for you" or "limited time", never how long or for how many clients (founders, 2026-11-02, urgent: a lead was lost; replaces the 2026-11-01 wording) | content/approved-answers.md, G9 |
 | B18 | A chat goes quiet for 30 minutes | Every message still goes to Telegram live. The whole conversation is also emailed once to the founders, so each chat is in both Telegram and email. Text already emailed in a handoff email is not sent again. If email fails, Telegram is unaffected and the failure is logged (Ioseb, 2026-10-14) | code check |
 | B19 | Visitor asks where or how to send files (invoices, recipes, menu) | Give the email address, then offer once: "If you share your first name, restaurant name, state and email, a founder will follow up with you." Not pushy, never repeated. The length limit (R6) never cuts this sentence, even on the first reply with the greeting (founders, 2026-10-19: a visitor with clear intent left without leaving contact details) | content/approved-answers.md, B4 |
+| B20 | Visitor says they are a consultant, bookkeeper or accountant, or manage several restaurants | Say exactly: "We work with consultants and bookkeepers too, one relationship can cover several restaurants. Share your name and email and a founder will get in touch." Once (founders, 2026-11-02) | content/approved-answers.md |
+| B21 | Message has "free" together with "sample", "check", "analysis" or "trial" (any wording) | Treat it as the free Food Cost Analysis offer: no Sample page or Main Street Grill, do not open with prices. Order: the B17 text without its last sentence, what the Food Cost Analysis includes (approved text only), the get started steps, then ask for first name, restaurant, state and email. Full reply, no length cut (founders, 2026-11-02) | content/approved-answers.md, B17, G10 |
+| B22 | Message has several questions | Answer all of them, in order, in one reply; the length limit does not cut it (founders, 2026-11-02) | R6 |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
 
@@ -69,6 +72,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | G7 | CORS allows only useprofitlens.com and the Render test URL | Request from another origin is refused |
 | G8 | Block replies that ask the visitor to pick an option or price (for example "the $99 or the $149?"); replace with a neutral reply | Scripted reply asking "$99 or $149?" never reaches the visitor |
 | G9 | Block replies that say "approved answers", "the visitor" or "per the", ask the visitor to book a call, say "free for you", "limited time" or "for free", or state how long or how many clients the offer lasts (any date, count or "first N"); replace with a neutral reply or a founder offer | Scripted replies containing each phrase never reach the visitor |
+| G10 | Visitor message is a free request (B21) | Remove any sentence that points to the Sample page or Main Street Grill | Scripted reply with Main Street Grill never reaches a free request |
 
 ## 5. Data
 
@@ -129,6 +133,9 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B17 | tests/check_guardrails.py |
 | B18 | tests/check_booking.py |
 | B19 | tests/check_guardrails.py |
+| B20 | tests/check_guardrails.py |
+| B21 | tests/check_guardrails.py |
+| B22 | tests/check_guardrails.py |
 | G1 | tests/check_guardrails.py; tests/conversations.md#4 |
 | G2 | tests/check_guardrails.py |
 | G3 | tests/check_guardrails.py |
@@ -138,3 +145,4 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | G7 | none yet |
 | G8 | tests/check_guardrails.py; tests/conversations.md#18 |
 | G9 | tests/check_guardrails.py |
+| G10 | tests/check_guardrails.py |
