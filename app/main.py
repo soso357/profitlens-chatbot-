@@ -290,6 +290,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
         if response.stop_reason == "max_tokens":
             reply = guardrails.trim_to_sentence(reply)
         reply = guardrails.clean_reply(guardrails.remove_option_question(guardrails.remove_sales_push(reply, message)))
+        reply = guardrails.remove_sample_link(reply, message)
         reply = guardrails.cap_length(reply, message)
 
         violations = guardrails.find_violations(reply)

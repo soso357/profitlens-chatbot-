@@ -160,5 +160,32 @@ ok = not g.find_violations(PRICE) and g.clean_reply(PRICE) == PRICE and g.cap_le
 failures += not ok
 print(f"  [{'OK' if ok else 'WRONG'}] the exact price answer reaches the visitor unchanged")
 
+print("\nFree requests, several questions, consultants (B20, B21, B22, G10):")
+CASES = [
+    (g.wants_long_reply("Is a free sample menu profit check available, what is included, how can I request it?"), True, "T3 free sample check message wants a long reply"),
+    (g.wants_long_reply("how much does it cost and how long does it take?"), True, "T4 two questions joined by and want a long reply"),
+    (g.wants_long_reply("how much is it?"), False, "one question stays short"),
+    (g.wants_long_reply("hi"), False, "a greeting stays short"),
+    (g.free_intent("any free trial?"), True, "free + trial is a free request"),
+    (g.free_intent("is it free?"), False, "free alone is the price answer, not a free request"),
+]
+for got, want, label in CASES:
+    failures += got != want
+    print(f"  [{'OK' if got == want else 'WRONG'}] {label}")
+LONG = " ".join(f"Sentence number {i} says something useful here." for i in range(9))
+ok = g.cap_length(LONG, "how much does it cost and how long does it take?") == LONG and g.cap_length(LONG, "how much is it?") != LONG
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] several questions are not cut, a single question still is")
+SAMPLE = "The free Food Cost Analysis is available. The Sample page shows Main Street Grill. Share your details."
+out = g.remove_sample_link(SAMPLE, "Is a free sample menu profit check available, what is included, how can I request it?")
+ok = "Main Street Grill" not in out and "Share your details" in out and g.remove_sample_link(SAMPLE, "can I see a sample?") == SAMPLE
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] free request: no Sample page or Main Street Grill; a plain sample question keeps it")
+CONSULT = "We work with consultants and bookkeepers too, one relationship can cover several restaurants. Share your name and email and a founder will get in touch."
+answers = (__import__("pathlib").Path(__file__).parent.parent / "content" / "approved-answers.md").read_text()
+ok = answers.count(CONSULT) == 1 and not g.find_violations(CONSULT) and g.clean_reply(CONSULT) == CONSULT
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] consultant answer is in the file once and passes the guards")
+
 print(f"\n{'ALL CHECKS PASSED' if not failures else f'{failures} CHECK(S) FAILED'}")
 raise SystemExit(bool(failures))

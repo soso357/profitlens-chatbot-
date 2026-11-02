@@ -184,7 +184,7 @@ def cap_length(reply: str, visitor_message: str, max_words: int = 80, max_senten
     max_words or max_sentences, keep whole sentences from the start. A closing question (for
     example asking for their email) is always kept, so a handoff is never cut off."""
     parts = [p for p in re.split(r"(?<!\b\d[.])(?<=[.!?])\s+", reply.strip()) if p]
-    if DETAIL_ASKED.search(visitor_message) or (len(reply.split()) <= max_words and len(parts) <= max_sentences):
+    if DETAIL_ASKED.search(visitor_message) or wants_long_reply(visitor_message) or (len(reply.split()) <= max_words and len(parts) <= max_sentences):
         return reply
     closing = parts.pop() if parts[-1].endswith("?") else ""
     offer = next((p for p in parts if _FILES_OFFER.search(p)), "")  # B19: the founders' offer is never cut
@@ -226,3 +226,30 @@ def contains_card_number(message: str) -> bool:
 
 def redact_card_numbers(message: str) -> str:
     return _CARD.sub("[card number removed]", message)
+
+
+# B21, B22, G10: several questions and "free" requests get a full reply; no sample page for a free request
+_INTERROGATIVE = re.compile(r"^\s*(?:how|what|when|where|which|who|why|is|are|can|could|do|does|did|will|would|should)\b", re.I)
+_FREE_WORD = re.compile(r"\bfree\b", re.I)
+_FREE_TOPIC = re.compile(r"\b(?:sample|check|analysis|trial)\b", re.I)
+_SAMPLE_LINK = re.compile(r"main street grill|sample page|see a sample|/sample|sample report", re.I)
+
+
+def free_intent(visitor_message: str) -> bool:
+    """B21: "free" together with sample, check, analysis or trial means the free Food Cost Analysis offer."""
+    return bool(_FREE_WORD.search(visitor_message) and _FREE_TOPIC.search(visitor_message))
+
+
+def wants_long_reply(visitor_message: str) -> bool:
+    """B21, B22: a message with several questions, or a free request, is answered in full, in order."""
+    clauses = re.split(r"[?;,]|\band\b", visitor_message)
+    return sum(1 for c in clauses if _INTERROGATIVE.match(c)) >= 2 or free_intent(visitor_message)
+
+
+def remove_sample_link(reply: str, visitor_message: str) -> str:
+    """G10: for a free request, drop any sentence that points to the Sample page or Main Street Grill."""
+    if not free_intent(visitor_message):
+        return reply
+    parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
+    kept = [p for p in parts if not _SAMPLE_LINK.search(p)]
+    return " ".join(kept) if kept else reply
