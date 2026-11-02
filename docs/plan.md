@@ -12,6 +12,11 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Urgent price answer (task price-fix, 2026-11-02)
+Spec version 1.17, covers B17. A lead was lost; founders approved the exact text (relayed by Ioseb). Step 1 of 4; steps 2 to 4 follow in a second pull request.
+1. content/approved-answers.md, app/content.py rule 17, docs/spec.md B17: price, cost or free questions get the exact founder text (Food Cost Analysis free right now, normally $99; Menu Analysis Report $149 later; ask for the four details).
+2. tests/check_guardrails.py: the exact text passes the guards and the length limit unchanged. No code change in guardrails.
+
 ### Free service for everyone, no short list (task free-for-all, 2026-11-01)
 Spec version 1.16, covers B17. Founders approved (relayed by Ioseb): the bot says the service is free, with no "small number" and no "confirm by email".
 1. content/approved-answers.md and app/content.py rule 17: after the prices, say word for word "Right now our service is free, in exchange for your honest feedback." Still never "free for you", "limited time", or how long or for how many clients.

@@ -120,7 +120,7 @@ for reply, expect_changed in [
     ("Right now both are free for you, for a limited time, in exchange for honest feedback.", True),
     ("It is a limited time offer.", True),
     ("You can have the report for free.", True),
-    ("Right now our service is free, in exchange for your honest feedback.", False),
+    ("Yes, the Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. Nothing is charged afterwards. The Menu Analysis Report is a separate option at $149, only if you want it later. Share your first name, restaurant, state and email and a founder will email you the next steps.", False),
     ("Results arrive within 5 business days of the 15 to 20 minute call. A founder will email you to set up the call.", False),
     ("Share your email and a founder will reply.", False),
 ]:
@@ -153,6 +153,12 @@ cut = g.cap_length(g.clean_reply(first), "where do i send invoices?")
 ok = "follow up with you" in cut and "support@useprofitlens.com" in cut
 failures += not ok
 print(f"  [{'OK' if ok else 'WRONG'}] the offer survives the length limit on a first reply: {cut!r}")
+
+print("\nPrice answer (B17): passes the guards and the length limit unchanged")
+PRICE = "Yes, the Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. Nothing is charged afterwards. The Menu Analysis Report is a separate option at $149, only if you want it later. Share your first name, restaurant, state and email and a founder will email you the next steps."
+ok = not g.find_violations(PRICE) and g.clean_reply(PRICE) == PRICE and g.cap_length(PRICE, "is it free?") == PRICE
+failures += not ok
+print(f"  [{'OK' if ok else 'WRONG'}] the exact price answer reaches the visitor unchanged")
 
 print(f"\n{'ALL CHECKS PASSED' if not failures else f'{failures} CHECK(S) FAILED'}")
 raise SystemExit(bool(failures))

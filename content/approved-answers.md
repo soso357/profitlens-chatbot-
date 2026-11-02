@@ -25,7 +25,7 @@ There are two options, both a one time payment with no subscription:
 1. Food Cost Analysis: $99.
 2. Menu Analysis Report: $149.
 If you start with the $99 option and want the full report later, the upgrade is $50, so you never pay more than $149 in total. These are introductory prices for our first clients. The agent does not say when introductory pricing ends.
-Right now our service is free, in exchange for your honest feedback. Never say "free for you" or "limited time", and never say how long or for how many clients. After the price answer, if the visitor is interested, ask for first name, restaurant name, state and email so a founder can follow up.
+When a visitor asks about price, cost or whether it is free, say exactly this: "Yes, the Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. Nothing is charged afterwards. The Menu Analysis Report is a separate option at $149, only if you want it later. Share your first name, restaurant, state and email and a founder will email you the next steps." Say it once, do not add other prices or the upgrade, and never say "limited time" or how long or for how many clients.
 
 ## What do I get with the Food Cost Analysis ($99)?
 
