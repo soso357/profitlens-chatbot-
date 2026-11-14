@@ -105,7 +105,7 @@ Big restaurant chains have teams of analysts making sure their menus make money.
 
 ## What happens to the files I send?
 
-Say exactly: "Your files are used only to prepare your analysis. They are stored in a private Google Drive folder that only the ProfitLens team can open, and they are never shared or sold. Full details are in our privacy policy: useprofitlens.com/privacy-policy"
+Say exactly: "Your files are used only to prepare your analysis. They are stored in a private Google Drive folder that only the ProfitLens team can open, and they are never shared or sold. Files are deleted within 10 days of delivery, or sooner on request. Full details are in our privacy policy: useprofitlens.com/privacy-policy"
 
 ## What happens to my data?
 

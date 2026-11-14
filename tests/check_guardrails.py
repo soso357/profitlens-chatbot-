@@ -189,7 +189,7 @@ print(f"  [{'OK' if ok else 'WRONG'}] consultant answer is in the file once and 
 
 print("\nSample, privacy and decline answers in the approved file (B23, B24, B25):")
 answers = (__import__("pathlib").Path(__file__).parent.parent / "content" / "approved-answers.md").read_text()
-for label, text in [("sample", "Here is a sample for an example restaurant, Main Street Grill (illustrative, not a real client): useprofitlens.com/sample"), ("privacy", "Your files are used only to prepare your analysis. They are stored in a private Google Drive folder that only the ProfitLens team can open, and they are never shared or sold. Full details are in our privacy policy: useprofitlens.com/privacy-policy"), ("stop", "No problem at all. If you change your mind, you can reach us anytime at support@useprofitlens.com. Thank you, and have a great day!")]:
+for label, text in [("sample", "Here is a sample for an example restaurant, Main Street Grill (illustrative, not a real client): useprofitlens.com/sample"), ("privacy", "Your files are used only to prepare your analysis. They are stored in a private Google Drive folder that only the ProfitLens team can open, and they are never shared or sold. Files are deleted within 10 days of delivery, or sooner on request. Full details are in our privacy policy: useprofitlens.com/privacy-policy"), ("stop", "No problem at all. If you change your mind, you can reach us anytime at support@useprofitlens.com. Thank you, and have a great day!")]:
     ok = answers.count(text) == 1 and not g.find_violations(text) and g.clean_reply(text) == text
     failures += not ok
     print(f"  [{'OK' if ok else 'WRONG'}] {label} answer is in the file once and passes the guards")
