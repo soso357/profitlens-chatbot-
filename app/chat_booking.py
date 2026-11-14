@@ -43,6 +43,9 @@ class BookingState:
     handoff_sent: bool = False
     pending: dict | None = None          # B13: {"data": {...}} waiting for "yes" or a retyped address
     checked: list[str] = field(default_factory=list)  # B13: addresses already read back once
+    asked_details: bool = False          # B25: the last reply asked the visitor for their details
+    declines: int = 0                    # B25: how many times the visitor declined to share them
+    stopped: bool = False                # B25: declined twice, never ask again
     asked: int = 0                       # B4: times the alert was held to ask for a missing detail
 
 
@@ -119,7 +122,7 @@ def missing_question(state: BookingState, lead: dict | None) -> str | None:
     """B4: a founder alert needs first name, restaurant, state and email. If the model sent a lead with
     some of the first three missing, hold it once and ask for all the missing ones in one message
     (in code, so the model cannot skip it). After that the lead goes through as it is."""
-    if not lead or state.handoff_sent or state.asked >= MAX_ASKS:
+    if not lead or state.handoff_sent or state.stopped or state.asked >= MAX_ASKS:
         return None
     missing = [label for key, label in MISSING_DETAILS if not lead.get(key)]
     if not missing:
@@ -127,6 +130,32 @@ def missing_question(state: BookingState, lead: dict | None) -> str | None:
     state.asked += 1
     listed = missing[0] if len(missing) == 1 else ", ".join(missing[:-1]) + " and " + missing[-1]
     return f"Thanks! To pass this to a founder, could you also tell me {listed}?"
+
+
+ASKS_DETAILS = re.compile(r"\b(?:first name|your name|restaurant name|your email|state and email)\b", re.I)
+DECLINE = re.compile(r"^\W*(?:no|nope|nah|not now|not really|no thanks|no thank you|maybe later|skip|pass|"
+                     r"i(?:'d| would) rather not|i prefer not|i would prefer not|i do not want to|i don'?t want to|rather not)\b", re.I)
+STOP_REPLY = ("No problem at all. If you change your mind, you can reach us anytime at support@useprofitlens.com. "
+              "Thank you, and have a great day!")
+
+
+def note_reply(state: BookingState, reply: str) -> None:
+    """B25: remember whether this reply asked the visitor for their details."""
+    state.asked_details = bool(ASKS_DETAILS.search(reply))
+
+
+def decline(state: BookingState, message: str) -> str | None:
+    """B25: a short "no" right after we asked for details is a decline. The second one stops all asking:
+    return the closing reply (support email once). Done in code so the model cannot keep asking."""
+    if state.stopped or not state.asked_details or "?" in message or len(message.split()) > 8:
+        return None
+    if not DECLINE.match(message):
+        return None
+    state.declines += 1
+    if state.declines < 2:
+        return None
+    state.stopped = True
+    return STOP_REPLY
 
 
 def handle(state: BookingState, lead: dict | None, sid: str, transcript: str = "", source: str = "") -> str:

@@ -64,6 +64,26 @@ check("B13 pending email suggestion survives a restart", s2.booking.pending == {
       and s2.booking.checked == ["nino@gmil.com"])
 check("sealed copy stays small", len(tok) < 2000)
 
+# B25, G11: two declines stop the asking, even across a restart
+ASK = "Share your first name, restaurant, state and email and a founder will email you the next steps."
+main.model.reply = lambda system, history: SEEN.append([m["content"] for m in history]) or model.Reply(text=ASK, stop_reason="end_turn")
+DSID = "declinetest0001"
+r = client.post("/start", json={"session_id": DSID}).json()
+tok = r["state"]
+r = client.post("/chat", json={"session_id": DSID, "message": "how much is it?", "state": tok}).json()
+check("the reply asks for details", "first name" in r["reply"])
+tok = r["state"]
+r = client.post("/chat", json={"session_id": DSID, "message": "no thanks", "state": tok}).json()
+tok = r["state"]
+main._sessions.clear()  # restart between the two declines
+calls = len(SEEN)
+r = client.post("/chat", json={"session_id": DSID, "message": "I'd rather not", "state": tok}).json()
+tok = r["state"]
+check("second decline: support email once, no model call", "support@useprofitlens.com" in r["reply"] and len(SEEN) == calls)
+main._sessions.clear()
+r = client.post("/chat", json={"session_id": DSID, "message": "ok what else is there", "state": tok}).json()
+check("after the stop the model's ask is removed", "first name" not in r["reply"])
+
 failed = [n for n, ok in results if not ok]
 print(f"\n{len(results) - len(failed)} of {len(results)} passed")
 raise SystemExit(1 if failed else 0)

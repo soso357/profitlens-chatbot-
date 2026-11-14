@@ -12,6 +12,12 @@ The phase status table lives in docs/progress.md (ADR 0023 C1). This file holds 
 
 (Per phase implementation plans go here, newest phase first.)
 
+### Founder answers: price wording, sample link, file privacy, two declines (task decline-stop, 2026-11-14)
+Spec version 1.19, covers B17, B23, B24, B25, G11. Founders sent four changes via Ioseb. Defaults chosen by Claude, to confirm: the last price sentence is kept; free requests (B21, G10) still get no sample link; the files kept X days sentence is left out until the founders give the number; the code counts declines (option B).
+1. content/approved-answers.md, app/content.py (rules 17, 22), docs/spec.md: new price opening, sample answer with the link, files privacy answer, decline answer.
+2. app/chat_booking.py decline, note_reply and BookingState fields; app/session_store.py saves them; app/main.py stops after the second decline; app/guardrails.py remove_asks (G11).
+3. Tests: tests/check_guardrails.py (texts), tests/check_booking.py (decline counting), tests/check_sessions.py (end to end, survives a restart).
+
 ### Consultants, free requests, several questions (task free-intent, 2026-11-02)
 Spec version 1.18, covers R6, B20, B21, B22, G10. Steps 2 to 4 of the founders' request (step 1 was pull request 34).
 1. content/approved-answers.md and app/content.py (rules 9, 19, 20, 21): consultant answer, free request order, several questions answered in order.
