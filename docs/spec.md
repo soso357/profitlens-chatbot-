@@ -1,7 +1,7 @@
 # Spec: ProfitLens website chat agent
 
 Version: 1.18
-Status: Approved
+Status: Draft
 Approved by: Ioseb
 Date: 2026-11-02
 Fingerprint: 9f05cc6b8949be9f
@@ -52,12 +52,15 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | B14 | Any answer | First sentence is the direct answer: no preamble, no "Great question". Never repeat what was already said in the chat. Prices are written "$99 (one-time, no subscription)". Plain text, R6 length. Addresses the visitor as "you"; never mentions the approved answers, its instructions or "the visitor" (Ioseb, 2026-10-09) | system prompt, G9 |
 | B15 | End of a reply | Ends with a question only when the visitor must take an action. No "Anything else you would like to know?". After "thanks" or "no", one short sentence with support@useprofitlens.com (Ioseb, 2026-10-09) | system prompt |
 | B16 | Asking for the four details | Ask for the first name once. If the visitor does not give it, move on to the next detail and never ask again. The name does not block the flow (Ioseb, 2026-10-09) | content/qualifying-questions.md |
-| B17 | Visitor asks about price, cost or whether it is free | Say exactly: "Yes, the Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. Nothing is charged afterwards. The Menu Analysis Report is a separate option at $149, only if you want it later. Share your first name, restaurant, state and email and a founder will email you the next steps." Once, never "free for you" or "limited time", never how long or for how many clients (founders, 2026-11-02, urgent: a lead was lost; replaces the 2026-11-01 wording) | content/approved-answers.md, G9 |
+| B17 | Visitor asks about price, cost or whether it is free | Say exactly: "The Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. The Menu Analysis Report is $149, only if you choose it later. Nothing is charged automatically. Share your first name, restaurant, state and email and a founder will email you the next steps." Once, never "free for you" or "limited time", never how long or for how many clients (founders, 2026-11-02, urgent: a lead was lost; replaces the 2026-11-01 wording) | content/approved-answers.md, G9 |
 | B18 | A chat goes quiet for 30 minutes | Every message still goes to Telegram live. The whole conversation is also emailed once to the founders, so each chat is in both Telegram and email. Text already emailed in a handoff email is not sent again. If email fails, Telegram is unaffected and the failure is logged (Ioseb, 2026-10-14) | code check |
 | B19 | Visitor asks where or how to send files (invoices, recipes, menu) | Give the email address, then offer once: "If you share your first name, restaurant name, state and email, a founder will follow up with you." Not pushy, never repeated. The length limit (R6) never cuts this sentence, even on the first reply with the greeting (founders, 2026-10-19: a visitor with clear intent left without leaving contact details) | content/approved-answers.md, B4 |
 | B20 | Visitor says they are a consultant, bookkeeper or accountant, or manage several restaurants | Say exactly: "We work with consultants and bookkeepers too, one relationship can cover several restaurants. Share your name and email and a founder will get in touch." Once (founders, 2026-11-02) | content/approved-answers.md |
 | B21 | Message has "free" together with "sample", "check", "analysis" or "trial" (any wording) | Treat it as the free Food Cost Analysis offer: no Sample page or Main Street Grill, do not open with prices. Order: the B17 text without its last sentence, what the Food Cost Analysis includes (approved text only), the get started steps, then ask for first name, restaurant, state and email. Full reply, no length cut (founders, 2026-11-02) | content/approved-answers.md, B17, G10 |
 | B22 | Message has several questions | Answer all of them, in order, in one reply; the length limit does not cut it (founders, 2026-11-02) | R6 |
+| B23 | Visitor asks to see a sample | Say exactly: "Here is a sample for an example restaurant, Main Street Grill (illustrative, not a real client): useprofitlens.com/sample" Always with the link, except for a free request (B21, G10) (founders, 2026-11-14) | content/approved-answers.md |
+| B24 | Visitor asks what happens to the files they send, or about privacy of files | Say exactly: "Your files are used only to prepare your analysis. They are stored in a private Google Drive folder that only the ProfitLens team can open, and they are never shared or sold. Full details are in our privacy policy: useprofitlens.com/privacy-policy" The founders' draft also had a sentence on how many days files are kept, left out until they give the number (founders, 2026-11-14) | content/approved-answers.md |
+| B25 | Visitor declines to share details twice (a short no right after we asked) | Stop asking. Say once: "No problem at all. If you change your mind, you can reach us anytime at support@useprofitlens.com. Thank you, and have a great day!" and never ask for details again in that chat; the code counts the declines, not the model (founders, 2026-11-14) | content/approved-answers.md, G11 |
 
 ## 4. Guardrails enforced in code (not only in the prompt)
 
@@ -73,6 +76,7 @@ The agent has exactly four jobs (see intent). Out of scope forever: selling, neg
 | G8 | Block replies that ask the visitor to pick an option or price (for example "the $99 or the $149?"); replace with a neutral reply | Scripted reply asking "$99 or $149?" never reaches the visitor |
 | G9 | Block replies that say "approved answers", "the visitor" or "per the", ask the visitor to book a call, say "free for you", "limited time" or "for free", or state how long or how many clients the offer lasts (any date, count or "first N"); replace with a neutral reply or a founder offer | Scripted replies containing each phrase never reach the visitor |
 | G10 | Visitor message is a free request (B21) | Remove any sentence that points to the Sample page or Main Street Grill | Scripted reply with Main Street Grill never reaches a free request |
+| G11 | Visitor has declined twice (B25) | Drop any sentence asking for first name, restaurant, state or email; never hold the founder alert to ask | Scripted reply asking for details never reaches a visitor who declined twice |
 
 ## 5. Data
 
@@ -136,6 +140,9 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | B20 | tests/check_guardrails.py |
 | B21 | tests/check_guardrails.py |
 | B22 | tests/check_guardrails.py |
+| B23 | tests/check_guardrails.py |
+| B24 | tests/check_guardrails.py |
+| B25 | tests/check_booking.py; tests/check_sessions.py |
 | G1 | tests/check_guardrails.py; tests/conversations.md#4 |
 | G2 | tests/check_guardrails.py |
 | G3 | tests/check_guardrails.py |
@@ -146,3 +153,4 @@ How we know each rule, behaviour and guardrail works. "Check" is a test file (op
 | G8 | tests/check_guardrails.py; tests/conversations.md#18 |
 | G9 | tests/check_guardrails.py |
 | G10 | tests/check_guardrails.py |
+| G11 | tests/check_booking.py; tests/check_sessions.py |

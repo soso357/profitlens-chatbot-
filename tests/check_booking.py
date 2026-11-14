@@ -160,6 +160,19 @@ TG_RAW.clear()
 ORIG_SEND_LONG("\n".join("line %d %s" % (i, "x" * 80) for i in range(200)))
 check("long text split into Telegram sized parts", len(TG_RAW) > 1 and all(len(t) <= 4096 for t in TG_RAW))
 
+# B25, G11: two declines stop all asking
+sd = cb.BookingState()
+check("no ask yet: a no is not a decline", cb.decline(sd, "no") is None and sd.declines == 0)
+cb.note_reply(sd, "Share your first name, restaurant, state and email and a founder will email you the next steps.")
+check("we asked for details", sd.asked_details)
+check("first decline: counted, not stopped", cb.decline(sd, "no thanks") is None and sd.declines == 1 and not sd.stopped)
+check("a question is never a decline", cb.decline(sd, "no, how much is it?") is None and sd.declines == 1)
+stop = cb.decline(sd, "I'd rather not")
+check("second decline: stop, support email once", stop == cb.STOP_REPLY and "support@useprofitlens.com" in stop and sd.stopped)
+check("after the stop nothing more is counted or held", cb.decline(sd, "no") is None and cb.missing_question(sd, {"name": "", "restaurant": "", "location": "", "email": "b@x.com"}) is None)
+from app import guardrails as gr
+check("asks are dropped after the stop", "first name" not in gr.remove_asks("The report takes 5 days. Share your first name, restaurant, state and email."))
+
 failed = [n for n, ok in results if not ok]
 print(f"\n{len(results) - len(failed)} of {len(results)} passed")
 raise SystemExit(1 if failed else 0)

@@ -48,6 +48,9 @@ def dump(session_id: str, session) -> str:
             "pending": b.pending,
             "checked": b.checked,
             "asked": b.asked,
+            "asked_details": b.asked_details,
+            "declines": b.declines,
+            "stopped": b.stopped,
         },
     }
     data = zlib.compress(json.dumps(state, separators=(",", ":")).encode(), 9)
@@ -89,4 +92,7 @@ def restore(session, state: dict) -> None:
         pending=b.get("pending") if isinstance(b.get("pending"), dict) else None,
         checked=[str(e) for e in b.get("checked", [])][:20],
         asked=int(b.get("asked", 0) or 0),
+        asked_details=bool(b.get("asked_details")),
+        declines=int(b.get("declines", 0) or 0),
+        stopped=bool(b.get("stopped")),
     )

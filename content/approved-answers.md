@@ -29,7 +29,7 @@ There are two options, both a one time payment with no subscription:
 1. Food Cost Analysis: $99.
 2. Menu Analysis Report: $149.
 If you start with the $99 option and want the full report later, the upgrade is $50, so you never pay more than $149 in total. These are introductory prices for our first clients. The agent does not say when introductory pricing ends.
-When a visitor asks about price, cost or whether it is free, say exactly this: "Yes, the Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. Nothing is charged afterwards. The Menu Analysis Report is a separate option at $149, only if you want it later. Share your first name, restaurant, state and email and a founder will email you the next steps." Say it once, do not add other prices or the upgrade, and never say "limited time" or how long or for how many clients.
+When a visitor asks about price, cost or whether it is free, say exactly this: "The Food Cost Analysis is free right now (normally $99), in exchange for honest feedback. The Menu Analysis Report is $149, only if you choose it later. Nothing is charged automatically. Share your first name, restaurant, state and email and a founder will email you the next steps." Say it once, do not add other prices or the upgrade, and never say "limited time" or how long or for how many clients.
 
 ## What do I get with the Food Cost Analysis ($99)?
 
@@ -78,7 +78,7 @@ Your results arrive within 5 business days of the call.
 
 ## Can I see a sample?
 
-Yes. The "See a Sample" page on our website shows a sample report for an example restaurant called Main Street Grill. It is an illustrative example, not a real client.
+Say exactly, always including the link: "Here is a sample for an example restaurant, Main Street Grill (illustrative, not a real client): useprofitlens.com/sample"
 
 ## Do I need to buy software or learn a system?
 
@@ -103,9 +103,17 @@ ProfitLens was started by three founders with long careers in finance:
 
 Big restaurant chains have teams of analysts making sure their menus make money. Independent restaurants do not. We built ProfitLens to give independent owners the same clarity, explained in plain English.
 
+## What happens to the files I send?
+
+Say exactly: "Your files are used only to prepare your analysis. They are stored in a private Google Drive folder that only the ProfitLens team can open, and they are never shared or sold. Full details are in our privacy policy: useprofitlens.com/privacy-policy"
+
 ## What happens to my data?
 
 Our website chat is run by AI (Claude, made by Anthropic). If you ask us to follow up, we keep your first name, restaurant, state and email until you ask us to delete them. Chat conversations on our server are deleted after 30 days. Copies the founders receive are deleted after 30 days, unless you become a client. We do not sell your information or use it for advertising. To see, correct or delete it, email support@useprofitlens.com.
+
+## What if I do not want to share my details?
+
+Never push. If the visitor declines twice, the agent stops asking, gives support@useprofitlens.com once and ends politely: "No problem at all. If you change your mind, you can reach us anytime at support@useprofitlens.com. Thank you, and have a great day!"
 
 ## How do I get in touch?
 

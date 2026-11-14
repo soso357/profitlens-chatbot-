@@ -273,6 +273,12 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             chat_log.log(sid, "agent", text=confirmed)
             _mirror(sid, session, message, confirmed)
             return _out(sid, session, reply=confirmed)
+        stop = chat_booking.decline(session.booking, message)
+        if stop:  # B25: declined twice, give the support email once and end politely
+            session.messages += [{"role": "user", "content": message}, {"role": "assistant", "content": stop}]
+            chat_log.log(sid, "agent", text=stop)
+            _mirror(sid, session, message, stop)
+            return _out(sid, session, reply=stop)
         first_reply = not any(m["role"] == "assistant" for m in session.messages)
         history = session.messages + [{"role": "user", "content": message}]
 
@@ -300,6 +306,8 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
             chat_log.log(sid, "guardrail_blocked", reasons=violations, original=raw)
             reply, lead = guardrails.HANDOFF_REPLY, None
 
+        if session.booking.stopped:
+            reply = guardrails.remove_asks(reply)
         question = chat_booking.missing_question(session.booking, lead)
         if question:  # B4: ask for the missing detail instead of alerting the founders
             reply, lead = question, None
@@ -307,6 +315,7 @@ def chat(request: Request, body: ChatIn) -> ChatOut:
         if first_reply:
             reply = guardrails.ensure_disclosure(reply)
 
+        chat_booking.note_reply(session.booking, reply)
         session.messages = history + [{"role": "assistant", "content": reply}]
         handoff_before = session.booking.handoff_sent
         extra = chat_booking.handle(session.booking, lead, sid, _transcript(session), SOURCE)

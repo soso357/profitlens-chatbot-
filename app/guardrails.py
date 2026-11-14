@@ -253,3 +253,10 @@ def remove_sample_link(reply: str, visitor_message: str) -> str:
     parts = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p]
     kept = [p for p in parts if not _SAMPLE_LINK.search(p)]
     return " ".join(kept) if kept else reply
+
+
+def remove_asks(reply: str) -> str:
+    """G11: after two declines the agent never asks for details again; drop any sentence that does."""
+    asks = re.compile(r"\b(?:first name|your name|restaurant name|your email|state and email|share your)\b", re.I)
+    kept = [p for p in re.split(r"(?<=[.!?])\s+", reply.strip()) if p and not asks.search(p)]
+    return " ".join(kept) if kept else "Happy to answer any other questions."
